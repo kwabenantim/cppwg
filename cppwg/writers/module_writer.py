@@ -4,10 +4,6 @@ import logging
 import os
 from typing import Dict, List
 
-from pygccxml.declarations.class_declaration import class_t
-from pygccxml.declarations.namespace import namespace_t
-
-from cppwg.input.module_info import ModuleInfo
 from cppwg.utils.constants import CPPWG_EXT, CPPWG_HEADER_COLLECTION_FILENAME
 from cppwg.writers.class_writer import CppClassWrapperWriter
 from cppwg.writers.free_function_writer import CppFreeFunctionWrapperWriter
@@ -24,7 +20,7 @@ class CppModuleWrapperWriter:
 
     Attributes
     ----------
-    source_ns : namespace_t
+    source_ns : pygccxml.declarations.namespace_t
         The pygccxml namespace containing declarations from the source code
     module_info : ModuleInfo
         The module information to generate Python bindings for
@@ -40,14 +36,14 @@ class CppModuleWrapperWriter:
 
     def __init__(
         self,
-        source_ns: namespace_t,
-        module_info: ModuleInfo,
+        source_ns: "namespace_t",  # noqa: F821
+        module_info: "ModuleInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
         wrapper_root: str,
         package_license: str = "",
     ):
-        self.source_ns: namespace_t = source_ns
-        self.module_info: ModuleInfo = module_info
+        self.source_ns: "namespace_t" = source_ns  # noqa: F821
+        self.module_info: "ModuleInfo" = module_info  # noqa: F821
         self.wrapper_templates: Dict[str, str] = wrapper_templates
         self.wrapper_root: str = wrapper_root
         self.package_license: str = (
@@ -143,16 +139,11 @@ class CppModuleWrapperWriter:
             logger.info(f"Generating wrapper for class {class_info.name}")
 
             class_writer = CppClassWrapperWriter(
-                class_info, self.wrapper_templates, self.exposed_class_full_names
+                self.source_ns,
+                class_info,
+                self.wrapper_templates,
+                self.exposed_class_full_names,
             )
-
-            # Get the declaration for each class and add it to the class writer
-            # TODO: Consider using class_info.decl instead
-            for full_name in class_info.full_names:
-                name = full_name.replace(" ", "")  # e.g. Foo<2,2>
-
-                class_decl: class_t = self.source_ns.class_(name)
-                class_writer.class_decls.append(class_decl)
 
             # Write the class wrappers into /path/to/wrapper_root/modulename/
             module_dir = os.path.join(self.wrapper_root, self.module_info.name)

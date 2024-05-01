@@ -5,10 +5,7 @@ import os
 from typing import Dict, List
 
 from pygccxml import declarations
-from pygccxml.declarations.calldef_members import member_function_t
-from pygccxml.declarations.class_declaration import class_t
 
-from cppwg.input.class_info import CppClassInfo
 from cppwg.utils.constants import (
     CPPWG_CLASS_OVERRIDE_SUFFIX,
     CPPWG_EXT,
@@ -25,6 +22,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
     Attributes
     ----------
+    source_ns : pygccxml.declarations.namespace_t
+        The pygccxml namespace containing declarations from the source code
     class_info : CppClassInfo
         The class information
     wrapper_templates : Dict[str, str]
@@ -35,7 +34,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         A list of full names for this class e.g. ["Foo<2,2>", "Foo<3,3>"]
     class_short_names : List[str]
         A list of short names for this class e.g. ["Foo2_2", "Foo3_3"]
-    class_decls : List[class_t]
+    class_decls : List[pygccxml.declarations.class_t]
         A list of class declarations associated with the class
     has_shared_ptr : bool
         Whether the class uses shared pointers
@@ -49,7 +48,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
     def __init__(
         self,
-        class_info: CppClassInfo,
+        source_ns: "namespace_t",  # noqa: F821
+        class_info: "CppClassInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
         exposed_class_full_names: List[str],
     ) -> None:
@@ -57,7 +57,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
         super(CppClassWrapperWriter, self).__init__(wrapper_templates)
 
-        self.class_info: CppClassInfo = class_info
+        self.source_ns: "namespace_t" = source_ns  # noqa: F821
+        self.class_info: "CppClassInfo" = class_info  # noqa: F821
 
         # Class full names eg. ["Foo<2,2>", "Foo<3,3>"]
         self.class_full_names: List[str] = self.class_info.full_names
@@ -69,9 +70,17 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             logger.error("Full and short name lists should be the same length")
             raise AssertionError()
 
+        # Get the declaration for each class
+        self.class_decls: List["class_t"] = []  # noqa: F821
+
+        for full_name in self.class_info.full_names:
+            name = full_name.replace(" ", "")  # e.g. Foo<2,2>
+
+            class_decl: "class_t" = self.source_ns.class_(name)  # noqa: F821
+            self.class_decls.append(class_decl)
+
         self.exposed_class_full_names: List[str] = exposed_class_full_names
 
-        self.class_decls: List[class_t] = []
         self.has_shared_ptr: bool = True
         self.is_abstract: bool = False  # TODO: Consider removing unused attribute
 
@@ -161,8 +170,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             )
 
     def add_virtual_overrides(
-        self, class_decl: class_t, short_class_name: str
-    ) -> List[member_function_t]:
+        self, class_decl: "class_t", short_class_name: str  # noqa: F821
+    ) -> List["member_function_t"]:  # noqa: F821
         """
         Add virtual "trampoline" overrides for the class.
 
@@ -178,9 +187,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
         Returns
         -------
-        list[member_function_t]: A list of member functions needing override
+        list[pygccxml.declarations.member_function_t]: A list of member functions needing override
         """
-        methods_needing_override: List[member_function_t] = []
+        methods_needing_override: List["member_function_t"] = []  # noqa: F821
         return_types: List[str] = []  # e.g. ["void", "unsigned int", "::Bar<2> *"]
 
         # Collect all virtual methods and their return types
@@ -297,7 +306,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 continue
 
             # Find and define virtual function "trampoline" overrides
-            methods_needing_override: List[member_function_t] = (
+            methods_needing_override: List["member_function_t"] = (  # noqa: F821
                 self.add_virtual_overrides(class_decl, short_name)
             )
 
