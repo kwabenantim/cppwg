@@ -26,8 +26,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         The class information
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
-    exposed_class_full_names : List[str]
-        A list of full names for all classes in the module
+    module_class_decls : List[pygccxml.declarations.class_t]
+        A list of decls for all classes in the module
     has_shared_ptr : bool
         Whether the class uses shared pointers
     is_abstract : bool
@@ -42,7 +42,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         self,
         class_info: "CppClassInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
-        exposed_class_full_names: List[str],
+        module_class_decls: List["class_t"],  # noqa: F821
     ) -> None:
         logger = logging.getLogger()
 
@@ -54,7 +54,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             logger.error("Full and short name lists should be the same length")
             raise AssertionError()
 
-        self.exposed_class_full_names: List[str] = exposed_class_full_names
+        self.module_class_decls: List["class_t"] = module_class_decls  # noqa: F821
 
         self.has_shared_ptr: bool = True
         self.is_abstract: bool = False  # TODO: Consider removing unused attribute
@@ -109,7 +109,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
             source_file = self.class_info.source_file
             if not source_file:
-                source_file = os.path.basename(self.class_info.decls[0].location.file_name)
+                source_file = os.path.basename(
+                    self.class_info.decls[0].location.file_name
+                )
             includes += f'#include "{source_file}"\n'
 
         # Check for custom smart pointers e.g. "boost::shared_ptr"
@@ -308,9 +310,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 if base.access_type == "private":
                     continue
 
-                # Check if the base class is exposed (i.e. to be wrapped in the module)
-                base_class_name: str = base.related_class.name.replace(" ", "")
-                if base_class_name in self.exposed_class_full_names:
+                # Check if the base class is also wrapped in the module
+                if base.related_class in self.module_class_decls:
                     bases += f", {base.related_class.name} "
 
             # Add the class registration

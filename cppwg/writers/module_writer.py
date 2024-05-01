@@ -30,8 +30,8 @@ class CppModuleWrapperWriter:
         The output directory for the generated wrapper code
     package_license : str
         The license to include in the generated wrapper code
-    exposed_class_full_names : List[str]
-        A list of full names of all classes to be wrapped in the module
+    class_decls : List[pygccxml.declarations.class_t]
+        A list of declarations of all classes to be wrapped in the module
     """
 
     def __init__(
@@ -50,13 +50,12 @@ class CppModuleWrapperWriter:
             package_license  # TODO: use this in the generated wrappers
         )
 
-        # For convenience, create a list of all classes to be wrapped in the module
-        # e.g. ['Foo', 'Bar<2>', 'Bar<3>']
-        self.exposed_class_full_names: List[str] = []
+        # For convenience, store a list of declarations of all
+        # classes to be wrapped in the module
+        self.class_decls: List["class_t"] = []  # noqa: F821
 
         for class_info in self.module_info.class_info_collection:
-            for full_name in class_info.full_names:
-                self.exposed_class_full_names.append(full_name.replace(" ", ""))
+            self.class_decls.extend(class_info.decls)
 
     def write_module_wrapper(self) -> None:
         """
@@ -141,7 +140,7 @@ class CppModuleWrapperWriter:
             class_writer = CppClassWrapperWriter(
                 class_info,
                 self.wrapper_templates,
-                self.exposed_class_full_names,
+                self.class_decls,
             )
 
             # Write the class wrappers into /path/to/wrapper_root/modulename/
