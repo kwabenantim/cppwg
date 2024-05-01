@@ -63,7 +63,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         self.class_full_names: List[str] = self.class_info.full_names
 
         # Class short names eg. ["Foo2_2", "Foo3_3"]
-        self.class_short_names: List[str] = self.class_info.full_names
+        self.class_short_names: List[str] = self.class_info.short_names
 
         if len(self.class_full_names) != len(self.class_short_names):
             logger.error("Full and short name lists should be the same length")
