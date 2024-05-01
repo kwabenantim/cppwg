@@ -7,7 +7,7 @@ import re
 import subprocess
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import pygccxml
 

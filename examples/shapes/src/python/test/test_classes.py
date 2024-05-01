@@ -1,8 +1,8 @@
 import unittest
 
 import pyshapes.geometry
-import pyshapes.primitives
 import pyshapes.mesh
+import pyshapes.primitives
 
 
 class TestClasses(unittest.TestCase):
@@ -30,6 +30,7 @@ class TestClasses(unittest.TestCase):
 
         cmesh.SetIndex(1)
         self.assertTrue(cmesh.GetIndex() == 1)
+
 
 if __name__ == "__main__":
     unittest.main()
