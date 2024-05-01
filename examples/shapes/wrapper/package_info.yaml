@@ -19,3 +19,8 @@ modules:
   - name: Shape
   - name: Cuboid
   - name: Rectangle
+- name: mesh
+  source_locations: 
+  classes: 
+  - name: Mesh
+  
