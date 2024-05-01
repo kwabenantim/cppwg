@@ -24,4 +24,5 @@ modules:
   - name: mesh
     source_locations:
     classes:
-      - name: Mesh
+      - name: AbstractMesh
+      - name: ConcreteMesh

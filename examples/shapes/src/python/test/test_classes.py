@@ -2,6 +2,7 @@ import unittest
 
 import pyshapes.geometry
 import pyshapes.primitives
+import pyshapes.mesh
 
 
 class TestClasses(unittest.TestCase):
@@ -22,6 +23,13 @@ class TestClasses(unittest.TestCase):
         cuboid = pyshapes.primitives.Cuboid(5.0, 10.0, 20.0)
         self.assertTrue(len(cuboid.rGetVertices()) == 8)
 
+    def testMesh(self):
+
+        cmesh = pyshapes.mesh.ConcreteMesh2()
+        self.assertTrue(cmesh.GetIndex() == 0)
+
+        cmesh.SetIndex(1)
+        self.assertTrue(cmesh.GetIndex() == 1)
 
 if __name__ == "__main__":
     unittest.main()

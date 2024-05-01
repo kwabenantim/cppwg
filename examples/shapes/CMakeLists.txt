@@ -35,7 +35,7 @@ target_link_libraries(_pyshapes_math_funcs PRIVATE pybind11::module shapes)
 
 file(GLOB MODULE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/mesh/*.cpp)
 add_library(_pyshapes_mesh SHARED ${MODULE_SOURCES})
-target_link_libraries(_pyshapes_mesh PRIVATE pybind11::module mesh)
+target_link_libraries(_pyshapes_mesh PRIVATE pybind11::module shapes)
 
 file(GLOB MODULE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/geometry/*.cpp)
 add_library(_pyshapes_geometry SHARED ${MODULE_SOURCES})

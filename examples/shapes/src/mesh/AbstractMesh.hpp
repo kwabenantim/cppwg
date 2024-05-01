@@ -5,11 +5,11 @@
  * A mesh in SPACE_DIM space with ELEMENT_DIM dimensional elements
  */
 template <unsigned ELEMENT_DIM, unsigned SPACE_DIM = ELEMENT_DIM>
-class Mesh
+class AbstractMesh
 {
 private:
     /**
-     * Mesh index
+     * AbstractMesh index
      */
     unsigned mIndex;
 
@@ -17,12 +17,12 @@ public:
     /**
      * Default Constructor
      */
-    Mesh();
+    AbstractMesh();
 
     /**
      * Destructor
      */
-    ~Mesh();
+    ~AbstractMesh();
 
     /**
      * Return the index
@@ -33,6 +33,11 @@ public:
      * Set the index
      */
     void SetIndex(unsigned index);
+
+    /**
+     * Scale the mesh by a factor
+     */
+    virtual void Scale(const double factor) = 0;
 };
 
 #endif // _MESH_HPP
