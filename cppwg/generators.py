@@ -7,10 +7,9 @@ import re
 import subprocess
 import uuid
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-import pygccxml.utils
-from pygccxml import __version__ as pygccxml_version
+import pygccxml
 
 from cppwg.input.class_info import CppClassInfo
 from cppwg.input.free_function_info import CppFreeFunctionInfo
@@ -95,7 +94,7 @@ class CppWrapperGenerator:
             r"castxml version \d+\.\d+\.\d+", castxml_version
         ).group(0)
         logger.info(castxml_version)
-        logger.info(f"pygccxml version {pygccxml_version}")
+        logger.info(f"pygccxml version {pygccxml.version}")
 
         # Sanitize castxml_cflags
         self.castxml_cflags: str = ""
@@ -203,8 +202,7 @@ class CppWrapperGenerator:
             info_helper = CppInfoHelper(module_info)
             for class_info in module_info.class_info_collection:
                 info_helper.extract_templates_from_source(class_info)
-                class_info.update_short_names()
-                class_info.update_full_names()
+                class_info.update_names()
 
     def map_classes_to_hpp_files(self) -> None:
         """
@@ -265,10 +263,49 @@ class CppWrapperGenerator:
                 for class_decl in class_decls:
                     if module_info.is_decl_in_source_path(class_decl):
                         class_info = CppClassInfo(class_decl.name)
-                        class_info.update_short_names()
-                        class_info.update_full_names()
+                        class_info.update_names()
                         class_info.module_info = module_info
                         module_info.class_info_collection.append(class_info)
+
+    def add_class_decls(self) -> None:
+        """
+        Add declarations to class info objects.
+
+        Update all class info objects with their corresponding
+        declarations found by pygccxml in the C++ source code.
+        """
+        for module_info in self.package_info.module_info_collection:
+            for class_info in module_info.class_info_collection:
+                class_info.decls: List["class_t"] = []  # noqa: F821
+
+                for full_name in class_info.full_names:
+                    decl_name = full_name.replace(" ", "")  # e.g. Foo<2,2>
+
+                    try:
+                        class_decl = self.source_ns.class_(decl_name)
+
+                    except pygccxml.declarations.runtime_errors.declaration_not_found_t:
+                        if "=" in class_info.template_signature:
+                            # Try to find the class without default template args
+                            # e.g. for template <int A, int B=A> class Foo {};
+                            # convert Foo<2,2> -> Foo<2 >
+                            pos = 0
+                            for i, s in enumerate(
+                                class_info.template_signature.split(",")
+                            ):
+                                if "=" in s:
+                                    pos = i
+                                    break
+
+                            decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
+                            class_decl = self.source_ns.class_(decl_name)
+
+                        else:
+                            logging.error(
+                                f"Could not find class declaration for {decl_name}"
+                            )
+
+                    class_info.decls.append(class_decl)
 
     def add_discovered_free_functions(self) -> None:
         """
@@ -285,9 +322,9 @@ class CppWrapperGenerator:
 
                 for free_function in free_functions:
                     if module_info.is_decl_in_source_path(free_function):
-                        function_info = CppFreeFunctionInfo(free_function.name)
-                        function_info.module_info = module_info
-                        module_info.free_function_info_collection.append(function_info)
+                        ff_info = CppFreeFunctionInfo(free_function.name)
+                        ff_info.module_info = module_info
+                        module_info.free_function_info_collection.append(ff_info)
 
     def add_free_function_decls(self) -> None:
         """
@@ -297,12 +334,9 @@ class CppWrapperGenerator:
         declarations found by pygccxml in the C++ source code.
         """
         for module_info in self.package_info.module_info_collection:
-            if module_info.use_all_free_functions:
-                for free_function_info in module_info.free_function_info_collection:
-                    decls = self.source_ns.free_functions(
-                        free_function_info.name, allow_empty=True
-                    )
-                    free_function_info.decl = decls[0]
+            for ff_info in module_info.free_function_info_collection:
+                decls = self.source_ns.free_functions(ff_info.name, allow_empty=True)
+                ff_info.decls = [decls[0]]
 
     def write_header_collection(self) -> None:
         """Write the header collection to file."""
@@ -346,6 +380,9 @@ class CppWrapperGenerator:
 
         # Add discovered classes from the parsed code
         self.add_discovered_classes()
+
+        # Add declarations to class info objects
+        self.add_class_decls()
 
         # Add discovered free functions from the parsed code
         self.add_discovered_free_functions()

@@ -24,21 +24,16 @@ class CppClassInfo(CppTypeInfo):
         self.full_names: List[str] = None
         self.short_names: List[str] = None
 
-    def update_short_names(self):
+    def update_short_names(self) -> None:
         """
-        Get the Python name for the class e.g. Foo2_2.
+        Set the Python names for the class, accounting for template args.
 
-        Return the name of the class as it will appear on the Python side. This
+        Set the name of the class as it will appear on the Python side. This
         collapses template arguments, separating them by underscores and removes
         special characters. The return type is a list, as a class can have
         multiple names if it is templated. For example, a class "Foo" with
         template arguments [[2, 2], [3, 3]] will have a short name list
         ["Foo2_2", "Foo3_3"].
-
-        Returns
-        -------
-        List[str]
-            The list of short names
         """
         # Handles untemplated classes
         if self.template_arg_lists is None:
@@ -96,20 +91,15 @@ class CppClassInfo(CppTypeInfo):
 
             self.short_names.append(type_name + template_string)
 
-    def update_full_names(self):
+    def update_full_names(self) -> None:
         """
-        Get the C++ name for the class e.g. Foo<2,2>.
+        Set the C++ names for the class, accounting for template args.
 
-        Return the name (declaration) of the class as it appears on the C++
-        side. The return type is a list, as a class can have multiple names
-        (declarations) if it is templated. For example, a class "Foo" with
+        Set the name of the class as it should appear in C++.
+        The return type is a list, as a class can have multiple names
+        if it is templated. For example, a class "Foo" with
         template arguments [[2, 2], [3, 3]] will have a full name list
         ["Foo<2,2 >", "Foo<3,3 >"].
-
-        Returns
-        -------
-        List[str]
-            The list of full names
         """
         # Handles untemplated classes
         if self.template_arg_lists is None:
@@ -124,6 +114,11 @@ class CppClassInfo(CppTypeInfo):
 
             # Join full name e.g. "Foo<2,2 >"
             self.full_names.append(self.name + template_string)
+
+    def update_names(self) -> None:
+        """Update the full and short names for the class."""
+        self.update_full_names()
+        self.update_short_names()
 
     @property
     def parent(self) -> "ModuleInfo":  # noqa: F821

@@ -139,7 +139,6 @@ class CppModuleWrapperWriter:
             logger.info(f"Generating wrapper for class {class_info.name}")
 
             class_writer = CppClassWrapperWriter(
-                self.source_ns,
                 class_info,
                 self.wrapper_templates,
                 self.exposed_class_full_names,

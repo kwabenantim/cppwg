@@ -22,20 +22,12 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
     Attributes
     ----------
-    source_ns : pygccxml.declarations.namespace_t
-        The pygccxml namespace containing declarations from the source code
     class_info : CppClassInfo
         The class information
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
     exposed_class_full_names : List[str]
         A list of full names for all classes in the module
-    class_full_names : List[str]
-        A list of full names for this class e.g. ["Foo<2,2>", "Foo<3,3>"]
-    class_short_names : List[str]
-        A list of short names for this class e.g. ["Foo2_2", "Foo3_3"]
-    class_decls : List[pygccxml.declarations.class_t]
-        A list of class declarations associated with the class
     has_shared_ptr : bool
         Whether the class uses shared pointers
     is_abstract : bool
@@ -48,7 +40,6 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
     def __init__(
         self,
-        source_ns: "namespace_t",  # noqa: F821
         class_info: "CppClassInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
         exposed_class_full_names: List[str],
@@ -57,27 +48,11 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
         super(CppClassWrapperWriter, self).__init__(wrapper_templates)
 
-        self.source_ns: "namespace_t" = source_ns  # noqa: F821
         self.class_info: "CppClassInfo" = class_info  # noqa: F821
 
-        # Class full names eg. ["Foo<2,2>", "Foo<3,3>"]
-        self.class_full_names: List[str] = self.class_info.full_names
-
-        # Class short names eg. ["Foo2_2", "Foo3_3"]
-        self.class_short_names: List[str] = self.class_info.short_names
-
-        if len(self.class_full_names) != len(self.class_short_names):
+        if len(self.class_info.full_names) != len(self.class_info.short_names):
             logger.error("Full and short name lists should be the same length")
             raise AssertionError()
-
-        # Get the declaration for each class
-        self.class_decls: List["class_t"] = []  # noqa: F821
-
-        for full_name in self.class_info.full_names:
-            name = full_name.replace(" ", "")  # e.g. Foo<2,2>
-
-            class_decl: "class_t" = self.source_ns.class_(name)  # noqa: F821
-            self.class_decls.append(class_decl)
 
         self.exposed_class_full_names: List[str] = exposed_class_full_names
 
@@ -134,7 +109,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
             source_file = self.class_info.source_file
             if not source_file:
-                source_file = os.path.basename(self.class_info.decl.location.file_name)
+                source_file = os.path.basename(self.class_info.decls[0].location.file_name)
             includes += f'#include "{source_file}"\n'
 
         # Check for custom smart pointers e.g. "boost::shared_ptr"
@@ -262,13 +237,13 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         """
         logger = logging.getLogger()
 
-        if len(self.class_decls) != len(self.class_full_names):
+        if len(self.class_info.decls) != len(self.class_info.full_names):
             logger.error("Not enough class decls added to do write.")
             raise AssertionError()
 
-        for idx, full_name in enumerate(self.class_full_names):
-            short_name = self.class_short_names[idx]
-            class_decl = self.class_decls[idx]
+        for idx, full_name in enumerate(self.class_info.full_names):
+            short_name = self.class_info.short_names[idx]
+            class_decl = self.class_info.decls[idx]
             self.hpp_string = ""
             self.cpp_string = ""
 
