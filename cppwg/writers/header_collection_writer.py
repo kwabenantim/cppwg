@@ -130,14 +130,10 @@ class CppHeaderCollectionWriter:
                     continue
 
                 # Class full names eg. ["Foo<2,2>", "Foo<3,3>"]
-                full_names = [
-                    name.replace(" ", "") for name in class_info.get_full_names()
-                ]
+                full_names = [name.replace(" ", "") for name in class_info.full_names]
 
                 # Class short names eg. ["Foo2_2", "Foo3_3"]
-                short_names = [
-                    name.replace(" ", "") for name in class_info.get_short_names()
-                ]
+                short_names = [name.replace(" ", "") for name in class_info.short_names]
 
                 for full_name, short_name in zip(full_names, short_names):
                     template_instantiations += f"template class {full_name};\n"

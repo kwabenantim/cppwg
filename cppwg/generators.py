@@ -203,6 +203,8 @@ class CppWrapperGenerator:
             info_helper = CppInfoHelper(module_info)
             for class_info in module_info.class_info_collection:
                 info_helper.extract_templates_from_source(class_info)
+                class_info.update_short_names()
+                class_info.update_full_names()
 
     def map_classes_to_hpp_files(self) -> None:
         """

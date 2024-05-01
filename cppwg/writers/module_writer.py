@@ -59,7 +59,7 @@ class CppModuleWrapperWriter:
         self.exposed_class_full_names: List[str] = []
 
         for class_info in self.module_info.class_info_collection:
-            for full_name in class_info.get_full_names():
+            for full_name in class_info.full_names:
                 self.exposed_class_full_names.append(full_name.replace(" ", ""))
 
     def write_module_wrapper(self) -> None:
@@ -92,7 +92,7 @@ class CppModuleWrapperWriter:
 
         # Add includes for class wrappers in the module
         for class_info in self.module_info.class_info_collection:
-            for short_name in class_info.get_short_names():
+            for short_name in class_info.short_names:
                 # Example: #include "Foo2_2.cppwg.hpp"
                 cpp_string += f'#include "{short_name}.{CPPWG_EXT}.hpp"\n'
 
@@ -115,7 +115,7 @@ class CppModuleWrapperWriter:
 
         # Add classes
         for class_info in self.module_info.class_info_collection:
-            for short_name in class_info.get_short_names():
+            for short_name in class_info.short_names:
                 # Example: register_Foo2_2_class(m);"
                 cpp_string += f"    register_{short_name}_class(m);\n"
 
@@ -148,7 +148,7 @@ class CppModuleWrapperWriter:
 
             # Get the declaration for each class and add it to the class writer
             # TODO: Consider using class_info.decl instead
-            for full_name in class_info.get_full_names():
+            for full_name in class_info.full_names:
                 name = full_name.replace(" ", "")  # e.g. Foo<2,2>
 
                 class_decl: class_t = self.source_ns.class_(name)
