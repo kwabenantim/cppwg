@@ -20,8 +20,6 @@ class CppModuleWrapperWriter:
 
     Attributes
     ----------
-    source_ns : pygccxml.declarations.namespace_t
-        The pygccxml namespace containing declarations from the source code
     module_info : ModuleInfo
         The module information to generate Python bindings for
     wrapper_templates : Dict[str, str]
@@ -36,13 +34,11 @@ class CppModuleWrapperWriter:
 
     def __init__(
         self,
-        source_ns: "namespace_t",  # noqa: F821
         module_info: "ModuleInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
         wrapper_root: str,
         package_license: str = "",
     ):
-        self.source_ns: "namespace_t" = source_ns  # noqa: F821
         self.module_info: "ModuleInfo" = module_info  # noqa: F821
         self.wrapper_templates: Dict[str, str] = wrapper_templates
         self.wrapper_root: str = wrapper_root

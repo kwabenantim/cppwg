@@ -351,7 +351,6 @@ class CppWrapperGenerator:
         """Write all the wrappers required for the package."""
         for module_info in self.package_info.module_info_collection:
             module_writer = CppModuleWrapperWriter(
-                self.source_ns,
                 module_info,
                 wrapper_templates.template_collection,
                 self.wrapper_root,
