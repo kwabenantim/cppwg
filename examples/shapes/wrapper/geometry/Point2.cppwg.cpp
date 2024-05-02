@@ -11,7 +11,7 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 void register_Point2_class(py::module &m){
 py::class_<Point2  , std::shared_ptr<Point2 >   >(m, "Point2")
         .def(py::init< >())
-        .def(py::init<double, double, double >(), py::arg("x"), py::arg("y"), py::arg("z") = 0.)
+        .def(py::init<double, double, double >(), py::arg("x"), py::arg("y"), py::arg("z") = (2 - 2))
         .def(
             "GetLocation",
             (::std::array<double, 2>(Point2::*)() const ) &Point2::GetLocation,

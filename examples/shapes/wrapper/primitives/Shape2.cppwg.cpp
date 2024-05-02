@@ -27,5 +27,9 @@ py::class_<Shape2  , std::shared_ptr<Shape2 >   >(m, "Shape2")
             "SetVertices",
             (void(Shape2::*)(::std::vector<std::shared_ptr<Point<2>>> const &)) &Shape2::SetVertices,
             " " , py::arg("rVertices") )
+        .def(
+            "AddVertex",
+            (void(Shape2::*)(::std::shared_ptr<Point<2>>)) &Shape2::AddVertex,
+            " " , py::arg("point") = std::make_shared<Point<2>>() )
     ;
 }
