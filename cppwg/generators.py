@@ -94,7 +94,7 @@ class CppWrapperGenerator:
             r"castxml version \d+\.\d+\.\d+", castxml_version
         ).group(0)
         logger.info(castxml_version)
-        logger.info(f"pygccxml version {pygccxml.version}")
+        logger.info(f"pygccxml version {pygccxml.__version__}")
 
         # Sanitize castxml_cflags
         self.castxml_cflags: str = ""
