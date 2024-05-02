@@ -3,10 +3,7 @@
 from typing import Dict, Optional
 
 from pygccxml import declarations
-from pygccxml.declarations.calldef_members import member_function_t
-from pygccxml.declarations.class_declaration import class_t
 
-from cppwg.input.class_info import CppClassInfo
 from cppwg.writers.base_writer import CppBaseWrapperWriter
 
 
@@ -18,34 +15,45 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
     ----------
     class_info : ClassInfo
         The class information for the class containing the method
-    method_decl : member_function_t
+    template_idx: int
+        The index of the template in class_info
+    method_decl : [pygccxml.declarations.member_function_t]
         The pygccxml declaration object for the method
-    class_decl : class_t
+    class_decl : [pygccxml.declarations.class_t]
         The class declaration for the class containing the method
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
     class_short_name : Optional[str]
         The short name of the class e.g. 'Foo2_2'
+    template_params: Optional[List[str]]
+        The template params for the class e.g. ['DIM_A', 'DIM_B']
+    template_args: Optional[List[str]]
+        The template args for the class e.g. ['2', '2']
     """
 
     def __init__(
         self,
-        class_info: CppClassInfo,
-        method_decl: member_function_t,
-        class_decl: class_t,
+        class_info: "CppClassInfo",  # noqa: F821
+        template_idx: int,
+        method_decl: "member_function_t",  # noqa: F821
         wrapper_templates: Dict[str, str],
-        class_short_name: Optional[str] = None,
     ) -> None:
 
         super(CppMethodWrapperWriter, self).__init__(wrapper_templates)
 
-        self.class_info: CppClassInfo = class_info
-        self.method_decl: member_function_t = method_decl
-        self.class_decl: class_t = class_decl
+        self.class_info: "CppClassInfo" = class_info  # noqa: F821
+        self.method_decl: "member_function_t" = method_decl  # noqa: F821
+        self.class_decl: "class_t" = class_info.decls[template_idx]  # noqa: F821
 
-        self.class_short_name: str = class_short_name
+        self.class_short_name = class_info.short_names[template_idx]
         if self.class_short_name is None:
             self.class_short_name = self.class_decl.name
+
+        self.template_params = class_info.template_params
+
+        self.template_args = None
+        if class_info.template_arg_lists:
+            self.template_args = class_info.template_arg_lists[template_idx]
 
     def exclusion_criteria(self) -> bool:
         """
@@ -136,23 +144,17 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         # Default args e.g. py::arg("d") = 1.0
         default_args = ""
         if not self.default_arg_exclusion_criteria():
-            for arg, arg_type in zip(
-                self.method_decl.arguments, self.method_decl.argument_types
-            ):
+            for arg in self.method_decl.arguments:
                 default_args += f', py::arg("{arg.name}")'
 
                 if arg.default_value is not None:
                     default_value = str(arg.default_value)
 
-                    # Hack for missing template in default args
-                    # e.g. Foo<2>::bar(Bar<2> const & b = Bar<DIM>())
-                    # TODO: Make more robust
-                    arg_type_str = str(arg_type).replace(" ", "")
-                    if "<DIM>" in default_value:
-                        if "<2>" in arg_type_str:
-                            default_value = default_value.replace("<DIM>", "<2>")
-                        elif "<3>" in arg_type_str:
-                            default_value = default_value.replace("<DIM>", "<3>")
+                    if self.template_params:
+                        for param, val in zip(self.template_params, self.template_args):
+                            default_value = default_value.replace(
+                                self.class_info.name + "::" + param, str(val)
+                            ).replace(param, str(val))
 
                     default_args += f" = {default_value}"
 

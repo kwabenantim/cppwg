@@ -147,7 +147,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             )
 
     def add_virtual_overrides(
-        self, class_decl: "class_t", short_class_name: str  # noqa: F821
+        self, template_idx: int
     ) -> List["member_function_t"]:  # noqa: F821
         """
         Add virtual "trampoline" overrides for the class.
@@ -157,10 +157,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
         Parameters
         ----------
-        class_decl : class_t
-            The class declaration
-        short_class_name : str
-            The short name of the class e.g. Foo2_2
+        template_idx : int
+            The index of the template in the class info
 
         Returns
         -------
@@ -170,6 +168,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         return_types: List[str] = []  # e.g. ["void", "unsigned int", "::Bar<2> *"]
 
         # Collect all virtual methods and their return types
+        class_decl = self.class_info.decls[template_idx]
+
         for member_function in class_decl.member_functions(allow_empty=True):
             is_pure_virtual = member_function.virtuality == "pure virtual"
             is_virtual = member_function.virtuality == "virtual"
@@ -192,13 +192,14 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         self.cpp_string += "\n"
 
         # Override virtual methods
+        short_name = self.class_info.short_names[template_idx]
         if methods_needing_override:
             # Add virtual override class, e.g.:
             #   class Foo_Overrides : public Foo {
             #       public:
             #       using Foo::Foo;
             override_header_dict = {
-                "class_short_name": short_class_name,
+                "class_short_name": short_name,
                 "class_base_name": self.class_info.name,
             }
 
@@ -217,10 +218,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             for method in methods_needing_override:
                 method_writer = CppMethodWrapperWriter(
                     self.class_info,
+                    template_idx,
                     method,
-                    class_decl,
                     self.wrapper_templates,
-                    short_class_name,
                 )
                 self.cpp_string += method_writer.generate_virtual_override_wrapper()
 
@@ -284,7 +284,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
             # Find and define virtual function "trampoline" overrides
             methods_needing_override: List["member_function_t"] = (  # noqa: F821
-                self.add_virtual_overrides(class_decl, short_name)
+                self.add_virtual_overrides(idx)
             )
 
             # Add the virtual "trampoline" overrides from "Foo_Overrides" to
@@ -331,10 +331,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             ):
                 constructor_writer = CppConstructorWrapperWriter(
                     self.class_info,
+                    idx,
                     constructor,
-                    class_decl,
                     self.wrapper_templates,
-                    short_name,
                 )
                 self.cpp_string += constructor_writer.generate_wrapper()
 
@@ -350,10 +349,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
                 method_writer = CppMethodWrapperWriter(
                     self.class_info,
+                    idx,
                     member_function,
-                    class_decl,
                     self.wrapper_templates,
-                    short_name,
                 )
                 self.cpp_string += method_writer.generate_wrapper()
 
