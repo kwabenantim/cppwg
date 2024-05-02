@@ -1,9 +1,8 @@
 #include "Point.hpp"
 
 template <unsigned DIM>
-Point<DIM>::Point(std::array<double, DIM> location)
-    : mIndex(0)
-    , mLocation(location)
+Point<DIM>::Point()
+    : Point(0.0, 0.0, 0.0)
 {
 }
 

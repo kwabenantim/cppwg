@@ -23,12 +23,12 @@ public:
     /**
      * Default Constructor
      */
-    Point(std::array<double, DIM> location = { 0.0 });
+    Point();
 
     /**
      * Constructor with coordinates
      */
-    Point(double x, double y, double z = 0.0);
+    Point(double x, double y, double z = DIM - DIM);
 
     /**
      * Destructor
