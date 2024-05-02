@@ -1,5 +1,5 @@
-#ifndef _Rectangle_HPP
-#define _Rectangle_HPP
+#ifndef _RECTANGLE_HPP
+#define _RECTANGLE_HPP
 
 #include "Shape.hpp"
 
@@ -23,4 +23,4 @@ public:
 
 };
 
-#endif  // _Rectangle_HPP
+#endif  // _RECTANGLE_HPP
