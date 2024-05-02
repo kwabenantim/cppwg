@@ -285,6 +285,10 @@ class CppWrapperGenerator:
                         class_decl = self.source_ns.class_(decl_name)
 
                     except pygccxml.declarations.runtime_errors.declaration_not_found_t:
+                        logging.warning(
+                            f"Could not find declaration for {decl_name}: trying partial match."
+                        )
+
                         if "=" in class_info.template_signature:
                             # Try to find the class without default template args
                             # e.g. for template <int A, int B=A> class Foo {};
@@ -300,10 +304,10 @@ class CppWrapperGenerator:
                             decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
                             class_decl = self.source_ns.class_(decl_name)
 
+                            logging.info(f"Found {decl_name}")
+
                         else:
-                            logging.error(
-                                f"Could not find class declaration for {decl_name}"
-                            )
+                            logging.error(f"Could not find declaration for {decl_name}")
 
                     class_info.decls.append(class_decl)
 
