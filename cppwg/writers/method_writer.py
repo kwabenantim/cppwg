@@ -1,6 +1,6 @@
 """Wrapper code writer for C++ methods."""
 
-from typing import Dict, Optional
+from typing import Dict
 
 from pygccxml import declarations
 
