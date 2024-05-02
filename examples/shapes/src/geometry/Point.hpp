@@ -6,11 +6,9 @@
 /**
  * A point in DIM dimensional space
  */
-template<unsigned DIM>
-class Point
-{
+template <unsigned DIM>
+class Point {
 private:
-
     /**
      * Point index
      */
@@ -22,16 +20,15 @@ private:
     std::array<double, DIM> mLocation;
 
 public:
-
     /**
      * Default Constructor
      */
-    Point();
+    Point(std::array<double, DIM> location = { 0.0 });
 
     /**
-     * Constructor
+     * Constructor with coordinates
      */
-    Point(double x, double y, double z=0.0);
+    Point(double x, double y, double z = 0.0);
 
     /**
      * Destructor
@@ -64,4 +61,4 @@ public:
     void SetLocation(const std::array<double, DIM>& rLocation);
 };
 
-#endif  // _POINT_HPP
+#endif // _POINT_HPP
