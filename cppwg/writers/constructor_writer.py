@@ -1,5 +1,6 @@
 """Wrapper code writer for C++ class constructors."""
 
+import re
 from typing import Dict
 
 from pygccxml import declarations
@@ -159,10 +160,20 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
                     default_value = str(arg.default_value)
 
                     if self.template_params:
+                        # Check for template params in default value
                         for param, val in zip(self.template_params, self.template_args):
-                            default_value = default_value.replace(
-                                self.class_info.name + "::" + param, str(val)
-                            ).replace(param, str(val))
+                            if param in default_value:
+                                # Replace e.g. Foo::DIM_A -> 2
+                                default_value = re.sub(
+                                    f"\\b{self.class_info.name}::{param}\\b",
+                                    str(val),
+                                    default_value,
+                                )
+
+                                # Replace e.g. <DIM_A> -> <2>
+                                default_value = re.sub(
+                                    f"\\b{param}\\b", f"{val}", default_value
+                                )
 
                     default_args += f" = {default_value}"
 
