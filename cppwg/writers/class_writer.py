@@ -5,10 +5,7 @@ import os
 from typing import Dict, List
 
 from pygccxml import declarations
-from pygccxml.declarations.calldef_members import member_function_t
-from pygccxml.declarations.class_declaration import class_t
 
-from cppwg.input.class_info import CppClassInfo
 from cppwg.utils.constants import (
     CPPWG_CLASS_OVERRIDE_SUFFIX,
     CPPWG_EXT,
@@ -29,14 +26,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         The class information
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
-    exposed_class_full_names : List[str]
-        A list of full names for all classes in the module
-    class_full_names : List[str]
-        A list of full names for this class e.g. ["Foo<2,2>", "Foo<3,3>"]
-    class_short_names : List[str]
-        A list of short names for this class e.g. ["Foo2_2", "Foo3_3"]
-    class_decls : List[class_t]
-        A list of class declarations associated with the class
+    module_class_decls : List[pygccxml.declarations.class_t]
+        A list of decls for all classes in the module
     has_shared_ptr : bool
         Whether the class uses shared pointers
     is_abstract : bool
@@ -49,29 +40,22 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
     def __init__(
         self,
-        class_info: CppClassInfo,
+        class_info: "CppClassInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
-        exposed_class_full_names: List[str],
+        module_class_decls: List["class_t"],  # noqa: F821
     ) -> None:
         logger = logging.getLogger()
 
         super(CppClassWrapperWriter, self).__init__(wrapper_templates)
 
-        self.class_info: CppClassInfo = class_info
+        self.class_info: "CppClassInfo" = class_info  # noqa: F821
 
-        # Class full names eg. ["Foo<2,2>", "Foo<3,3>"]
-        self.class_full_names: List[str] = self.class_info.get_full_names()
-
-        # Class short names eg. ["Foo2_2", "Foo3_3"]
-        self.class_short_names: List[str] = self.class_info.get_short_names()
-
-        if len(self.class_full_names) != len(self.class_short_names):
+        if len(self.class_info.full_names) != len(self.class_info.short_names):
             logger.error("Full and short name lists should be the same length")
             raise AssertionError()
 
-        self.exposed_class_full_names: List[str] = exposed_class_full_names
+        self.module_class_decls: List["class_t"] = module_class_decls  # noqa: F821
 
-        self.class_decls: List[class_t] = []
         self.has_shared_ptr: bool = True
         self.is_abstract: bool = False  # TODO: Consider removing unused attribute
 
@@ -125,7 +109,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
             source_file = self.class_info.source_file
             if not source_file:
-                source_file = os.path.basename(self.class_info.decl.location.file_name)
+                source_file = os.path.basename(
+                    self.class_info.decls[0].location.file_name
+                )
             includes += f'#include "{source_file}"\n'
 
         # Check for custom smart pointers e.g. "boost::shared_ptr"
@@ -161,8 +147,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             )
 
     def add_virtual_overrides(
-        self, class_decl: class_t, short_class_name: str
-    ) -> List[member_function_t]:
+        self, class_decl: "class_t", short_class_name: str  # noqa: F821
+    ) -> List["member_function_t"]:  # noqa: F821
         """
         Add virtual "trampoline" overrides for the class.
 
@@ -178,9 +164,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
         Returns
         -------
-        list[member_function_t]: A list of member functions needing override
+        list[pygccxml.declarations.member_function_t]: A list of member functions needing override
         """
-        methods_needing_override: List[member_function_t] = []
+        methods_needing_override: List["member_function_t"] = []  # noqa: F821
         return_types: List[str] = []  # e.g. ["void", "unsigned int", "::Bar<2> *"]
 
         # Collect all virtual methods and their return types
@@ -253,13 +239,13 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         """
         logger = logging.getLogger()
 
-        if len(self.class_decls) != len(self.class_full_names):
+        if len(self.class_info.decls) != len(self.class_info.full_names):
             logger.error("Not enough class decls added to do write.")
             raise AssertionError()
 
-        for idx, full_name in enumerate(self.class_full_names):
-            short_name = self.class_short_names[idx]
-            class_decl = self.class_decls[idx]
+        for idx, full_name in enumerate(self.class_info.full_names):
+            short_name = self.class_info.short_names[idx]
+            class_decl = self.class_info.decls[idx]
             self.hpp_string = ""
             self.cpp_string = ""
 
@@ -297,7 +283,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 continue
 
             # Find and define virtual function "trampoline" overrides
-            methods_needing_override: List[member_function_t] = (
+            methods_needing_override: List["member_function_t"] = (  # noqa: F821
                 self.add_virtual_overrides(class_decl, short_name)
             )
 
@@ -324,9 +310,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 if base.access_type == "private":
                     continue
 
-                # Check if the base class is exposed (i.e. to be wrapped in the module)
-                base_class_name: str = base.related_class.name.replace(" ", "")
-                if base_class_name in self.exposed_class_full_names:
+                # Check if the base class is also wrapped in the module
+                if base.related_class in self.module_class_decls:
                     bases += f", {base.related_class.name} "
 
             # Add the class registration

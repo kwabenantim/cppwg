@@ -77,11 +77,6 @@ class CppInfoHelper:
         if len(template_substitutions) == 0:
             return
 
-        # Remove spaces from template signatures
-        # e.g. <unsigned DIM_A, unsigned DIM_B> -> <unsignedDIM_A,unsignedDIM_B>
-        for tpl_sub in template_substitutions:
-            tpl_sub["signature"] = tpl_sub["signature"].replace(" ", "")
-
         # Remove whitespaces, blank lines, and directives from the source file
         whitespace_regex = re.compile(r"\s+")
         with open(source_path, "r") as in_file:
@@ -95,7 +90,9 @@ class CppInfoHelper:
 
             for template_substitution in template_substitutions:
                 # e.g. template<unsignedDIM_A,unsignedDIM_B>
-                signature: str = "template" + template_substitution["signature"]
+                signature: str = "template" + template_substitution[
+                    "signature"
+                ].replace(" ", "")
 
                 # e.g. [[2,2], [3,3]]
                 replacement: List[List[Any]] = template_substitution["replacement"]
@@ -134,4 +131,7 @@ class CppInfoHelper:
 
                     if declaration_found:
                         feature_info.template_arg_lists = replacement
+                        feature_info.template_signature = template_substitution[
+                            "signature"
+                        ]
                         break

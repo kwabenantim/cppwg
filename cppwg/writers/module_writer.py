@@ -4,10 +4,6 @@ import logging
 import os
 from typing import Dict, List
 
-from pygccxml.declarations.class_declaration import class_t
-from pygccxml.declarations.namespace import namespace_t
-
-from cppwg.input.module_info import ModuleInfo
 from cppwg.utils.constants import CPPWG_EXT, CPPWG_HEADER_COLLECTION_FILENAME
 from cppwg.writers.class_writer import CppClassWrapperWriter
 from cppwg.writers.free_function_writer import CppFreeFunctionWrapperWriter
@@ -24,8 +20,6 @@ class CppModuleWrapperWriter:
 
     Attributes
     ----------
-    source_ns : namespace_t
-        The pygccxml namespace containing declarations from the source code
     module_info : ModuleInfo
         The module information to generate Python bindings for
     wrapper_templates : Dict[str, str]
@@ -34,33 +28,30 @@ class CppModuleWrapperWriter:
         The output directory for the generated wrapper code
     package_license : str
         The license to include in the generated wrapper code
-    exposed_class_full_names : List[str]
-        A list of full names of all classes to be wrapped in the module
+    class_decls : List[pygccxml.declarations.class_t]
+        A list of declarations of all classes to be wrapped in the module
     """
 
     def __init__(
         self,
-        source_ns: namespace_t,
-        module_info: ModuleInfo,
+        module_info: "ModuleInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
         wrapper_root: str,
         package_license: str = "",
     ):
-        self.source_ns: namespace_t = source_ns
-        self.module_info: ModuleInfo = module_info
+        self.module_info: "ModuleInfo" = module_info  # noqa: F821
         self.wrapper_templates: Dict[str, str] = wrapper_templates
         self.wrapper_root: str = wrapper_root
         self.package_license: str = (
             package_license  # TODO: use this in the generated wrappers
         )
 
-        # For convenience, create a list of all classes to be wrapped in the module
-        # e.g. ['Foo', 'Bar<2>', 'Bar<3>']
-        self.exposed_class_full_names: List[str] = []
+        # For convenience, store a list of declarations of all
+        # classes to be wrapped in the module
+        self.class_decls: List["class_t"] = []  # noqa: F821
 
         for class_info in self.module_info.class_info_collection:
-            for full_name in class_info.get_full_names():
-                self.exposed_class_full_names.append(full_name.replace(" ", ""))
+            self.class_decls.extend(class_info.decls)
 
     def write_module_wrapper(self) -> None:
         """
@@ -92,7 +83,7 @@ class CppModuleWrapperWriter:
 
         # Add includes for class wrappers in the module
         for class_info in self.module_info.class_info_collection:
-            for short_name in class_info.get_short_names():
+            for short_name in class_info.short_names:
                 # Example: #include "Foo2_2.cppwg.hpp"
                 cpp_string += f'#include "{short_name}.{CPPWG_EXT}.hpp"\n'
 
@@ -115,7 +106,7 @@ class CppModuleWrapperWriter:
 
         # Add classes
         for class_info in self.module_info.class_info_collection:
-            for short_name in class_info.get_short_names():
+            for short_name in class_info.short_names:
                 # Example: register_Foo2_2_class(m);"
                 cpp_string += f"    register_{short_name}_class(m);\n"
 
@@ -143,16 +134,10 @@ class CppModuleWrapperWriter:
             logger.info(f"Generating wrapper for class {class_info.name}")
 
             class_writer = CppClassWrapperWriter(
-                class_info, self.wrapper_templates, self.exposed_class_full_names
+                class_info,
+                self.wrapper_templates,
+                self.class_decls,
             )
-
-            # Get the declaration for each class and add it to the class writer
-            # TODO: Consider using class_info.decl instead
-            for full_name in class_info.get_full_names():
-                name = full_name.replace(" ", "")  # e.g. Foo<2,2>
-
-                class_decl: class_t = self.source_ns.class_(name)
-                class_writer.class_decls.append(class_decl)
 
             # Write the class wrappers into /path/to/wrapper_root/modulename/
             module_dir = os.path.join(self.wrapper_root, self.module_info.name)

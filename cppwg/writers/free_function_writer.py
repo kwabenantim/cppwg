@@ -49,7 +49,7 @@ class CppFreeFunctionWrapperWriter(CppBaseWrapperWriter):
         # e.g. with default values: ', py::arg("foo") = 1, py::arg("bar") = 2'
         default_args = ""
         if not self.default_arg_exclusion_criteria():
-            for argument in self.free_function_info.decl.arguments:
+            for argument in self.free_function_info.decls[0].arguments:
                 default_args += f', py::arg("{argument.name}")'
                 if argument.default_value is not None:
                     default_args += f" = {argument.default_value}"
@@ -57,7 +57,7 @@ class CppFreeFunctionWrapperWriter(CppBaseWrapperWriter):
         # Add the free function wrapper code to the wrapper string
         func_dict = {
             "def_adorn": def_adorn,
-            "function_name": self.free_function_info.decl.name,
+            "function_name": self.free_function_info.decls[0].name,
             "function_docs": '" "',
             "default_args": default_args,
         }
@@ -75,14 +75,14 @@ class CppFreeFunctionWrapperWriter(CppBaseWrapperWriter):
             True if the function should be excluded from wrapper code, False otherwise.
         """
         # Check if any return types are not wrappable
-        return_type = self.free_function_info.decl.return_type.decl_string.replace(
+        return_type = self.free_function_info.decls[0].return_type.decl_string.replace(
             " ", ""
         )
         if return_type in self.exclusion_args:
             return True
 
         # Check if any arguments not wrappable
-        for decl_arg_type in self.free_function_info.decl.argument_types:
+        for decl_arg_type in self.free_function_info.decls[0].argument_types:
             arg_type = decl_arg_type.decl_string.split()[0].replace(" ", "")
             if arg_type in self.exclusion_args:
                 return True
