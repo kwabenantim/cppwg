@@ -7,7 +7,8 @@
  * A point in DIM dimensional space
  */
 template <unsigned DIM>
-class Point {
+class Point
+{
 private:
     /**
      * Point index
@@ -28,7 +29,7 @@ public:
     /**
      * Constructor with coordinates
      */
-    Point(double x, double y, double z = DIM - DIM);
+    Point(double x, double y, double z = (DIM - DIM));
 
     /**
      * Destructor
@@ -43,7 +44,7 @@ public:
     /**
      * Return the const location
      */
-    const std::array<double, DIM>& rGetLocation() const;
+    const std::array<double, DIM> &rGetLocation() const;
 
     /**
      * Return the index
@@ -58,7 +59,7 @@ public:
     /**
      * Set the location
      */
-    void SetLocation(const std::array<double, DIM>& rLocation);
+    void SetLocation(const std::array<double, DIM> &rLocation);
 };
 
 #endif // _POINT_HPP
