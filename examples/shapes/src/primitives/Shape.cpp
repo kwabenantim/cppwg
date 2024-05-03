@@ -1,41 +1,46 @@
+#include <memory>
+
 #include "Shape.hpp"
 
-template<unsigned DIM>
-Shape<DIM>::Shape() :
-    mIndex(0),
-    mVertices()
+template <unsigned DIM>
+Shape<DIM>::Shape() : mIndex(0),
+                      mVertices()
 {
-
 }
 
-template<unsigned DIM>
+template <unsigned DIM>
 Shape<DIM>::~Shape()
 {
-
 }
 
-template<unsigned DIM>
+template <unsigned DIM>
 unsigned Shape<DIM>::GetIndex() const
 {
     return mIndex;
 }
 
-template<unsigned DIM>
-const std::vector<std::shared_ptr<Point<DIM> > >& Shape<DIM>::rGetVertices() const
+template <unsigned DIM>
+const std::vector<std::shared_ptr<Point<DIM>>> &Shape<DIM>::rGetVertices() const
 {
     return mVertices;
 }
 
-template<unsigned DIM>
+template <unsigned DIM>
 void Shape<DIM>::SetIndex(unsigned index)
 {
     mIndex = index;
 }
 
-template<unsigned DIM>
-void Shape<DIM>::SetVertices(const std::vector<std::shared_ptr<Point<DIM> > >& rVertices)
+template <unsigned DIM>
+void Shape<DIM>::SetVertices(const std::vector<std::shared_ptr<Point<DIM>>> &rVertices)
 {
     mVertices = rVertices;
+}
+
+template <unsigned DIM>
+void Shape<DIM>::AddVertex(std::shared_ptr<Point<DIM>> point)
+{
+    this->mVertices.push_back(point);
 }
 
 template class Shape<2>;

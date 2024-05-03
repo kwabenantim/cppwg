@@ -52,7 +52,7 @@ Add a package description to `examples/shapes/wrapper/package_info.yaml`:
 name: pyshapes
 modules:
 - name: math_funcs
-  free_functions: cppwg_ALL
+  free_functions: CPPWG_ALL
 ```
 
 Generate the wrappers with:

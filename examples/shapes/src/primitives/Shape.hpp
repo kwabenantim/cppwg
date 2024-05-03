@@ -8,11 +8,10 @@
 /**
  * A DIM dimensional shape
  */
-template<unsigned DIM>
+template <unsigned DIM>
 class Shape
 {
 protected:
-
     /**
      * The shape index
      */
@@ -21,10 +20,9 @@ protected:
     /**
      * The shape vertices
      */
-    std::vector<std::shared_ptr<Point<DIM> > > mVertices;
+    std::vector<std::shared_ptr<Point<DIM>>> mVertices;
 
 public:
-
     /**
      * Default Constructor
      */
@@ -43,7 +41,7 @@ public:
     /**
      * Return the shape vertices
      */
-    const std::vector<std::shared_ptr<Point<DIM> > >& rGetVertices() const;
+    const std::vector<std::shared_ptr<Point<DIM>>> &rGetVertices() const;
 
     /**
      * Set the shape index
@@ -53,8 +51,12 @@ public:
     /**
      * Set the shape vertices
      */
-     void SetVertices(const std::vector<std::shared_ptr<Point<DIM> > >& rVertices);
+    void SetVertices(const std::vector<std::shared_ptr<Point<DIM>>> &rVertices);
+
+    /**
+     * Add a single vertex to the shape
+     */
+    void AddVertex(std::shared_ptr<Point<DIM>> point = std::make_shared<Point<DIM>>());
 };
 
-
-#endif  // _SHAPE_HPP
+#endif // _SHAPE_HPP

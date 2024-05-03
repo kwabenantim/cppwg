@@ -112,7 +112,7 @@ def main() -> None:
 
     logging.basicConfig(
         format="%(levelname)s %(message)s",
-        handlers=[logging.FileHandler("cppwg.log"), logging.StreamHandler()],
+        handlers=[logging.StreamHandler()],
     )
     logger = logging.getLogger()
 

@@ -133,6 +133,7 @@ class PackageInfoParser:
         package_config: Dict[str, Any] = {
             "name": "cppwg_package",
             "common_include_file": True,
+            "exclude_default_args": False,
             "source_hpp_patterns": ["*.hpp"],
         }
         package_config.update(global_config)
@@ -140,7 +141,10 @@ class PackageInfoParser:
         for key in package_config.keys():
             if key in self.raw_package_info:
                 package_config[key] = self.raw_package_info[key]
+
+        # Replace boolean strings with booleans
         utils.substitute_bool_for_string(package_config, "common_include_file")
+        utils.substitute_bool_for_string(package_config, "exclude_default_args")
 
         # Create the PackageInfo object from the package config dict
         self.package_info = PackageInfo(

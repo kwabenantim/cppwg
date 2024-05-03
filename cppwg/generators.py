@@ -94,7 +94,7 @@ class CppWrapperGenerator:
             r"castxml version \d+\.\d+\.\d+", castxml_version
         ).group(0)
         logger.info(castxml_version)
-        logger.info(f"pygccxml version {pygccxml.version}")
+        logger.info(f"pygccxml version {pygccxml.__version__}")
 
         # Sanitize castxml_cflags
         self.castxml_cflags: str = ""
@@ -278,13 +278,17 @@ class CppWrapperGenerator:
             for class_info in module_info.class_info_collection:
                 class_info.decls: List["class_t"] = []  # noqa: F821
 
-                for full_name in class_info.full_names:
-                    decl_name = full_name.replace(" ", "")  # e.g. Foo<2,2>
+                for class_cpp_name in class_info.cpp_names:
+                    decl_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
 
                     try:
                         class_decl = self.source_ns.class_(decl_name)
 
                     except pygccxml.declarations.runtime_errors.declaration_not_found_t:
+                        logging.warning(
+                            f"Could not find declaration for {decl_name}: trying partial match."
+                        )
+
                         if "=" in class_info.template_signature:
                             # Try to find the class without default template args
                             # e.g. for template <int A, int B=A> class Foo {};
@@ -300,10 +304,10 @@ class CppWrapperGenerator:
                             decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
                             class_decl = self.source_ns.class_(decl_name)
 
+                            logging.info(f"Found {decl_name}")
+
                         else:
-                            logging.error(
-                                f"Could not find class declaration for {decl_name}"
-                            )
+                            logging.error(f"Could not find declaration for {decl_name}")
 
                     class_info.decls.append(class_decl)
 

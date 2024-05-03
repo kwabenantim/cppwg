@@ -9,6 +9,9 @@ class TestClasses(unittest.TestCase):
 
     def testGeometry(self):
 
+        p0 = pyshapes.geometry.Point2()
+        self.assertTrue(p0.GetLocation() == [0.0, 0.0])
+
         p1 = pyshapes.geometry.Point2(0.0, 0.0)
         p2 = pyshapes.geometry.Point2(1.0, 0.0)
         p3 = pyshapes.geometry.Point2(0.0, 1.0)

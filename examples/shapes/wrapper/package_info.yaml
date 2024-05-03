@@ -1,5 +1,30 @@
-name: pyshapes # Unique name prepended to all modules
+name: pyshapes # Package name: prepended to all modules.
+
+# Smart pointer type for PYBIND11_DECLARE_HOLDER_TYPE in all wrappers.
 smart_ptr_type: std::shared_ptr
+# Default value of pybind11::return_value_policy for pointers.
+pointer_call_policy: reference
+# Default value of pybind11::return_value_policy for references.
+reference_call_policy: reference_internal
+
+# Set False to not include the common include file (all headers) in all wrappers.
+common_include_file: True
+# Headers to include in all wrappers.
+source_includes:
+  - <memory>
+
+# Exclude default arguments from wrapped methods.
+exclude_default_args: False
+
+# Exclude any methods that have these arg types.
+# arg_type_excludes:
+#   - double
+
+# Exclude any constructors that have these arg types.
+# constructor_arg_type_excludes:
+#   - double
+
+# Signature/replacement settings for explicit template instantiations.
 template_substitutions:
   - signature: <unsigned DIM>
     replacement: [[2], [3]]
@@ -7,20 +32,41 @@ template_substitutions:
     replacement: [[2, 2], [3, 3]]
 
 modules:
-  - name: math_funcs # Name of the module
-    source_locations: # Only use decls with hpp files found in these directories. Leave blank for 'cppwg_ALL'
-    classes: # Classes to include. Blank means none, cppwg_ALL means any found
-    free_functions: cppwg_ALL # Free functions to include. Blank means none, cppwg_ALL means any found
+  - name: math_funcs # Module name
+    # Restrict to headers from these directories. Blank means unrestricted.
+    source_locations:
+    # List of classes to wrap. Blank means none, CPPWG_ALL means discover all.
+    classes:
+    # List of free functions to wrap. Blank means none, CPPWG_ALL means discover all.
+    free_functions: CPPWG_ALL
+
   - name: geometry
     source_locations:
     classes:
       - name: Point
+        # Name of class source file. Not required if class name matches file name.
+        source_file: Point.hpp
+        # Additional headers to include in this class wrapper.
+        source_includes:
+          - <map>
+        # List of methods that should not be wrapped.
+        excluded_methods:
+          - ExcludedMethod
+
+        # Path to a custom script for generating wrappers for this class.
+        # CPPWG_SOURCEROOT points to the supplied source root directory.
+        # custom_generator: "CPPWG_SOURCEROOT/point_generator.py"
+
+        # Custom C++ code to place at the top of the class wrapper.
+        # prefix_code:
+
   - name: primitives
     source_locations:
     classes:
       - name: Shape
       - name: Cuboid
       - name: Rectangle
+
   - name: mesh
     source_locations:
     classes:

@@ -1,5 +1,5 @@
-#ifndef _Cuboid_HPP
-#define _Cuboid_HPP
+#ifndef _CUBOID_HPP
+#define _CUBOID_HPP
 
 #include "Shape.hpp"
 
@@ -23,4 +23,4 @@ public:
 
 };
 
-#endif  // _Cuboid_HPP
+#endif  // _CUBOID_HPP

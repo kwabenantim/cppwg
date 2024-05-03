@@ -6,11 +6,10 @@
 /**
  * A point in DIM dimensional space
  */
-template<unsigned DIM>
+template <unsigned DIM>
 class Point
 {
 private:
-
     /**
      * Point index
      */
@@ -22,16 +21,15 @@ private:
     std::array<double, DIM> mLocation;
 
 public:
-
     /**
      * Default Constructor
      */
     Point();
 
     /**
-     * Constructor
+     * Constructor with coordinates
      */
-    Point(double x, double y, double z=0.0);
+    Point(double x, double y, double z = (DIM - DIM));
 
     /**
      * Destructor
@@ -46,7 +44,7 @@ public:
     /**
      * Return the const location
      */
-    const std::array<double, DIM>& rGetLocation() const;
+    const std::array<double, DIM> &rGetLocation() const;
 
     /**
      * Return the index
@@ -61,7 +59,12 @@ public:
     /**
      * Set the location
      */
-    void SetLocation(const std::array<double, DIM>& rLocation);
+    void SetLocation(const std::array<double, DIM> &rLocation);
+
+    /**
+     * Placeholder method to exclude from wrapping
+     */
+    void ExcludedMethod();
 };
 
-#endif  // _POINT_HPP
+#endif // _POINT_HPP

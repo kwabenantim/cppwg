@@ -1,12 +1,10 @@
 """Wrapper code writer for C++ methods."""
 
-from typing import Dict, Optional
+import re
+from typing import Dict
 
 from pygccxml import declarations
-from pygccxml.declarations.calldef_members import member_function_t
-from pygccxml.declarations.class_declaration import class_t
 
-from cppwg.input.class_info import CppClassInfo
 from cppwg.writers.base_writer import CppBaseWrapperWriter
 
 
@@ -18,36 +16,47 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
     ----------
     class_info : ClassInfo
         The class information for the class containing the method
-    method_decl : member_function_t
+    template_idx: int
+        The index of the template in class_info
+    method_decl : [pygccxml.declarations.member_function_t]
         The pygccxml declaration object for the method
-    class_decl : class_t
+    class_decl : [pygccxml.declarations.class_t]
         The class declaration for the class containing the method
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
-    class_short_name : Optional[str]
-        The short name of the class e.g. 'Foo2_2'
+    class_py_name : Optional[str]
+        The Python name of the class e.g. 'Foo2_2'
+    template_params: Optional[List[str]]
+        The template params for the class e.g. ['DIM_A', 'DIM_B']
+    template_args: Optional[List[str]]
+        The template args for the class e.g. ['2', '2']
     """
 
     def __init__(
         self,
-        class_info: CppClassInfo,
-        method_decl: member_function_t,
-        class_decl: class_t,
+        class_info: "CppClassInfo",  # noqa: F821
+        template_idx: int,
+        method_decl: "member_function_t",  # noqa: F821
         wrapper_templates: Dict[str, str],
-        class_short_name: Optional[str] = None,
     ) -> None:
 
         super(CppMethodWrapperWriter, self).__init__(wrapper_templates)
 
-        self.class_info: CppClassInfo = class_info
-        self.method_decl: member_function_t = method_decl
-        self.class_decl: class_t = class_decl
+        self.class_info: "CppClassInfo" = class_info  # noqa: F821
+        self.method_decl: "member_function_t" = method_decl  # noqa: F821
+        self.class_decl: "class_t" = class_info.decls[template_idx]  # noqa: F821
 
-        self.class_short_name: str = class_short_name
-        if self.class_short_name is None:
-            self.class_short_name = self.class_decl.name
+        self.class_py_name = class_info.py_names[template_idx]
+        if self.class_py_name is None:
+            self.class_py_name = self.class_decl.name
 
-    def exclusion_criteria(self) -> bool:
+        self.template_params = class_info.template_params
+
+        self.template_args = None
+        if class_info.template_arg_lists:
+            self.template_args = class_info.template_arg_lists[template_idx]
+
+    def exclude(self) -> bool:
         """
         Check if the method should be excluded from the wrapper code.
 
@@ -109,7 +118,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             The method wrapper code.
         """
         # Skip excluded methods
-        if self.exclusion_criteria():
+        if self.exclude():
             return ""
 
         # Pybind11 def type e.g. "_static" for def_static()
@@ -122,7 +131,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             self_ptr = "*"
         else:
             # e.g. Foo2_2::*
-            self_ptr = self.class_short_name + "::*"
+            self_ptr = self.class_py_name + "::*"
 
         # Const-ness
         const_adorn = ""
@@ -133,28 +142,34 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         arg_types = [t.decl_string for t in self.method_decl.argument_types]
         arg_signature = ", ".join(arg_types)
 
-        # Default args e.g. py::arg("d") = 1.0
-        default_args = ""
-        if not self.default_arg_exclusion_criteria():
-            for arg, arg_type in zip(
-                self.method_decl.arguments, self.method_decl.argument_types
+        # Keyword args with default values e.g. py::arg("i") = 1
+        keyword_args = ""
+        for arg in self.method_decl.arguments:
+            keyword_args += f', py::arg("{arg.name}")'
+
+            if not (
+                arg.default_value is None
+                or self.class_info.hierarchy_attribute("exclude_default_args")
             ):
-                default_args += f', py::arg("{arg.name}")'
+                default_value = str(arg.default_value)
 
-                if arg.default_value is not None:
-                    default_value = str(arg.default_value)
+                # Check for template params in default value
+                if self.template_params:
+                    for param, val in zip(self.template_params, self.template_args):
+                        if param in default_value:
+                            # Replace e.g. Foo::DIM_A -> 2
+                            default_value = re.sub(
+                                f"\\b{self.class_info.name}::{param}\\b",
+                                str(val),
+                                default_value,
+                            )
 
-                    # Hack for missing template in default args
-                    # e.g. Foo<2>::bar(Bar<2> const & b = Bar<DIM>())
-                    # TODO: Make more robust
-                    arg_type_str = str(arg_type).replace(" ", "")
-                    if "<DIM>" in default_value:
-                        if "<2>" in arg_type_str:
-                            default_value = default_value.replace("<DIM>", "<2>")
-                        elif "<3>" in arg_type_str:
-                            default_value = default_value.replace("<DIM>", "<3>")
+                            # Replace e.g. <DIM_A> -> <2>
+                            default_value = re.sub(
+                                f"\\b{param}\\b", f"{val}", default_value
+                            )
 
-                    default_args += f" = {default_value}"
+                keyword_args += f" = {default_value}"
 
         # Call policy, e.g. "py::return_value_policy::reference"
         call_policy = ""
@@ -175,9 +190,9 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             "self_ptr": self_ptr,
             "arg_signature": arg_signature,
             "const_adorn": const_adorn,
-            "class_short_name": self.class_short_name,
+            "class_py_name": self.class_py_name,
             "method_docs": '" "',
-            "default_args": default_args,
+            "default_args": keyword_args,
             "call_policy": call_policy,
         }
         class_method_template = self.wrapper_templates["class_method"]
@@ -243,7 +258,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             "const_adorn": const_adorn,
             "overload_adorn": overload_adorn,
             "tidy_method_name": self.tidy_name(return_string),
-            "short_class_name": self.class_short_name,
+            "class_py_name": self.class_py_name,
             "args_string": arg_name_string,
         }
         wrapper_string = self.wrapper_templates["method_virtual_override"].format(

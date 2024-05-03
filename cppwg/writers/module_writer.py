@@ -42,9 +42,7 @@ class CppModuleWrapperWriter:
         self.module_info: "ModuleInfo" = module_info  # noqa: F821
         self.wrapper_templates: Dict[str, str] = wrapper_templates
         self.wrapper_root: str = wrapper_root
-        self.package_license: str = (
-            package_license  # TODO: use this in the generated wrappers
-        )
+        self.package_license: str = package_license
 
         # For convenience, store a list of declarations of all
         # classes to be wrapped in the module
@@ -83,9 +81,9 @@ class CppModuleWrapperWriter:
 
         # Add includes for class wrappers in the module
         for class_info in self.module_info.class_info_collection:
-            for short_name in class_info.short_names:
+            for py_name in class_info.py_names:
                 # Example: #include "Foo2_2.cppwg.hpp"
-                cpp_string += f'#include "{short_name}.{CPPWG_EXT}.hpp"\n'
+                cpp_string += f'#include "{py_name}.{CPPWG_EXT}.hpp"\n'
 
         # Format module name as _packagename_modulename
         full_module_name = (
@@ -106,9 +104,9 @@ class CppModuleWrapperWriter:
 
         # Add classes
         for class_info in self.module_info.class_info_collection:
-            for short_name in class_info.short_names:
+            for py_name in class_info.py_names:
                 # Example: register_Foo2_2_class(m);"
-                cpp_string += f"    register_{short_name}_class(m);\n"
+                cpp_string += f"    register_{py_name}_class(m);\n"
 
         # Add code from the module's custom generator
         if self.module_info.custom_generator:

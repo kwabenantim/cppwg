@@ -134,4 +134,16 @@ class CppInfoHelper:
                         feature_info.template_signature = template_substitution[
                             "signature"
                         ]
+
+                        # Extract ["DIM_A", "DIM_B"] from "<unsigned A, unsigned DIM_B=DIM_A>"
+                        template_params = []
+                        for tp in template_substitution["signature"].split(","):
+                            template_params.append(
+                                tp.replace("<", "")
+                                .replace(">", "")
+                                .split(" ")[1]
+                                .split("=")[0]
+                                .strip()
+                            )
+                        feature_info.template_params = template_params
                         break
