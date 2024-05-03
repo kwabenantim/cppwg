@@ -30,8 +30,6 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         A list of decls for all classes in the module
     has_shared_ptr : bool
         Whether the class uses shared pointers
-    is_abstract : bool
-        Whether the class is abstract
     hpp_string : str
         The hpp wrapper code
     cpp_string : str
@@ -57,7 +55,6 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         self.module_class_decls: List["class_t"] = module_class_decls  # noqa: F821
 
         self.has_shared_ptr: bool = True
-        self.is_abstract: bool = False  # TODO: Consider removing unused attribute
 
         self.hpp_string: str = ""
         self.cpp_string: str = ""
@@ -176,8 +173,6 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             if is_pure_virtual or is_virtual:
                 methods_needing_override.append(member_function)
                 return_types.append(member_function.return_type.decl_string)
-            if is_pure_virtual:
-                self.is_abstract = True
 
         # Add typedefs for return types with special characters
         # e.g. typedef ::Bar<2> * _Bar_lt_2_gt_Ptr;
@@ -256,7 +251,6 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             #   struct Foo{
             #     enum Value{A, B, C};
             #   };
-            # TODO: Consider moving some parts into templates
             if declarations.is_struct(class_decl):
                 enums = class_decl.enumerations(allow_empty=True)
 

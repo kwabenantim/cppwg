@@ -42,9 +42,7 @@ class CppModuleWrapperWriter:
         self.module_info: "ModuleInfo" = module_info  # noqa: F821
         self.wrapper_templates: Dict[str, str] = wrapper_templates
         self.wrapper_root: str = wrapper_root
-        self.package_license: str = (
-            package_license  # TODO: use this in the generated wrappers
-        )
+        self.package_license: str = package_license
 
         # For convenience, store a list of declarations of all
         # classes to be wrapped in the module
