@@ -56,7 +56,7 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
         if class_info.template_arg_lists:
             self.template_args = class_info.template_arg_lists[template_idx]
 
-    def exclusion_criteria(self) -> bool:
+    def exclude(self) -> bool:
         """
         Check if the constructor should be excluded from the wrapper code.
 
@@ -139,7 +139,7 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
             The constructor wrapper code.
         """
         # Skip excluded constructors
-        if self.exclusion_criteria():
+        if self.exclude():
             return ""
 
         # Get the arg signature e.g. "int, bool"
@@ -152,7 +152,7 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
 
         # Default args e.g. py::arg("i") = 1
         default_args = ""
-        if not self.default_arg_exclusion_criteria():
+        if not self.exclude_default_args():
             for arg in self.ctor_decl.arguments:
                 default_args += f', py::arg("{arg.name}")'
 

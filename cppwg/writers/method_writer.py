@@ -56,7 +56,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         if class_info.template_arg_lists:
             self.template_args = class_info.template_arg_lists[template_idx]
 
-    def exclusion_criteria(self) -> bool:
+    def exclude(self) -> bool:
         """
         Check if the method should be excluded from the wrapper code.
 
@@ -118,7 +118,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             The method wrapper code.
         """
         # Skip excluded methods
-        if self.exclusion_criteria():
+        if self.exclude():
             return ""
 
         # Pybind11 def type e.g. "_static" for def_static()
@@ -144,7 +144,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
 
         # Default args e.g. py::arg("d") = 1.0
         default_args = ""
-        if not self.default_arg_exclusion_criteria():
+        if not self.exclude_default_args():
             for arg in self.method_decl.arguments:
                 default_args += f', py::arg("{arg.name}")'
 
