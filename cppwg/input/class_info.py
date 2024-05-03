@@ -11,9 +11,9 @@ class CppClassInfo(CppTypeInfo):
 
     Attributes
     ----------
-    full_names : List[str]
+    cpp_names : List[str]
         The C++ names of the class e.g. ["Foo<2,2>", "Foo<3,3>"]
-    short_names : List[str]
+    py_names : List[str]
         The Python names of the class e.g. ["Foo2_2", "Foo3_3"]
     """
 
@@ -21,10 +21,10 @@ class CppClassInfo(CppTypeInfo):
 
         super(CppClassInfo, self).__init__(name, class_config)
 
-        self.full_names: List[str] = None
-        self.short_names: List[str] = None
+        self.cpp_names: List[str] = None
+        self.py_names: List[str] = None
 
-    def update_short_names(self) -> None:
+    def update_py_names(self) -> None:
         """
         Set the Python names for the class, accounting for template args.
 
@@ -32,18 +32,18 @@ class CppClassInfo(CppTypeInfo):
         collapses template arguments, separating them by underscores and removes
         special characters. The return type is a list, as a class can have
         multiple names if it is templated. For example, a class "Foo" with
-        template arguments [[2, 2], [3, 3]] will have a short name list
+        template arguments [[2, 2], [3, 3]] will have a python name list
         ["Foo2_2", "Foo3_3"].
         """
         # Handles untemplated classes
         if self.template_arg_lists is None:
             if self.name_override:
-                self.short_names = [self.name_override]
+                self.py_names = [self.name_override]
             else:
-                self.short_names = [self.name]
+                self.py_names = [self.name]
             return
 
-        self.short_names = []
+        self.py_names = []
 
         # Table of special characters for removal
         rm_chars = {"<": None, ">": None, ",": None, " ": None}
@@ -89,36 +89,36 @@ class CppClassInfo(CppTypeInfo):
                 if idx < len(template_arg_list) - 1:
                     template_string += "_"
 
-            self.short_names.append(type_name + template_string)
+            self.py_names.append(type_name + template_string)
 
-    def update_full_names(self) -> None:
+    def update_cpp_names(self) -> None:
         """
         Set the C++ names for the class, accounting for template args.
 
         Set the name of the class as it should appear in C++.
         The return type is a list, as a class can have multiple names
         if it is templated. For example, a class "Foo" with
-        template arguments [[2, 2], [3, 3]] will have a full name list
+        template arguments [[2, 2], [3, 3]] will have a C++ name list
         ["Foo<2,2 >", "Foo<3,3 >"].
         """
         # Handles untemplated classes
         if self.template_arg_lists is None:
-            self.full_names = [self.name]
+            self.cpp_names = [self.name]
             return
 
-        self.full_names = []
+        self.cpp_names = []
         for template_arg_list in self.template_arg_lists:
             # Create template string from arg list e.g. [2, 2] -> "<2,2 >"
             template_string = ",".join([str(arg) for arg in template_arg_list])
             template_string = "<" + template_string + " >"
 
             # Join full name e.g. "Foo<2,2 >"
-            self.full_names.append(self.name + template_string)
+            self.cpp_names.append(self.name + template_string)
 
     def update_names(self) -> None:
-        """Update the full and short names for the class."""
-        self.update_full_names()
-        self.update_short_names()
+        """Update the C++ and Python names for the class."""
+        self.update_cpp_names()
+        self.update_py_names()
 
     @property
     def parent(self) -> "ModuleInfo":  # noqa: F821

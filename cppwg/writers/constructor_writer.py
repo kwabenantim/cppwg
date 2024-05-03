@@ -24,8 +24,8 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
         The class declaration for the class containing the constructor
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
-    class_short_name : Optional[str]
-        The short name of the class e.g. 'Foo2_2'
+    class_py_name : Optional[str]
+        The Python name of the class e.g. 'Foo2_2'
     template_params: Optional[List[str]]
         The template params for the class e.g. ['DIM_A', 'DIM_B']
     template_args: Optional[List[str]]
@@ -46,9 +46,9 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
         self.ctor_decl: "constructor_t" = ctor_decl  # noqa: F821
         self.class_decl: "class_t" = class_info.decls[template_idx]  # noqa: F821
 
-        self.class_short_name = class_info.short_names[template_idx]
-        if self.class_short_name is None:
-            self.class_short_name = self.class_decl.name
+        self.class_py_name = class_info.py_names[template_idx]
+        if self.class_py_name is None:
+            self.class_py_name = self.class_decl.name
 
         self.template_params = class_info.template_params
 

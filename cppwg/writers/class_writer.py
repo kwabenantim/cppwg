@@ -50,8 +50,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
         self.class_info: "CppClassInfo" = class_info  # noqa: F821
 
-        if len(self.class_info.full_names) != len(self.class_info.short_names):
-            logger.error("Full and short name lists should be the same length")
+        if len(self.class_info.cpp_names) != len(self.class_info.py_names):
+            logger.error("C++ and Python class name lists should be the same length")
             raise AssertionError()
 
         self.module_class_decls: List["class_t"] = module_class_decls  # noqa: F821
@@ -62,31 +62,31 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         self.hpp_string: str = ""
         self.cpp_string: str = ""
 
-    def add_hpp(self, class_short_name: str) -> None:
+    def add_hpp(self, class_py_name: str) -> None:
         """
         Fill the class hpp string for a single class using the wrapper template.
 
         Parameters
         ----------
-        class_short_name: str
-            The short name of the class e.g. Foo2_2
+        class_py_name: str
+            The Python name of the class e.g. Foo2_2
         """
-        class_hpp_dict = {"class_short_name": class_short_name}
+        class_hpp_dict = {"class_py_name": class_py_name}
 
         self.hpp_string += self.wrapper_templates["class_hpp_header"].format(
             **class_hpp_dict
         )
 
-    def add_cpp_header(self, class_full_name: str, class_short_name: str) -> None:
+    def add_cpp_header(self, class_cpp_name: str, class_py_name: str) -> None:
         """
         Add the 'top' of the class wrapper cpp file for a single class.
 
         Parameters
         ----------
-        class_full_name : str
-            The full name of the class e.g. Foo<2,2>
-        class_short_name : str
-            The short name of the class e.g. Foo2_2
+        class_cpp_name : str
+            The C++ name of the class e.g. Foo<2,2>
+        class_py_name : str
+            The Python name of the class e.g. Foo2_2
         """
         # Add the includes for this class
         includes = ""
@@ -127,8 +127,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         # Fill in the cpp header template
         header_dict = {
             "includes": includes,
-            "class_short_name": class_short_name,
-            "class_full_name": class_full_name,
+            "class_py_name": class_py_name,
+            "class_cpp_name": class_cpp_name,
             "smart_ptr_handle": smart_ptr_handle,
         }
 
@@ -143,7 +143,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         # Run any custom generators to add additional prefix code
         if self.class_info.custom_generator:
             self.cpp_string += self.class_info.custom_generator.get_class_cpp_pre_code(
-                class_short_name
+                class_py_name
             )
 
     def add_virtual_overrides(
@@ -183,23 +183,23 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         # e.g. typedef ::Bar<2> * _Bar_lt_2_gt_Ptr;
         for return_type in return_types:
             if return_type != self.tidy_name(return_type):
-                typedef_template = "typedef {full_name} {tidy_name};\n"
+                typedef_template = "typedef {class_cpp_name} {tidy_name};\n"
                 typedef_dict = {
-                    "full_name": return_type,
+                    "class_cpp_name": return_type,
                     "tidy_name": self.tidy_name(return_type),
                 }
                 self.cpp_string += typedef_template.format(**typedef_dict)
         self.cpp_string += "\n"
 
         # Override virtual methods
-        short_name = self.class_info.short_names[template_idx]
+        class_py_name = self.class_info.py_names[template_idx]
         if methods_needing_override:
             # Add virtual override class, e.g.:
             #   class Foo_Overrides : public Foo {
             #       public:
             #       using Foo::Foo;
             override_header_dict = {
-                "class_short_name": short_name,
+                "class_py_name": class_py_name,
                 "class_base_name": self.class_info.name,
             }
 
@@ -239,18 +239,18 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         """
         logger = logging.getLogger()
 
-        if len(self.class_info.decls) != len(self.class_info.full_names):
+        if len(self.class_info.decls) != len(self.class_info.cpp_names):
             logger.error("Not enough class decls added to do write.")
             raise AssertionError()
 
-        for idx, full_name in enumerate(self.class_info.full_names):
-            short_name = self.class_info.short_names[idx]
+        for idx, class_cpp_name in enumerate(self.class_info.cpp_names):
+            class_py_name = self.class_info.py_names[idx]
             class_decl = self.class_info.decls[idx]
             self.hpp_string = ""
             self.cpp_string = ""
 
             # Add the cpp file header
-            self.add_cpp_header(full_name, short_name)
+            self.add_cpp_header(class_cpp_name, class_py_name)
 
             # Check for struct-enum pattern. For example:
             #   struct Foo{
@@ -276,10 +276,10 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                     self.cpp_string += "    .export_values();\n}\n"
 
                     # Set up the hpp
-                    self.add_hpp(short_name)
+                    self.add_hpp(class_py_name)
 
                     # Write the struct cpp and hpp files
-                    self.write_files(work_dir, short_name)
+                    self.write_files(work_dir, class_py_name)
                 continue
 
             # Find and define virtual function "trampoline" overrides
@@ -292,14 +292,14 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             # e.g. py::class_<Foo, Foo_Overrides >(m, "Foo")
             overrides_string = ""
             if methods_needing_override:
-                overrides_string = f", {short_name}{CPPWG_CLASS_OVERRIDE_SUFFIX}"
+                overrides_string = f", {class_py_name}{CPPWG_CLASS_OVERRIDE_SUFFIX}"
 
             # Add smart pointer support to the wrapper class definition if needed
             # e.g. py::class_<Foo, boost::shared_ptr<Foo > >(m, "Foo")
             smart_ptr_type: str = self.class_info.hierarchy_attribute("smart_ptr_type")
             ptr_support = ""
             if self.has_shared_ptr and smart_ptr_type:
-                ptr_support = f", {smart_ptr_type}<{short_name} > "
+                ptr_support = f", {smart_ptr_type}<{class_py_name} > "
 
             # Add base classes to the wrapper class definition if needed
             # e.g. py::class_<Foo, AbstractFoo, InterfaceFoo >(m, "Foo")
@@ -316,7 +316,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
             # Add the class registration
             class_definition_dict = {
-                "short_name": short_name,
+                "class_py_name": class_py_name,
                 "overrides_string": overrides_string,
                 "ptr_support": ptr_support,
                 "bases": bases,
@@ -358,19 +358,21 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             # Run any custom generators to add additional class code
             if self.class_info.custom_generator:
                 self.cpp_string += (
-                    self.class_info.custom_generator.get_class_cpp_def_code(short_name)
+                    self.class_info.custom_generator.get_class_cpp_def_code(
+                        class_py_name
+                    )
                 )
 
             # Close the class definition
             self.cpp_string += "    ;\n}\n"
 
             # Set up the hpp
-            self.add_hpp(short_name)
+            self.add_hpp(class_py_name)
 
             # Write the class cpp and hpp files
-            self.write_files(work_dir, short_name)
+            self.write_files(work_dir, class_py_name)
 
-    def write_files(self, work_dir: str, class_short_name: str) -> None:
+    def write_files(self, work_dir: str, class_py_name: str) -> None:
         """
         Write the hpp and cpp wrapper code to file.
 
@@ -378,11 +380,11 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         ----------
             work_dir : str
                 The directory to write the files to
-            class_short_name : str
-                The short name of the class e.g. Foo2_2
+            class_py_name : str
+                The Python name of the class e.g. Foo2_2
         """
-        hpp_filepath = os.path.join(work_dir, f"{class_short_name}.{CPPWG_EXT}.hpp")
-        cpp_filepath = os.path.join(work_dir, f"{class_short_name}.{CPPWG_EXT}.cpp")
+        hpp_filepath = os.path.join(work_dir, f"{class_py_name}.{CPPWG_EXT}.hpp")
+        cpp_filepath = os.path.join(work_dir, f"{class_py_name}.{CPPWG_EXT}.cpp")
 
         with open(hpp_filepath, "w") as hpp_file:
             hpp_file.write(self.hpp_string)

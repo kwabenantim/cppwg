@@ -53,4 +53,3 @@ class CppBaseWrapperWriter:
             name = name.replace(key, value)
 
         return name
-

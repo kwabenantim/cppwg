@@ -24,8 +24,8 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         The class declaration for the class containing the method
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
-    class_short_name : Optional[str]
-        The short name of the class e.g. 'Foo2_2'
+    class_py_name : Optional[str]
+        The Python name of the class e.g. 'Foo2_2'
     template_params: Optional[List[str]]
         The template params for the class e.g. ['DIM_A', 'DIM_B']
     template_args: Optional[List[str]]
@@ -46,9 +46,9 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         self.method_decl: "member_function_t" = method_decl  # noqa: F821
         self.class_decl: "class_t" = class_info.decls[template_idx]  # noqa: F821
 
-        self.class_short_name = class_info.short_names[template_idx]
-        if self.class_short_name is None:
-            self.class_short_name = self.class_decl.name
+        self.class_py_name = class_info.py_names[template_idx]
+        if self.class_py_name is None:
+            self.class_py_name = self.class_decl.name
 
         self.template_params = class_info.template_params
 
@@ -131,7 +131,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             self_ptr = "*"
         else:
             # e.g. Foo2_2::*
-            self_ptr = self.class_short_name + "::*"
+            self_ptr = self.class_py_name + "::*"
 
         # Const-ness
         const_adorn = ""
@@ -190,7 +190,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             "self_ptr": self_ptr,
             "arg_signature": arg_signature,
             "const_adorn": const_adorn,
-            "class_short_name": self.class_short_name,
+            "class_py_name": self.class_py_name,
             "method_docs": '" "',
             "default_args": keyword_args,
             "call_policy": call_policy,
@@ -258,7 +258,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             "const_adorn": const_adorn,
             "overload_adorn": overload_adorn,
             "tidy_method_name": self.tidy_name(return_string),
-            "short_class_name": self.class_short_name,
+            "class_py_name": self.class_py_name,
             "args_string": arg_name_string,
         }
         wrapper_string = self.wrapper_templates["method_virtual_override"].format(

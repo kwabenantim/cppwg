@@ -278,8 +278,8 @@ class CppWrapperGenerator:
             for class_info in module_info.class_info_collection:
                 class_info.decls: List["class_t"] = []  # noqa: F821
 
-                for full_name in class_info.full_names:
-                    decl_name = full_name.replace(" ", "")  # e.g. Foo<2,2>
+                for class_cpp_name in class_info.cpp_names:
+                    decl_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
 
                     try:
                         class_decl = self.source_ns.class_(decl_name)

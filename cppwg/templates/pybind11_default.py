@@ -4,10 +4,10 @@ class_cpp_header = """\
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 {includes}
-#include "{class_short_name}.%s.hpp"
+#include "{class_py_name}.%s.hpp"
 
 namespace py = pybind11;
-typedef {class_full_name} {class_short_name};
+typedef {class_cpp_name} {class_py_name};
 {smart_ptr_handle};
 """ % CPPWG_EXT
 
@@ -16,43 +16,43 @@ class_cpp_header_chaste = """\
 #include <pybind11/stl.h>
 {includes}
 //#include "PythonObjectConverters.hpp"
-#include "{class_short_name}.%s.hpp"
+#include "{class_py_name}.%s.hpp"
 
 namespace py = pybind11;
 //PYBIND11_CVECTOR_TYPECASTER2();
 //PYBIND11_CVECTOR_TYPECASTER3();
-typedef {class_full_name} {class_short_name};
+typedef {class_cpp_name} {class_py_name};
 {smart_ptr_handle};
 """ % CPPWG_EXT
 
 class_hpp_header = """\
-#ifndef {class_short_name}_hpp__%s_wrapper
-#define {class_short_name}_hpp__%s_wrapper
+#ifndef {class_py_name}_hpp__%s_wrapper
+#define {class_py_name}_hpp__%s_wrapper
 
 #include <pybind11/pybind11.h>
 
-void register_{class_short_name}_class(pybind11::module &m);
-#endif // {class_short_name}_hpp__%s_wrapper
+void register_{class_py_name}_class(pybind11::module &m);
+#endif // {class_py_name}_hpp__%s_wrapper
 """ % tuple([CPPWG_EXT]*3)
 
 class_virtual_override_header = """\
-class {class_short_name}%s : public {class_short_name}{{
+class {class_py_name}%s : public {class_py_name}{{
     public:
-    using {class_short_name}::{class_base_name};
+    using {class_py_name}::{class_base_name};
 """ % CPPWG_CLASS_OVERRIDE_SUFFIX
 
 class_virtual_override_footer = "}\n"
 
 class_definition = """\
-void register_{short_name}_class(py::module &m){{
-py::class_<{short_name} {overrides_string} {ptr_support} {bases} >(m, "{short_name}")
+void register_{class_py_name}_class(py::module &m){{
+py::class_<{class_py_name} {overrides_string} {ptr_support} {bases} >(m, "{class_py_name}")
 """
 
 method_virtual_override = """\
     {return_type} {method_name}({arg_string}){const_adorn} override {{
         PYBIND11_OVERRIDE{overload_adorn}(
             {tidy_method_name},
-            {short_class_name},
+            {class_py_name},
             {method_name},
             {args_string});
     }}
@@ -67,7 +67,7 @@ free_function = """\
 class_method = """\
         .def{def_adorn}(
             "{method_name}",
-            ({return_type}({self_ptr})({arg_signature}){const_adorn}) &{class_short_name}::{method_name},
+            ({return_type}({self_ptr})({arg_signature}){const_adorn}) &{class_py_name}::{method_name},
             {method_docs} {default_args} {call_policy})
 """
 

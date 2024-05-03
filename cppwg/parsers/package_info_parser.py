@@ -141,7 +141,7 @@ class PackageInfoParser:
         for key in package_config.keys():
             if key in self.raw_package_info:
                 package_config[key] = self.raw_package_info[key]
-        
+
         # Replace boolean strings with booleans
         utils.substitute_bool_for_string(package_config, "common_include_file")
         utils.substitute_bool_for_string(package_config, "exclude_default_args")
