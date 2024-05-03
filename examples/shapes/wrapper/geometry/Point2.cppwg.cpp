@@ -19,7 +19,7 @@ py::class_<Point2  , std::shared_ptr<Point2 >   >(m, "Point2")
         .def(
             "rGetLocation",
             (::std::array<double, 2> const &(Point2::*)() const ) &Point2::rGetLocation,
-            " "  )
+            " "  , py::return_value_policy::reference_internal)
         .def(
             "GetIndex",
             (unsigned int(Point2::*)() const ) &Point2::GetIndex,

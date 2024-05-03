@@ -18,7 +18,7 @@ py::class_<Shape2  , std::shared_ptr<Shape2 >   >(m, "Shape2")
         .def(
             "rGetVertices",
             (::std::vector<std::shared_ptr<Point<2>>> const &(Shape2::*)() const ) &Shape2::rGetVertices,
-            " "  )
+            " "  , py::return_value_policy::reference_internal)
         .def(
             "SetIndex",
             (void(Shape2::*)(unsigned int)) &Shape2::SetIndex,

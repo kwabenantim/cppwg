@@ -60,6 +60,11 @@ public:
      * Set the location
      */
     void SetLocation(const std::array<double, DIM> &rLocation);
+
+    /**
+     * Placeholder method to exclude from wrapping
+     */
+    void ExcludedMethod();
 };
 
 #endif // _POINT_HPP

@@ -8,12 +8,12 @@ Point<DIM>::Point()
 
 template <unsigned DIM>
 Point<DIM>::Point(double x, double y, double z)
-    : mIndex(0)
-    , mLocation()
+    : mIndex(0), mLocation()
 {
     mLocation[0] = x;
     mLocation[1] = y;
-    if (DIM == 3) {
+    if (DIM == 3)
+    {
         mLocation[2] = z;
     }
 }
@@ -30,7 +30,7 @@ std::array<double, DIM> Point<DIM>::GetLocation() const
 }
 
 template <unsigned DIM>
-const std::array<double, DIM>& Point<DIM>::rGetLocation() const
+const std::array<double, DIM> &Point<DIM>::rGetLocation() const
 {
     return mLocation;
 }
@@ -48,9 +48,15 @@ void Point<DIM>::SetIndex(unsigned index)
 }
 
 template <unsigned DIM>
-void Point<DIM>::SetLocation(const std::array<double, DIM>& rLocation)
+void Point<DIM>::SetLocation(const std::array<double, DIM> &rLocation)
 {
     mLocation = rLocation;
+}
+
+template <unsigned DIM>
+void Point<DIM>::ExcludedMethod()
+{
+    // Excluded method
 }
 
 template class Point<2>;

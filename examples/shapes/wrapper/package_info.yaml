@@ -7,14 +7,22 @@ pointer_call_policy: reference
 # Default value of pybind11::return_value_policy for references.
 reference_call_policy: reference_internal
 
-# Set True to include the common include file (all headers) in all wrappers.
-common_include_file: False
-# Headers to be included in all wrappers.
+# Set False to not include the common include file (all headers) in all wrappers.
+common_include_file: True
+# Headers to include in all wrappers.
 source_includes:
   - <memory>
 
-# Exclude default arguments from method signatures.
+# Exclude default arguments from wrapped methods.
 exclude_default_args: False
+
+# Exclude any methods that have these arg types.
+# arg_type_excludes:
+#   - double
+
+# Exclude any constructors that have these arg types.
+# constructor_arg_type_excludes:
+#   - double
 
 # Signature/replacement settings for explicit template instantiations.
 template_substitutions:
@@ -45,11 +53,7 @@ modules:
         excluded_methods:
           - ExcludedMethod
 
-        # Exclude any constructors that have these arg types.
-        # constructor_arg_type_excludes:
-        #   - double
-
-        # Path to custom script for generating wrappers for this class.
+        # Path to a custom script for generating wrappers for this class.
         # CPPWG_SOURCEROOT points to the supplied source root directory.
         # custom_generator: "CPPWG_SOURCEROOT/point_generator.py"
 
