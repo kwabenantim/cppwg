@@ -25,6 +25,8 @@ class PackageInfo(BaseInfo):
         A list of source file names to include
     common_include_file : bool
         Use a common include file for all source files
+    exclude_default_args : bool
+        Exclude default arguments from method wrappers.
     """
 
     def __init__(
@@ -57,6 +59,7 @@ class PackageInfo(BaseInfo):
         self.source_hpp_patterns: List[str] = ["*.hpp"]
         self.source_hpp_files: List[str] = []
         self.common_include_file: bool = False
+        self.exclude_default_args: bool = False
 
         if package_config:
             for key, value in package_config.items():

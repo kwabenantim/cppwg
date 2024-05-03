@@ -150,33 +150,35 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
 
         wrapper_string += " >()"
 
-        # Default args e.g. py::arg("i") = 1
-        default_args = ""
-        if not self.exclude_default_args():
-            for arg in self.ctor_decl.arguments:
-                default_args += f', py::arg("{arg.name}")'
+        # Keyword args with default values e.g. py::arg("i") = 1
+        keyword_args = ""
+        for arg in self.ctor_decl.arguments:
+            keyword_args += f', py::arg("{arg.name}")'
 
-                if arg.default_value is not None:
-                    default_value = str(arg.default_value)
+            if not (
+                arg.default_value is None
+                or self.class_info.hierarchy_attribute("exclude_default_args")
+            ):
+                default_value = str(arg.default_value)
 
-                    if self.template_params:
-                        # Check for template params in default value
-                        for param, val in zip(self.template_params, self.template_args):
-                            if param in default_value:
-                                # Replace e.g. Foo::DIM_A -> 2
-                                default_value = re.sub(
-                                    f"\\b{self.class_info.name}::{param}\\b",
-                                    str(val),
-                                    default_value,
-                                )
+                # Check for template params in default value
+                if self.template_params:
+                    for param, val in zip(self.template_params, self.template_args):
+                        if param in default_value:
+                            # Replace e.g. Foo::DIM_A -> 2
+                            default_value = re.sub(
+                                f"\\b{self.class_info.name}::{param}\\b",
+                                str(val),
+                                default_value,
+                            )
 
-                                # Replace e.g. <DIM_A> -> <2>
-                                default_value = re.sub(
-                                    f"\\b{param}\\b", f"{val}", default_value
-                                )
+                            # Replace e.g. <DIM_A> -> <2>
+                            default_value = re.sub(
+                                f"\\b{param}\\b", f"{val}", default_value
+                            )
 
-                    default_args += f" = {default_value}"
+                keyword_args += f" = {default_value}"
 
-        wrapper_string += default_args + ")\n"
+        wrapper_string += keyword_args + ")\n"
 
         return wrapper_string

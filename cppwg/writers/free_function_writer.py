@@ -48,7 +48,7 @@ class CppFreeFunctionWrapperWriter(CppBaseWrapperWriter):
         # e.g. without default values: ', py::arg("foo"), py::arg("bar")'
         # e.g. with default values: ', py::arg("foo") = 1, py::arg("bar") = 2'
         default_args = ""
-        if not self.exclude_default_args():
+        if not self.free_function_info.hierarchy_attribute("exclude_default_args"):
             for argument in self.free_function_info.decls[0].arguments:
                 default_args += f', py::arg("{argument.name}")'
                 if argument.default_value is not None:

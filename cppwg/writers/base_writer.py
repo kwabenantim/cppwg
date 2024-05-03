@@ -54,14 +54,3 @@ class CppBaseWrapperWriter:
 
         return name
 
-    # TODO: This method is currently a placeholder. Consider implementing or removing.
-    def exclude_default_args(self) -> bool:
-        """
-        Check if default arguments should be excluded from the wrapper code.
-
-        Returns
-        -------
-        bool
-            True if the default arguments should be excluded
-        """
-        return False

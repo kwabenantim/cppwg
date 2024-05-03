@@ -3,8 +3,6 @@
 import os
 from typing import Any, Dict, List, Optional
 
-from pygccxml.declarations import declaration_t
-
 from cppwg.input.base_info import BaseInfo
 
 
@@ -54,7 +52,7 @@ class ModuleInfo(BaseInfo):
         """Returns the parent package info object."""
         return self.package_info
 
-    def is_decl_in_source_path(self, decl: declaration_t) -> bool:
+    def is_decl_in_source_path(self, decl: "declaration_t") -> bool:  # noqa: F821
         """
         Check if the declaration is associated with a file in the specified source paths.
 
