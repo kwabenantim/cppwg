@@ -132,10 +132,9 @@ class CppWrapperGenerator:
 
             for include_path in self.source_includes:
                 if not os.path.isdir(include_path):
-                    logger.error(
+                    logger.warning(
                         f"Could not find source include directory: {include_path}"
                     )
-                    raise FileNotFoundError()
         else:
             self.source_includes = [self.source_root]
 
