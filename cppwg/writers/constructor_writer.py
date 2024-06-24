@@ -177,6 +177,14 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
                                 f"\\b{param}\\b", f"{val}", default_value
                             )
 
+                # Add type if default value is an empty initializer list
+                # Example:
+                # `Foo(std::vector<Bar*> laminas = {})` is equivalent to
+                # `Foo(std::vector<Bar*> laminas = std::vector<Bar*>{})`
+                # which generates `py::arg("laminas") = std::vector<Bar*>{}`
+                if default_value.replace(" ", "") == "{}":
+                    default_value = arg.decl_type.decl_string + " {}"
+
                 keyword_args += f" = {default_value}"
 
         wrapper_string += keyword_args + ")\n"
