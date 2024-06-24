@@ -65,7 +65,6 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         bool
             True if the method should be excluded, False otherwise
         """
-
         # Skip methods marked for exclusion
         if self.class_info.excluded_methods:
             if self.method_decl.name in self.class_info.excluded_methods:
