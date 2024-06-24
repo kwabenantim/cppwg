@@ -65,7 +65,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         bool
             True if the method should be excluded, False otherwise
         """
-        # Exclude private methods without over-rides
+        # Exclude private methods
         if self.method_decl.access_type == "private":
             return True
 
@@ -220,8 +220,8 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         str
             The virtual override wrapper code.
         """
-        # Skip private methods
-        if self.method_decl.access_type == "private":
+        # Skip excluded methods
+        if self.exclude():
             return ""
 
         # Get list of arguments and types
