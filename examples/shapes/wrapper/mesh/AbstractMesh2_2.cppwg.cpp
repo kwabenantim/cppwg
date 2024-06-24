@@ -32,6 +32,10 @@ py::class_<AbstractMesh2_2 , AbstractMesh2_2_Overrides , std::shared_ptr<Abstrac
             (void(AbstractMesh2_2::*)(unsigned int)) &AbstractMesh2_2::SetIndex,
             " " , py::arg("index") )
         .def(
+            "AddVertex",
+            (void(AbstractMesh2_2::*)(::Point<2>)) &AbstractMesh2_2::AddVertex,
+            " " , py::arg("vertex") )
+        .def(
             "Scale",
             (void(AbstractMesh2_2::*)(double const)) &AbstractMesh2_2::Scale,
             " " , py::arg("factor") )

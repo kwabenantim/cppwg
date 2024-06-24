@@ -336,11 +336,6 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             for member_function in class_decl.member_functions(
                 function=query, allow_empty=True
             ):
-                if self.class_info.excluded_methods:
-                    # Skip excluded methods
-                    if member_function.name in self.class_info.excluded_methods:
-                        continue
-
                 method_writer = CppMethodWrapperWriter(
                     self.class_info,
                     idx,

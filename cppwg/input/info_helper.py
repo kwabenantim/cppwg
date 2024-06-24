@@ -139,7 +139,8 @@ class CppInfoHelper:
                         template_params = []
                         for tp in template_substitution["signature"].split(","):
                             template_params.append(
-                                tp.replace("<", "")
+                                tp.strip()
+                                .replace("<", "")
                                 .replace(">", "")
                                 .split(" ")[1]
                                 .split("=")[0]
