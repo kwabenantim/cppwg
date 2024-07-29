@@ -11,5 +11,6 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 void register_Rectangle_class(py::module &m){
 py::class_<Rectangle  , std::shared_ptr<Rectangle >  , Shape<2>  >(m, "Rectangle")
         .def(py::init<double, double >(), py::arg("width") = 2., py::arg("height") = 1.)
+        .def(py::init<::std::vector<std::shared_ptr<Point<2>>> const >(), py::arg("points") = ::std::vector<std::shared_ptr<Point<2>>> {})
     ;
 }
