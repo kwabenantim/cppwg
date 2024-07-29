@@ -122,8 +122,9 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
             )
         ]
         for exclude_type in ctor_arg_type_excludes:
-            if exclude_type in arg_type:
-                return True
+            for arg_type in arg_types:
+                if exclude_type in arg_type:
+                    return True
 
         # Exclude constructors matching a signature in constructor_signature_excludes
         ctor_signature_excludes = self.class_info.hierarchy_attribute_gather(
