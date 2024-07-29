@@ -185,6 +185,10 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
                 if default_value.replace(" ", "") == "{}":
                     default_value = arg.decl_type.decl_string + " {}"
 
+                    # Remove const keyword
+                    default_value = re.sub(r"\bconst\b", "", default_value)
+                    default_value = default_value.replace("  ", " ")
+
                 keyword_args += f" = {default_value}"
 
         wrapper_string += keyword_args + ")\n"
