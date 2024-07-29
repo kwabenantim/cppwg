@@ -123,6 +123,7 @@ class PackageInfoParser:
             "pointer_call_policy": None,
             "reference_call_policy": None,
             "constructor_arg_type_excludes": None,
+            "constructor_signature_excludes": None,
             "excluded_methods": [],
             "excluded_variables": [],
             "custom_generator": None,

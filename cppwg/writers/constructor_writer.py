@@ -94,35 +94,51 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
         ):
             return True
 
-        # Check for excluded argument patterns
+        # Get arg type strings with spaces removed
+        # e.g. ::std::vector<unsigned int> const & -> ::std::vector<unsignedint>const&
+        arg_types = [
+            x.decl_string.replace(" ", "") for x in self.ctor_decl.argument_types
+        ]
+
+        # Exclude constructors with "iterator" in args
+        for arg_type in arg_types:
+            if "iterator" in arg_type.lower():
+                return True
+
+        # Exclude constructors with args matching patterns in calldef_excludes
         calldef_excludes = [
             x.replace(" ", "")
             for x in self.class_info.hierarchy_attribute_gather("calldef_excludes")
         ]
+        for arg_type in arg_types:
+            if arg_type in calldef_excludes:
+                return True
 
+        # Exclude constructors with args matching patterns in constructor_arg_type_excludes
         ctor_arg_type_excludes = [
             x.replace(" ", "")
             for x in self.class_info.hierarchy_attribute_gather(
                 "constructor_arg_type_excludes"
             )
         ]
-
-        for arg_type in self.ctor_decl.argument_types:
-            # e.g. ::std::vector<unsigned int> const & -> ::std::vector<unsignedint>const&
-            arg_type_str = arg_type.decl_string.replace(" ", "")
-
-            # Exclude constructors with "iterator" in args
-            if "iterator" in arg_type_str.lower():
+        for exclude_type in ctor_arg_type_excludes:
+            if exclude_type in arg_type:
                 return True
 
-            # Exclude constructors with args matching calldef_excludes
-            if arg_type_str in calldef_excludes:
-                return True
+        # Exclude constructors matching a signature in constructor_signature_excludes
+        ctor_signature_excludes = self.class_info.hierarchy_attribute_gather(
+            "constructor_signature_excludes"
+        )
 
-            # Exclude constructurs with args matching constructor_arg_type_excludes
-            for excluded_type in ctor_arg_type_excludes:
-                if excluded_type in arg_type_str:
-                    return True
+        for exclude_types in ctor_signature_excludes:
+            if len(exclude_types) != len(arg_types):
+                continue
+
+            if all(
+                exclude_type in arg_type
+                for arg_type, exclude_type in zip(arg_types, exclude_types)
+            ):
+                return True
 
         return False
 
