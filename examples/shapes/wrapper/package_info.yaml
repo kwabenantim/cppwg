@@ -16,14 +16,6 @@ source_includes:
 # Exclude default arguments from wrapped methods.
 exclude_default_args: False
 
-# Exclude any methods that have these arg types.
-# arg_type_excludes:
-#   - double
-
-# Exclude any constructors that have these arg types.
-# constructor_arg_type_excludes:
-#   - double
-
 # Signature/replacement settings for explicit template instantiations.
 template_substitutions:
   - signature: <unsigned DIM>
@@ -52,6 +44,18 @@ modules:
         # List of methods that should not be wrapped.
         excluded_methods:
           - ExcludedMethod
+
+        # Exclude any methods that have these arg types.
+        # arg_type_excludes:
+        #   - double
+
+        # Exclude any constructors that have these arg types.
+        # constructor_arg_type_excludes:
+        #   - double
+
+        # Exclude any constructors that have these signatures.
+        constructor_signature_excludes:
+          - [int, int, int]
 
         # Path to a custom script for generating wrappers for this class.
         # CPPWG_SOURCEROOT points to the supplied source root directory.

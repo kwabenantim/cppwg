@@ -38,12 +38,14 @@ class BaseInfo:
         Do not include these methods.
     excluded_variables : List[str]
         Do not include these variables.
+    arg_type_excludes : List[str]
+        List of exclude patterns for arg types in methods.
     constructor_arg_type_excludes : List[str]
-        List of exclude patterns for ctors.
+        List of exclude patterns for arg types in constructors.
+    constructor_signature_excludes : List[List[str]]
+        List of exclude patterns for constructor signatures.
     return_type_excludes : List[str]
         List of exclude patterns for return types.
-    arg_type_excludes : List[str]
-        List of exclude patterns for arg types.
     name_replacements : Dict[str, str]
         A dictionary of name replacements e.g. {"double":"Double", "unsigned
         int":"Unsigned"}
@@ -62,9 +64,10 @@ class BaseInfo:
         self.custom_generator: Optional[str] = None
         self.excluded_methods: List[str] = []
         self.excluded_variables: List[str] = []
-        self.constructor_arg_type_excludes: List[str] = []
-        self.return_type_excludes: List[str] = []
         self.arg_type_excludes: List[str] = []
+        self.constructor_arg_type_excludes: List[str] = []
+        self.constructor_signature_excludes: List[List[str]] = []
+        self.return_type_excludes: List[str] = []
         self.name_replacements: Dict[str, str] = {
             "double": "Double",
             "unsigned int": "Unsigned",

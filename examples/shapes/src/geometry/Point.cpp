@@ -19,6 +19,14 @@ Point<DIM>::Point(double x, double y, double z)
 }
 
 template <unsigned DIM>
+Point<DIM>::Point(int x, int y, int z)
+    : Point(static_cast<double>(x),
+            static_cast<double>(y),
+            static_cast<double>(z))
+{
+}
+
+template <unsigned DIM>
 Point<DIM>::~Point()
 {
 }
