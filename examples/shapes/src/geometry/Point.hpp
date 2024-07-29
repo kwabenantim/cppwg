@@ -32,6 +32,11 @@ public:
     Point(double x, double y, double z = (DIM - DIM));
 
     /**
+     * Constructor to exclude from wrapping
+     */
+    Point(int x, int y, int z = 0);
+
+    /**
      * Destructor
      */
     ~Point();

@@ -54,9 +54,8 @@ modules:
         #   - double
 
         # Exclude any constructors that have these signatures.
-        # constructor_signature_excludes:
-        #   - [double]
-        #   - [double, int]
+        constructor_signature_excludes:
+          - [int, int, int]
 
         # Path to a custom script for generating wrappers for this class.
         # CPPWG_SOURCEROOT points to the supplied source root directory.
