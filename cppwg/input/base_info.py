@@ -32,6 +32,8 @@ class BaseInfo:
         Any extra wrapper code for the feature.
     prefix_code : List[str]
         Any wrapper code that precedes the feature.
+    prefix_text : str, optional
+        Text to add at the top of all wrappers.
     custom_generator : str, optional
         A custom generator for the feature.
     excluded_methods : List[str]

@@ -128,6 +128,7 @@ class PackageInfoParser:
             "excluded_variables": [],
             "custom_generator": None,
             "prefix_code": [],
+            "prefix_text": "",
         }
 
         # Get package config from the raw package info
