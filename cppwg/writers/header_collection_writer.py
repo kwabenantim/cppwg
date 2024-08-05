@@ -72,8 +72,12 @@ class CppHeaderCollectionWriter:
 
     def write(self) -> None:
         """Generate the header file output string and write it to file."""
+
+        # Add the top prefix text
+        self.hpp_collection_string += self.package_info.prefix_text + "\n"
+
         # Add opening header guard
-        self.hpp_collection_string = f"#ifndef {self.package_info.name}_HEADERS_HPP_\n"
+        self.hpp_collection_string += f"#ifndef {self.package_info.name}_HEADERS_HPP_\n"
         self.hpp_collection_string += f"#define {self.package_info.name}_HEADERS_HPP_\n"
 
         self.hpp_collection_string += "\n// Includes\n"
