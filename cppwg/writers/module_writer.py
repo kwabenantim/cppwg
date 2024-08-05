@@ -26,8 +26,6 @@ class CppModuleWrapperWriter:
         String templates with placeholders for generating wrapper code
     wrapper_root : str
         The output directory for the generated wrapper code
-    package_license : str
-        The license to include in the generated wrapper code
     class_decls : List[pygccxml.declarations.class_t]
         A list of declarations of all classes to be wrapped in the module
     """
@@ -37,12 +35,10 @@ class CppModuleWrapperWriter:
         module_info: "ModuleInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
         wrapper_root: str,
-        package_license: str = "",
     ):
         self.module_info: "ModuleInfo" = module_info  # noqa: F821
         self.wrapper_templates: Dict[str, str] = wrapper_templates
         self.wrapper_root: str = wrapper_root
-        self.package_license: str = package_license
 
         # For convenience, store a list of declarations of all
         # classes to be wrapped in the module
@@ -69,8 +65,13 @@ class CppModuleWrapperWriter:
         }
         ```
         """
+        cpp_string = ""
+
+        # Add the top prefix text
+        cpp_string += self.module_info.package_info.prefix_text + "\n"
+
         # Add top level includes
-        cpp_string = "#include <pybind11/pybind11.h>\n"
+        cpp_string += "#include <pybind11/pybind11.h>\n"
 
         if self.module_info.package_info.common_include_file:
             cpp_string += f'#include "{CPPWG_HEADER_COLLECTION_FILENAME}"\n'

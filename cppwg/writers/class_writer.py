@@ -68,6 +68,10 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         class_py_name: str
             The Python name of the class e.g. Foo2_2
         """
+        # Add the top prefix text
+        self.hpp_string += self.class_info.module_info.package_info.prefix_text + "\n"
+
+        # Add the header guard, includes and declarations
         class_hpp_dict = {"class_py_name": class_py_name}
 
         self.hpp_string += self.wrapper_templates["class_hpp_header"].format(
@@ -85,6 +89,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         class_py_name : str
             The Python name of the class e.g. Foo2_2
         """
+        # Add the top prefix text
+        self.cpp_string += self.class_info.module_info.package_info.prefix_text + "\n"
+
         # Add the includes for this class
         includes = ""
 
