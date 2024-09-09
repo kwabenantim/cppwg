@@ -15,6 +15,9 @@ public:
      */
     ~MeshGen();
 
+    /**
+     * Generate a mesh
+     */
     void generateMesh();
 };
 

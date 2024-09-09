@@ -1,7 +1,7 @@
 #include "AbstractMesh.hpp"
 
 template <unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-AbstractMesh<ELEMENT_DIM, SPACE_DIM>::AbstractMesh() : mIndex(0)
+AbstractMesh<ELEMENT_DIM, SPACE_DIM>::AbstractMesh() : mIndex(0), mMeshGen()
 {
 }
 
