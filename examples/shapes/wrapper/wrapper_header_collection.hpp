@@ -8,6 +8,7 @@
 #include "ConcreteMesh.hpp"
 #include "AbstractMesh.hpp"
 #include "SimpleMathFunctions.hpp"
+#include "Square.hpp"
 #include "Shape.hpp"
 #include "Cuboid.hpp"
 #include "Rectangle.hpp"
