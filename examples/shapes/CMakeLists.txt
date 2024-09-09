@@ -66,11 +66,11 @@ foreach(MODULE geometry math_funcs mesh primitives)
     # Set suitable extensions for the module and place the compiled
     # shared library in a suitable location inside the python package
     set_target_properties(
-      ${MODULE_LIB}
-      PROPERTIES
-          PREFIX "${PYTHON_MODULE_PREFIX}"
-          SUFFIX "${PYTHON_MODULE_EXTENSION}"
-          LIBRARY_OUTPUT_DIRECTORY
-          ${CMAKE_CURRENT_BINARY_DIR}/pyshapes/${MODULE}/
+        ${MODULE_LIB}
+        PROPERTIES
+            PREFIX "${PYTHON_MODULE_PREFIX}"
+            SUFFIX "${PYTHON_MODULE_EXTENSION}"
+            LIBRARY_OUTPUT_DIRECTORY
+            ${CMAKE_CURRENT_BINARY_DIR}/pyshapes/${MODULE}/
     )
 endforeach()
