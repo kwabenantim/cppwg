@@ -11,6 +11,7 @@
 #include "Square.hpp"
 #include "Shape.hpp"
 #include "Cuboid.hpp"
+#include "Triangle.hpp"
 #include "Rectangle.hpp"
 #include "Point.hpp"
 
