@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16...3.22)
-project(shapes)
+project(shapes LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -27,6 +27,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/math_funcs
     ${CMAKE_CURRENT_SOURCE_DIR}/src/mesh
     ${CMAKE_CURRENT_SOURCE_DIR}/src/primitives
+    ${CMAKE_CURRENT_SOURCE_DIR}/extern/meshgen
 )
 
 # Copy the Python source and test trees to the build location
