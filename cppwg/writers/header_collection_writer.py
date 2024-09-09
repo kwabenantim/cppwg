@@ -96,6 +96,10 @@ class CppHeaderCollectionWriter:
             # Include specific headers needed by classes
             for module_info in self.package_info.module_info_collection:
                 for class_info in module_info.class_info_collection:
+                    # Skip excluded classes
+                    if class_info.excluded:
+                        continue
+
                     hpp_filename = None
 
                     if class_info.source_file:
@@ -128,6 +132,10 @@ class CppHeaderCollectionWriter:
 
         for module_info in self.package_info.module_info_collection:
             for class_info in module_info.class_info_collection:
+                # Skip excluded classes
+                if class_info.excluded:
+                    continue
+
                 # Skip untemplated classes
                 if not class_info.template_arg_lists:
                     continue

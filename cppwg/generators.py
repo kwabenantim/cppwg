@@ -203,6 +203,29 @@ class CppWrapperGenerator:
                 info_helper.extract_templates_from_source(class_info)
                 class_info.update_names()
 
+    def log_unknown_classes(self) -> None:
+        """Get unwrapped classes."""
+        all_class_decls = self.source_ns.classes(allow_empty=True)
+
+        wrapped_decls = [
+            decl
+            for module_info in self.package_info.module_info_collection
+            for class_info in module_info.class_info_collection
+            for decl in class_info.decls
+        ]
+
+        skipped_decls = [
+            decl
+            for decl in all_class_decls
+            if decl not in wrapped_decls
+            and Path(self.source_root) in Path(decl.location.file_name).parents
+        ]
+
+        for decl in skipped_decls:
+            logging.info(
+                f"Unknown class {decl.name} from {decl.location.file_name}:{decl.location.line}"
+            )
+
     def map_classes_to_hpp_files(self) -> None:
         """
         Map each class to a header file.
@@ -285,7 +308,7 @@ class CppWrapperGenerator:
 
                     except pygccxml.declarations.runtime_errors.declaration_not_found_t:
                         logging.warning(
-                            f"Could not find declaration for {decl_name}: trying partial match."
+                            f"Could not find declaration for class {decl_name}: trying partial match."
                         )
 
                         if "=" in class_info.template_signature:
@@ -306,7 +329,9 @@ class CppWrapperGenerator:
                             logging.info(f"Found {decl_name}")
 
                         else:
-                            logging.error(f"Could not find declaration for {decl_name}")
+                            logging.error(
+                                f"Could not find declaration for class {decl_name}"
+                            )
 
                     class_info.decls.append(class_decl)
 
@@ -391,6 +416,9 @@ class CppWrapperGenerator:
 
         # Add declarations to free function info objects
         self.add_free_function_decls()
+
+        # Log list of unknown classes in the source root
+        self.log_unknown_classes()
 
         # Write all the wrappers required
         self.write_wrappers()
