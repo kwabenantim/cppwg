@@ -207,21 +207,21 @@ class CppWrapperGenerator:
         """Get unwrapped classes."""
         all_class_decls = self.source_ns.classes(allow_empty=True)
 
-        wrapped_decls = [
+        known_class_decls = [
             decl
             for module_info in self.package_info.module_info_collection
             for class_info in module_info.class_info_collection
             for decl in class_info.decls
         ]
 
-        skipped_decls = [
+        unknown_class_decls = [
             decl
             for decl in all_class_decls
-            if decl not in wrapped_decls
+            if decl not in known_class_decls
             and Path(self.source_root) in Path(decl.location.file_name).parents
         ]
 
-        for decl in skipped_decls:
+        for decl in unknown_class_decls:
             logging.info(
                 f"Unknown class {decl.name} from {decl.location.file_name}:{decl.location.line}"
             )

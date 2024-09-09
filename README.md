@@ -100,7 +100,7 @@ cd examples/shapes
 cppwg src/ \
   --wrapper_root wrapper/ \
   --package_info wrapper/package_info.yaml \
-  --includes src/geometry/ src/math_funcs/ src/mesh/ src/primitives
+  --includes src/geometry/ src/math_funcs/ src/mesh/ src/primitives extern/meshgen
 ```
 
 To build the example `pyshapes` package:
