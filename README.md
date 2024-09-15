@@ -2,9 +2,10 @@
 
 # cppwg
 
-Automatically generate PyBind11 Python wrapper code for C++ projects.
+Automatically generate pybind11 Python wrapper code for C++ projects.
 
 ## Installation
+
 Clone the repository and install cppwg:
 
 ```bash
@@ -15,106 +16,131 @@ pip install .
 
 ## Usage
 
-This project generates PyBind11 wrapper code, saving lots of boilerplate in
-bigger projects. Please see the [PyBind11 documentation](https://pybind11.readthedocs.io/en/stable/)
-for help on the generated wrapper code. 
+```
+usage: cppwg [-h] [-w WRAPPER_ROOT] [-p PACKAGE_INFO] [-c CASTXML_BINARY]
+             [--std STD] [-i [INCLUDES ...]] [-q] [-l [LOGFILE]] [-v]
+             SOURCE_ROOT
 
-### First Example
+Generate Python Wrappers for C++ code
 
-The `examples/shapes/` directory is a full example project, demonstrating how to
-generate a Python package `pyshapes` from C++ source code. It is recommended
-that you use it as a template project when getting started.
+positional arguments:
+  SOURCE_ROOT           Path to the root directory of the input C++ source
+                        code.
 
-As a small example, we can start with a free function in
-`examples/shapes/src/math_funcs/SimpleMathFunctions.hpp`:
-
-```c++
-#ifndef _SIMPLEMATHFUNCTIONS_HPP
-#define _SIMPLEMATHFUNCTIONS_HPP
-
-/**
- * Add the two input numbers and return the result
- * @param i the first number
- * @param j the second number
- * @return the sum of the numbers
- */
-int add(int i, int j)
-{
-    return i + j;
-}
-
-#endif  // _SIMPLEMATHFUNCTIONS_HPP
+options:
+  -h, --help            show this help message and exit
+  -w WRAPPER_ROOT, --wrapper_root WRAPPER_ROOT
+                        Path to the output directory for the Pybind11 wrapper
+                        code.
+  -p PACKAGE_INFO, --package_info PACKAGE_INFO
+                        Path to the package info file.
+  -c CASTXML_BINARY, --castxml_binary CASTXML_BINARY
+                        Path to the castxml executable.
+  --std STD             C++ standard e.g. c++17.
+  -i [INCLUDES ...], --includes [INCLUDES ...]
+                        List of paths to include directories.
+  -q, --quiet           Disable informational messages.
+  -l [LOGFILE], --logfile [LOGFILE]
+                        Output log messages to a file.
+  -v, --version         Print cppwg version.
 ```
 
-Add a package description to `examples/shapes/wrapper/package_info.yaml`:
+## Example
+
+The project in `examples/shapes` can be used to demonstrate `cppwg` usage.
+
+We start with the `Rectangle` class defined in
+`examples/shapes/src/primitives/Rectangle.hpp`
+
+```cpp
+class Rectangle : public Shape<2>
+{
+public:
+  Rectangle(double width=2.0, double height=1.0);
+  ~Rectangle();
+  //...
+};
+```
+
+A configuration file is required to use cppwg. There is a sample in
+`examples/shapes/wrapper/package_info.yaml`. The configuration file lists
+classes to be wrapped and describes the structure of the resulting Python
+package.
+
+The extract from `package_info.yaml` below describes a Python package named
+`pyshapes` which has a `primitives` module that includes the `Rectangle` class.
 
 ```yaml
 name: pyshapes
 modules:
-- name: math_funcs
-  free_functions: CPPWG_ALL
+  - name: primitives
+    classes:
+      - name: Rectangle
 ```
 
-Generate the wrappers with:
+See `package_info.yaml` for more configuration options.
+
+To generate pybind11 wrappers for `examples/shapes`:
 
 ```bash
 cd examples/shapes
-cppwg src/ \
-  --wrapper_root wrapper/ \
+cppwg src \
+  --wrapper_root wrapper \
   --package_info wrapper/package_info.yaml \
-  --includes src/math_funcs/
+  --includes src/geometry src/math_funcs src/mesh src/primitives extern/meshgen
 ```
 
-The following PyBind11 wrapper code will be output to
-`examples/shapes/wrapper/math_funcs/math_funcs.main.cpp`:
+For the `Rectangle` class, this creates two files in
+`examples/shapes/wrapper/primitives`.
 
-```c++
-#include <pybind11/pybind11.h>
-#include "wrapper_header_collection.hpp"
+**Rectangle.cppwg.hpp**
 
+```cpp
+void register_Rectangle_class(pybind11::module &m);
+```
+
+**Rectangle.cppwg.cpp**
+
+```cpp
 namespace py = pybind11;
-
-PYBIND11_MODULE(_pyshapes_math_funcs, m)
+void register_Rectangle_class(py::module &m)
 {
-    m.def("add", &add, "");
+  py::class_<Rectangle, Shape<2> >(m, "Rectangle")
+    .def(py::init<double, double>(), py::arg("width")=2, py::arg("height")=1)
+    //...
+   ;
 }
 ```
 
-The wrapper code can be built into a Python module and used as follows:
+The `Rectangle` wrapper is registered in the `primitives` module.
 
-```python
-from pyshapes import math_funcs
-a = 4
-b = 5
-c = math_funcs.add(4, 5)
-print c
->>> 9
+**primitives.main.cpp**
+
+```cpp
+PYBIND11_MODULE(_pyshapes_primitives, m)
+{
+  register_Rectangle_class(m);
+  //...
+}
 ```
 
-### Full Example
-
-To generate Pybind11 wrappers for all the C++ code in `examples/shapes`:
+To compile the wrappers into a Python package:
 
 ```bash
-cd examples/shapes
-cppwg src/ \
-  --wrapper_root wrapper/ \
-  --package_info wrapper/package_info.yaml \
-  --includes src/geometry/ src/math_funcs/ src/mesh/ src/primitives extern/meshgen
-```
-
-To build the example `pyshapes` package:
-
-```bash
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 make
 ```
 
-## Starting a New Project
-* Make a wrapper directory in your source tree e.g. `mkdir wrappers`
-* Copy the template in `examples/shapes/wrapper/generate.py` to the wrapper directory and fill it in as appropriate.
-* Copy the template in `examples/shapes/wrapper/package_info.yaml` to the wrapper directory and fill it in as appropriate.
-* Run `cppwg` with appropriate arguments to generate the PyBind11 wrapper code in the wrapper directory.
-* Follow the [PyBind11 guide](https://pybind11.readthedocs.io/en/stable/compiling.html) for building with CMake, using `examples/shapes/CMakeLists.txt` as an initial guide.
+The compiled wrapper code can now be imported in Python:
+
+```python
+from pyshapes import Rectangle
+r = Rectangle(4, 5)
+```
+
+## Tips
+
+- Use `examples/shapes` as a starting point.
+- See the [pybind11 docs](https://pybind11.readthedocs.io/) for help on pybind11
+  wrapper code.
