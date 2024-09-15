@@ -47,10 +47,10 @@ options:
 
 ## Example
 
-The project in `examples/shapes` can be used to demonstrate `cppwg` usage.
+The project in `examples/shapes` demonstrates `cppwg` usage. We can walk through
+the process with the `Rectangle` class in `examples/shapes/src/primitives`
 
-We start with the `Rectangle` class defined in
-`examples/shapes/src/primitives/Rectangle.hpp`
+**Rectangle.hpp**
 
 ```cpp
 class Rectangle : public Shape<2>
@@ -62,13 +62,15 @@ public:
 };
 ```
 
-A configuration file is required to use cppwg. There is a sample in
-`examples/shapes/wrapper/package_info.yaml`. The configuration file lists
-classes to be wrapped and describes the structure of the resulting Python
-package.
+Cppwg needs a configuration file that has a list of classes to wrap and
+describes the structure of the Python package to be created.
 
-The extract from `package_info.yaml` below describes a Python package named
-`pyshapes` which has a `primitives` module that includes the `Rectangle` class.
+There is an example configuration file in
+`examples/shapes/wrapper/package_info.yaml`.
+
+The extract below from the example configuration file describes a Python package
+named `pyshapes` which has a `primitives` module that includes the `Rectangle`
+class.
 
 ```yaml
 name: pyshapes
@@ -80,7 +82,7 @@ modules:
 
 See `package_info.yaml` for more configuration options.
 
-To generate pybind11 wrappers for `examples/shapes`:
+To generate the wrappers:
 
 ```bash
 cd examples/shapes
@@ -112,7 +114,7 @@ void register_Rectangle_class(py::module &m)
 }
 ```
 
-The `Rectangle` wrapper is registered in the `primitives` module.
+The wrapper for `Rectangle` is registered in the `primitives` module.
 
 **primitives.main.cpp**
 
