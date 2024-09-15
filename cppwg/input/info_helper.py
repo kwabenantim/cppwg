@@ -89,12 +89,12 @@ class CppInfoHelper:
             next_line = lines[idx + 1]
 
             for template_substitution in template_substitutions:
-                # e.g. template<unsignedDIM_A,unsignedDIM_B>
+                # Signature e.g. template<unsignedDIM_A,unsignedDIM_B>
                 signature: str = "template" + template_substitution[
                     "signature"
                 ].replace(" ", "")
 
-                # e.g. [[2,2], [3,3]]
+                # Replacement e.g. [[2,2], [3,3]]
                 replacement: List[List[Any]] = template_substitution["replacement"]
 
                 if signature in curr_line:
@@ -103,29 +103,37 @@ class CppInfoHelper:
                     declaration_found = False
 
                     if feature_string == next_line:
+                        # Case 1:
                         # template<unsignedDIM_A,unsignedDIM_B>
                         # classFoo
+                        # {
                         declaration_found = True
 
                     elif next_line.startswith(feature_string + "{"):
+                        # Case 2:
                         # template<unsignedDIM_A,unsignedDIM_B>
                         # classFoo{
                         declaration_found = True
 
                     elif next_line.startswith(feature_string + ":"):
+                        # Case 3:
                         # template<unsignedDIM_A,unsignedDIM_B>
                         # classFoo:publicBar<DIM_A,DIM_B>
                         declaration_found = True
 
                     elif curr_line == signature + feature_string:
+                        # Case 4:
                         # template<unsignedDIM_A,unsignedDIM_B>classFoo
+                        # {
                         declaration_found = True
 
                     elif curr_line.startswith(signature + feature_string + "{"):
+                        # Case 5:
                         # template<unsignedDIM_A,unsignedDIM_B>classFoo{
                         declaration_found = True
 
                     elif curr_line.startswith(signature + feature_string + ":"):
+                        # Case 6:
                         # template<unsignedDIM_A,unsignedDIM_B>classFoo:publicBar<DIM_A,DIM_B>
                         declaration_found = True
 

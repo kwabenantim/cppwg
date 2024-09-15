@@ -207,24 +207,41 @@ class CppWrapperGenerator:
         """Get unwrapped classes."""
         all_class_decls = self.source_ns.classes(allow_empty=True)
 
-        known_class_decls = [
-            decl
-            for module_info in self.package_info.module_info_collection
-            for class_info in module_info.class_info_collection
-            for decl in class_info.decls
-        ]
+        seen_class_names = set()
+        for module_info in self.package_info.module_info_collection:
+            for class_info in module_info.class_info_collection:
+                seen_class_names.add(class_info.name)
+                if class_info.decls:
+                    seen_class_names.update(decl.name for decl in class_info.decls)
 
-        unknown_class_decls = [
-            decl
-            for decl in all_class_decls
-            if decl not in known_class_decls
-            and Path(self.source_root) in Path(decl.location.file_name).parents
-        ]
+        for decl in all_class_decls:
+            if (
+                Path(self.source_root) in Path(decl.location.file_name).parents
+                and decl.name not in seen_class_names
+            ):
+                seen_class_names.add(decl.name)
+                seen_class_names.add(decl.name.split("<")[0].strip())
+                logging.info(
+                    f"Unknown class {decl.name} from {decl.location.file_name}:{decl.location.line}"
+                )
 
-        for decl in unknown_class_decls:
-            logging.info(
-                f"Unknown class {decl.name} from {decl.location.file_name}:{decl.location.line}"
-            )
+        # Check for uninstantiated class templates not parsed by pygccxml
+        for hpp_file_path in self.package_info.source_hpp_files:
+            with open(hpp_file_path, "r") as hpp_file:
+                hpp = hpp_file.read()
+
+            # Strip comments
+            hpp = re.sub(r"//.*", "", hpp)
+            hpp = re.sub(r"/\*.*?\*/", " ", hpp, flags=re.DOTALL)
+
+            # Extract class and struct declarations
+            regex = r"\b(class|struct)\s+(\w+)\s*(?::\s*([^{;]+))?\s*\{[^}]*\};"
+            classes = re.findall(regex, hpp)
+
+            for _, class_name, _ in classes:
+                if class_name not in seen_class_names:
+                    seen_class_names.add(class_name)
+                    logging.info(f"Unknown class {class_name} from {hpp_file_path}")
 
     def map_classes_to_hpp_files(self) -> None:
         """
@@ -298,6 +315,10 @@ class CppWrapperGenerator:
         """
         for module_info in self.package_info.module_info_collection:
             for class_info in module_info.class_info_collection:
+                # Skip excluded classes
+                if class_info.excluded:
+                    continue
+
                 class_info.decls: List["class_t"] = []  # noqa: F821
 
                 for class_cpp_name in class_info.cpp_names:
@@ -306,32 +327,43 @@ class CppWrapperGenerator:
                     try:
                         class_decl = self.source_ns.class_(decl_name)
 
-                    except pygccxml.declarations.runtime_errors.declaration_not_found_t:
+                    except (
+                        pygccxml.declarations.runtime_errors.declaration_not_found_t
+                    ) as e1:
+                        if (
+                            class_info.template_signature is None
+                            or "=" not in class_info.template_signature
+                        ):
+                            raise LookupError(
+                                f"Could not find declaration for class {decl_name}"
+                            ) from e1
+
+                        # If class has default args, try to compress the template signature
                         logging.warning(
-                            f"Could not find declaration for class {decl_name}: trying partial match."
+                            f"Could not find declaration for class {decl_name}: trying for a partial match."
                         )
 
-                        if "=" in class_info.template_signature:
-                            # Try to find the class without default template args
-                            # e.g. for template <int A, int B=A> class Foo {};
-                            # convert Foo<2,2> -> Foo<2 >
-                            pos = 0
-                            for i, s in enumerate(
-                                class_info.template_signature.split(",")
-                            ):
-                                if "=" in s:
-                                    pos = i
-                                    break
+                        # Try to find the class without default template args
+                        # e.g. for template <int A, int B=A> class Foo {};
+                        # convert Foo<2,2> -> Foo<2 >
+                        pos = 0
+                        for i, s in enumerate(class_info.template_signature.split(",")):
+                            if "=" in s:
+                                pos = i
+                                break
 
-                            decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
+                        decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
+
+                        try:
                             class_decl = self.source_ns.class_(decl_name)
-
-                            logging.info(f"Found {decl_name}")
-
-                        else:
-                            logging.error(
+                        except (
+                            pygccxml.declarations.runtime_errors.declaration_not_found_t
+                        ) as e2:
+                            raise LookupError(
                                 f"Could not find declaration for class {decl_name}"
-                            )
+                            ) from e2
+
+                        logging.info(f"Found {decl_name}")
 
                     class_info.decls.append(class_decl)
 

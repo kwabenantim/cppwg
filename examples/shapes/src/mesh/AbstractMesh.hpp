@@ -1,7 +1,6 @@
 #ifndef _ABSTRACT_MESH_HPP
 #define _ABSTRACT_MESH_HPP
 
-#include "MeshGen.hpp"
 #include "Point.hpp"
 
 /**
@@ -15,8 +14,6 @@ private:
      * AbstractMesh index
      */
     unsigned mIndex;
-
-    MeshGen mMeshGen;
 
 public:
     /**

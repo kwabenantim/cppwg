@@ -6,6 +6,7 @@
 
 // Includes
 #include "ConcreteMesh.hpp"
+#include "MeshFactory.hpp"
 #include "AbstractMesh.hpp"
 #include "SimpleMathFunctions.hpp"
 #include "Square.hpp"
