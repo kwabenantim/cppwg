@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import pygccxml
+from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
 from cppwg.input.class_info import CppClassInfo
 from cppwg.input.free_function_info import CppFreeFunctionInfo
@@ -18,6 +19,7 @@ from cppwg.input.package_info import PackageInfo
 from cppwg.parsers.package_info_parser import PackageInfoParser
 from cppwg.parsers.source_parser import CppSourceParser
 from cppwg.templates import pybind11_default as wrapper_templates
+from cppwg.utils import utils
 from cppwg.utils.constants import (
     CPPWG_DEFAULT_WRAPPER_DIR,
     CPPWG_EXT,
@@ -200,6 +202,9 @@ class CppWrapperGenerator:
         for module_info in self.package_info.module_info_collection:
             info_helper = CppInfoHelper(module_info)
             for class_info in module_info.class_info_collection:
+                # Skip excluded classes
+                if class_info.excluded:
+                    continue
                 info_helper.extract_templates_from_source(class_info)
                 class_info.update_names()
 
@@ -227,18 +232,10 @@ class CppWrapperGenerator:
 
         # Check for uninstantiated class templates not parsed by pygccxml
         for hpp_file_path in self.package_info.source_hpp_files:
-            with open(hpp_file_path, "r") as hpp_file:
-                hpp = hpp_file.read()
 
-            # Strip comments
-            hpp = re.sub(r"//.*", "", hpp)
-            hpp = re.sub(r"/\*.*?\*/", " ", hpp, flags=re.DOTALL)
+            class_list = utils.find_classes_in_source_file(hpp_file_path)
 
-            # Extract class and struct declarations
-            regex = r"\b(class|struct)\s+(\w+)\s*(?::\s*([^{;]+))?\s*\{[^}]*\};"
-            classes = re.findall(regex, hpp)
-
-            for _, class_name, _ in classes:
+            for _, class_name, _ in class_list:
                 if class_name not in seen_class_names:
                     seen_class_names.add(class_name)
                     logging.info(f"Unknown class {class_name} from {hpp_file_path}")
@@ -252,6 +249,9 @@ class CppWrapperGenerator:
         """
         for module_info in self.package_info.module_info_collection:
             for class_info in module_info.class_info_collection:
+                # Skip excluded classes
+                if class_info.excluded:
+                    continue
                 for hpp_file_path in self.package_info.source_hpp_files:
                     hpp_file_name = os.path.basename(hpp_file_path)
                     if class_info.name == os.path.splitext(hpp_file_name)[0]:
@@ -327,16 +327,15 @@ class CppWrapperGenerator:
                     try:
                         class_decl = self.source_ns.class_(decl_name)
 
-                    except (
-                        pygccxml.declarations.runtime_errors.declaration_not_found_t
-                    ) as e1:
+                    except declaration_not_found_t as e1:
                         if (
                             class_info.template_signature is None
                             or "=" not in class_info.template_signature
                         ):
-                            raise LookupError(
+                            logging.error(
                                 f"Could not find declaration for class {decl_name}"
-                            ) from e1
+                            )
+                            raise e1
 
                         # If class has default args, try to compress the template signature
                         logging.warning(
@@ -345,7 +344,7 @@ class CppWrapperGenerator:
 
                         # Try to find the class without default template args
                         # e.g. for template <int A, int B=A> class Foo {};
-                        # convert Foo<2,2> -> Foo<2 >
+                        # Look for Foo<2> instead of Foo<2,2>
                         pos = 0
                         for i, s in enumerate(class_info.template_signature.split(",")):
                             if "=" in s:
@@ -356,12 +355,12 @@ class CppWrapperGenerator:
 
                         try:
                             class_decl = self.source_ns.class_(decl_name)
-                        except (
-                            pygccxml.declarations.runtime_errors.declaration_not_found_t
-                        ) as e2:
-                            raise LookupError(
+
+                        except declaration_not_found_t as e2:
+                            logging.error(
                                 f"Could not find declaration for class {decl_name}"
-                            ) from e2
+                            )
+                            raise e2
 
                         logging.info(f"Found {decl_name}")
 
