@@ -45,6 +45,10 @@ class CppModuleWrapperWriter:
         self.class_decls: List["class_t"] = []  # noqa: F821
 
         for class_info in self.module_info.class_info_collection:
+            # Skip excluded classes
+            if class_info.excluded:
+                continue
+
             self.class_decls.extend(class_info.decls)
 
     def write_module_wrapper(self) -> None:
@@ -82,6 +86,10 @@ class CppModuleWrapperWriter:
 
         # Add includes for class wrappers in the module
         for class_info in self.module_info.class_info_collection:
+            # Skip excluded classes
+            if class_info.excluded:
+                continue
+
             for py_name in class_info.py_names:
                 # Example: #include "Foo2_2.cppwg.hpp"
                 cpp_string += f'#include "{py_name}.{CPPWG_EXT}.hpp"\n'
@@ -105,6 +113,10 @@ class CppModuleWrapperWriter:
 
         # Add classes
         for class_info in self.module_info.class_info_collection:
+            # Skip excluded classes
+            if class_info.excluded:
+                continue
+
             for py_name in class_info.py_names:
                 # Example: register_Foo2_2_class(m);"
                 cpp_string += f"    register_{py_name}_class(m);\n"
@@ -130,7 +142,12 @@ class CppModuleWrapperWriter:
         logger = logging.getLogger()
 
         for class_info in self.module_info.class_info_collection:
-            logger.info(f"Generating wrapper for class {class_info.name}")
+            # Skip excluded classes
+            if class_info.excluded:
+                logger.info(f"Skipping class {class_info.name}")
+                continue
+
+            logger.info(f"Generating wrappers for class {class_info.name}")
 
             class_writer = CppClassWrapperWriter(
                 class_info,

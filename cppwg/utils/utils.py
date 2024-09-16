@@ -1,6 +1,7 @@
 """Utility functions for the cppwg package."""
 
-from typing import Any, Dict
+import re
+from typing import Any, Dict, List, Tuple
 
 from cppwg.utils.constants import (
     CPPWG_ALL_STRING,
@@ -26,6 +27,225 @@ def is_option_ALL(input_obj: Any, option_ALL_string: str = CPPWG_ALL_STRING) -> 
         True if the input is a string that matches the "ALL" indicator
     """
     return isinstance(input_obj, str) and input_obj.upper() == option_ALL_string
+
+
+def find_classes_in_source(
+    source: str,
+    class_name: str = None,
+    template_signature: str = None,
+) -> List[Tuple[str, str, str]]:
+    """
+    Find class definitions in a C++ source string.
+
+    Parameters
+    ----------
+    source : str
+        The source string
+    class_name : str
+        The class name to search for; if None, all classes are returned.
+    template_signature : str
+        The template signature to search for.
+
+    Returns
+    -------
+    List[Tuple[str, str, str]]
+        A list of (struct/class, class_name, inheritance) tuples
+    """
+    regex = r"\b"
+
+    if template_signature:
+        signature = strip_source_whitespace(template_signature)
+        regex += r"template\s*" + re.escape(signature) + r"\s*"
+
+    regex += r"(class|struct)\s+"
+
+    if class_name:
+        name = strip_source_whitespace(class_name)
+        regex += r"(" + re.escape(name) + r")"
+    else:
+        regex += r"(\w+)"
+
+    regex += r"\s*(?::\s*([^{;]+))?\s*"  # Inheritance
+    regex += r"\{"  # Start of class body
+
+    classes = re.findall(regex, source)
+
+    return classes
+
+
+def find_classes_in_source_file(
+    source_file_path: str,
+    class_name: str = None,
+    template_signature: str = None,
+) -> List[Tuple[str, str, str]]:
+    """
+    Find class definitions in a C++ source file.
+
+    Parameters
+    ----------
+    source : str
+        The path to the source file.
+    class_name : str
+        The class name to search for; if None, all classes are returned.
+    template_signature : str
+        The template signature to search for.
+
+    Returns
+    -------
+    List[Tuple[str, str, str]]
+        A list of (struct/class, class_name, inheritance) tuples
+    """
+    source = read_source_file(
+        source_file_path,
+        strip_comments=True,
+        strip_preprocessor=True,
+        strip_whitespace=True,
+    )
+
+    classes = find_classes_in_source(
+        source,
+        class_name=class_name,
+        template_signature=template_signature,
+    )
+
+    return classes
+
+
+def read_source_file(
+    source_file_path: str,
+    strip_comments: bool = True,
+    strip_preprocessor: bool = True,
+    strip_whitespace: bool = True,
+) -> str:
+    """
+    Read a C++ source file and strip it of non-essential elements.
+
+    Parameters
+    ----------
+    source_file_path : str
+        The path to the source file
+    strip_comments : bool
+        Strip comments from the source file
+    strip_preprocessor : bool
+        Strip preprocessor directive lines from the source file
+    strip_whitespace : bool
+        Strip whitespace from the source file
+
+    Returns
+    -------
+    str
+        The source file as a string
+    """
+    source = ""
+
+    with open(source_file_path, "r") as source_file:
+        source = "\n".join(line.rstrip() for line in source_file)
+
+    source = strip_source(
+        source,
+        strip_comments=strip_comments,
+        strip_preprocessor=strip_preprocessor,
+        strip_whitespace=strip_whitespace,
+    )
+
+    return source
+
+
+def strip_source(
+    source: str,
+    strip_comments: bool = True,
+    strip_preprocessor: bool = True,
+    strip_whitespace: bool = True,
+) -> str:
+    """
+    Strip elements from a C++ source string.
+
+    Parameters
+    ----------
+    source_file_path : str
+        The path to the source file
+    strip_comments : bool
+        Strip comments from the source file
+    strip_preprocessor : bool
+        Strip preprocessor directive lines from the source file
+    strip_whitespace : bool
+        Strip whitespace from the source file
+
+    Returns
+    -------
+    str
+        The stripped source string
+    """
+    if strip_comments:
+        source = strip_source_comments(source)
+
+    if strip_preprocessor:
+        source = strip_source_preprocessor(source)
+
+    if strip_whitespace:
+        source = strip_source_whitespace(source)
+
+    return source
+
+
+def strip_source_comments(source: str) -> str:
+    """
+    Strip comments from a C++ source string.
+
+    Parameters
+    ----------
+    source : str
+        The source string
+
+    Returns
+    -------
+    str
+        The source string with comments stripped
+    """
+    source = re.sub(r"//.*", "", source)
+    source = re.sub(r"/\*.*?\*/", " ", source, flags=re.DOTALL)
+
+    return source
+
+
+def strip_source_preprocessor(source: str) -> str:
+    """
+    Strip preprocessor directives from a C++ source string.
+
+    Parameters
+    ----------
+    source : str
+        The source string
+
+    Returns
+    -------
+    str
+        The source string with preprocessor directives stripped
+    """
+    source = re.sub(r"#.*", "", source)
+
+    return source
+
+
+def strip_source_whitespace(source: str) -> str:
+    """
+    Strip newlines and non-essential whitespace from a C++ source string.
+
+    Parameters
+    ----------
+    source : str
+        The source string
+
+    Returns
+    -------
+    str
+        The source string with whitespace stripped
+    """
+    source = re.sub(r"[\r\n]", " ", source)
+    source = re.sub(r"\b\s+|\s+\b", " ", source)
+    source = re.sub(r"\B\s+|\s+\B", "", source)
+
+    return source
 
 
 def substitute_bool_for_string(input_dict: Dict[Any, Any], key: Any) -> None:

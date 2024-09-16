@@ -2,12 +2,12 @@
 
 import logging
 import os
-import re
 from typing import Any, Dict, List
 
 from cppwg.input.base_info import BaseInfo
 from cppwg.input.class_info import CppClassInfo
 from cppwg.input.module_info import ModuleInfo
+from cppwg.utils import utils
 
 
 class CppInfoHelper:
@@ -48,9 +48,7 @@ class CppInfoHelper:
         """
         logger = logging.getLogger()
 
-        if isinstance(feature_info, CppClassInfo):
-            feature_type = "class"
-        else:
+        if not isinstance(feature_info, CppClassInfo):
             logger.error(f"Unsupported feature type: {type(feature_info)}")
             raise TypeError()
 
@@ -77,74 +75,41 @@ class CppInfoHelper:
         if len(template_substitutions) == 0:
             return
 
-        # Remove whitespaces, blank lines, and directives from the source file
-        whitespace_regex = re.compile(r"\s+")
-        with open(source_path, "r") as in_file:
-            lines = [re.sub(whitespace_regex, "", line) for line in in_file]
-            lines = [line for line in lines if line and not line.startswith("#")]
+        source = utils.read_source_file(
+            source_path,
+            strip_comments=True,
+            strip_preprocessor=True,
+            strip_whitespace=True,
+        )
 
-        # Search for template signatures in the source file lines
-        for idx in range(len(lines) - 1):
-            curr_line = lines[idx]
-            next_line = lines[idx + 1]
+        # Search for template signatures in the source file
+        for template_substitution in template_substitutions:
+            # Signature e.g. <unsigned DIM_A,unsigned DIM_B>
+            signature = template_substitution["signature"].strip()
 
-            for template_substitution in template_substitutions:
-                # e.g. template<unsignedDIM_A,unsignedDIM_B>
-                signature: str = "template" + template_substitution[
-                    "signature"
-                ].replace(" ", "")
+            class_list = utils.find_classes_in_source(
+                source,
+                class_name=feature_info.name,
+                template_signature=signature,
+            )
 
-                # e.g. [[2,2], [3,3]]
-                replacement: List[List[Any]] = template_substitution["replacement"]
+            if class_list:
+                # Replacement e.g. [[2,2], [3,3]]
+                replacement = template_substitution["replacement"]
 
-                if signature in curr_line:
-                    feature_string = feature_type + feature_info.name  # e.g. "classFoo"
+                feature_info.template_arg_lists = replacement
+                feature_info.template_signature = signature
 
-                    declaration_found = False
-
-                    if feature_string == next_line:
-                        # template<unsignedDIM_A,unsignedDIM_B>
-                        # classFoo
-                        declaration_found = True
-
-                    elif next_line.startswith(feature_string + "{"):
-                        # template<unsignedDIM_A,unsignedDIM_B>
-                        # classFoo{
-                        declaration_found = True
-
-                    elif next_line.startswith(feature_string + ":"):
-                        # template<unsignedDIM_A,unsignedDIM_B>
-                        # classFoo:publicBar<DIM_A,DIM_B>
-                        declaration_found = True
-
-                    elif curr_line == signature + feature_string:
-                        # template<unsignedDIM_A,unsignedDIM_B>classFoo
-                        declaration_found = True
-
-                    elif curr_line.startswith(signature + feature_string + "{"):
-                        # template<unsignedDIM_A,unsignedDIM_B>classFoo{
-                        declaration_found = True
-
-                    elif curr_line.startswith(signature + feature_string + ":"):
-                        # template<unsignedDIM_A,unsignedDIM_B>classFoo:publicBar<DIM_A,DIM_B>
-                        declaration_found = True
-
-                    if declaration_found:
-                        feature_info.template_arg_lists = replacement
-                        feature_info.template_signature = template_substitution[
-                            "signature"
-                        ]
-
-                        # Extract ["DIM_A", "DIM_B"] from "<unsigned A, unsigned DIM_B=DIM_A>"
-                        template_params = []
-                        for tp in template_substitution["signature"].split(","):
-                            template_params.append(
-                                tp.strip()
-                                .replace("<", "")
-                                .replace(">", "")
-                                .split(" ")[1]
-                                .split("=")[0]
-                                .strip()
-                            )
-                        feature_info.template_params = template_params
-                        break
+                # Extract ["DIM_A", "DIM_B"] from "<unsigned DIM_A,unsigned DIM_B=DIM_A>"
+                template_params = []
+                for tp in signature.split(","):
+                    template_params.append(
+                        tp.strip()
+                        .replace("<", "")
+                        .replace(">", "")
+                        .split(" ")[1]
+                        .split("=")[0]
+                        .strip()
+                    )
+                feature_info.template_params = template_params
+                break

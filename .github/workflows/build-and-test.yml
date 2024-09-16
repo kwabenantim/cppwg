@@ -52,8 +52,14 @@ jobs:
           cppwg src/ \
             --wrapper_root wrapper/ \
             --package_info wrapper/package_info.yaml \
-            --includes src/*/ \
-            --std c++17
+            --includes src/*/ extern/*/ \
+            --std c++17 \
+            --logfile cppwg.log
+
+      - name: Check for new classes
+        run: |
+          cd examples/shapes
+          cat cppwg.log | grep "Unknown class"
 
       - name: Build Python module
         run: |

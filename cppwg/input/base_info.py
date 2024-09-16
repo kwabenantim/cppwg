@@ -36,6 +36,8 @@ class BaseInfo:
         Text to add at the top of all wrappers.
     custom_generator : str, optional
         A custom generator for the feature.
+    excluded: bool
+        Exclude this feature.
     excluded_methods : List[str]
         Do not include these methods.
     excluded_variables : List[str]
@@ -64,6 +66,7 @@ class BaseInfo:
         self.extra_code: List[str] = []
         self.prefix_code: List[str] = []
         self.custom_generator: Optional[str] = None
+        self.excluded = False
         self.excluded_methods: List[str] = []
         self.excluded_variables: List[str] = []
         self.arg_type_excludes: List[str] = []

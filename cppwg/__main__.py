@@ -69,6 +69,16 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "-l",
+        "--logfile",
+        type=str,
+        nargs="?",
+        default=None,
+        const="cppwg.log",
+        help="Output log messages to a file.",
+    )
+
+    parser.add_argument(
         "-v",
         "--version",
         action="version",
@@ -110,9 +120,13 @@ def main() -> None:
     """Generate wrappers from command line arguments."""
     args = parse_args()
 
+    log_handlers = [logging.StreamHandler()]
+    if args.logfile:
+        log_handlers.append(logging.FileHandler(args.logfile))
+
     logging.basicConfig(
         format="%(levelname)s %(message)s",
-        handlers=[logging.StreamHandler()],
+        handlers=log_handlers,
     )
     logger = logging.getLogger()
 

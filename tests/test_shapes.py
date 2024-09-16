@@ -62,19 +62,21 @@ class TestShapes(unittest.TestCase):
         # Set paths to the shapes code, reference and generated wrappers, etc.
         shapes_root = os.path.abspath("examples/shapes")
         shapes_src = os.path.join(shapes_root, "src")
+        extern_src = os.path.join(shapes_root, "extern")
 
         wrapper_root_ref = os.path.join(shapes_root, "wrapper")
         wrapper_root_gen = os.path.join(shapes_root, "gen_wrapper")
 
         self.assertTrue(os.path.isdir(shapes_root))
         self.assertTrue(os.path.isdir(shapes_src))
+        self.assertTrue(os.path.isdir(extern_src))
         self.assertTrue(os.path.isdir(wrapper_root_ref))
 
         generate_script = os.path.abspath("cppwg/__main__.py")
         package_info_path = os.path.join(wrapper_root_ref, "package_info.yaml")
         self.assertTrue(os.path.isfile(package_info_path))
 
-        includes = glob(shapes_src + "/*/")
+        includes = glob(shapes_src + "/*/") + glob(extern_src + "/*/")
 
         # Generate the wrappers
         subprocess.call(

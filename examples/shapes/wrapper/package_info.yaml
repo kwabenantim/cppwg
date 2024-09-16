@@ -70,6 +70,8 @@ modules:
       - name: Shape
       - name: Cuboid
       - name: Rectangle
+      - name: Triangle
+        excluded: True # Exclude this class from wrapping.
 
   - name: mesh
     source_locations:

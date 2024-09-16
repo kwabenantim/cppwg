@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import pygccxml
+from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
 from cppwg.input.class_info import CppClassInfo
 from cppwg.input.free_function_info import CppFreeFunctionInfo
@@ -18,6 +19,7 @@ from cppwg.input.package_info import PackageInfo
 from cppwg.parsers.package_info_parser import PackageInfoParser
 from cppwg.parsers.source_parser import CppSourceParser
 from cppwg.templates import pybind11_default as wrapper_templates
+from cppwg.utils import utils
 from cppwg.utils.constants import (
     CPPWG_DEFAULT_WRAPPER_DIR,
     CPPWG_EXT,
@@ -200,8 +202,43 @@ class CppWrapperGenerator:
         for module_info in self.package_info.module_info_collection:
             info_helper = CppInfoHelper(module_info)
             for class_info in module_info.class_info_collection:
+                # Skip excluded classes
+                if class_info.excluded:
+                    continue
                 info_helper.extract_templates_from_source(class_info)
                 class_info.update_names()
+
+    def log_unknown_classes(self) -> None:
+        """Get unwrapped classes."""
+        all_class_decls = self.source_ns.classes(allow_empty=True)
+
+        seen_class_names = set()
+        for module_info in self.package_info.module_info_collection:
+            for class_info in module_info.class_info_collection:
+                seen_class_names.add(class_info.name)
+                if class_info.decls:
+                    seen_class_names.update(decl.name for decl in class_info.decls)
+
+        for decl in all_class_decls:
+            if (
+                Path(self.source_root) in Path(decl.location.file_name).parents
+                and decl.name not in seen_class_names
+            ):
+                seen_class_names.add(decl.name)
+                seen_class_names.add(decl.name.split("<")[0].strip())
+                logging.info(
+                    f"Unknown class {decl.name} from {decl.location.file_name}:{decl.location.line}"
+                )
+
+        # Check for uninstantiated class templates not parsed by pygccxml
+        for hpp_file_path in self.package_info.source_hpp_files:
+
+            class_list = utils.find_classes_in_source_file(hpp_file_path)
+
+            for _, class_name, _ in class_list:
+                if class_name not in seen_class_names:
+                    seen_class_names.add(class_name)
+                    logging.info(f"Unknown class {class_name} from {hpp_file_path}")
 
     def map_classes_to_hpp_files(self) -> None:
         """
@@ -212,6 +249,9 @@ class CppWrapperGenerator:
         """
         for module_info in self.package_info.module_info_collection:
             for class_info in module_info.class_info_collection:
+                # Skip excluded classes
+                if class_info.excluded:
+                    continue
                 for hpp_file_path in self.package_info.source_hpp_files:
                     hpp_file_name = os.path.basename(hpp_file_path)
                     if class_info.name == os.path.splitext(hpp_file_name)[0]:
@@ -275,6 +315,10 @@ class CppWrapperGenerator:
         """
         for module_info in self.package_info.module_info_collection:
             for class_info in module_info.class_info_collection:
+                # Skip excluded classes
+                if class_info.excluded:
+                    continue
+
                 class_info.decls: List["class_t"] = []  # noqa: F821
 
                 for class_cpp_name in class_info.cpp_names:
@@ -283,30 +327,42 @@ class CppWrapperGenerator:
                     try:
                         class_decl = self.source_ns.class_(decl_name)
 
-                    except pygccxml.declarations.runtime_errors.declaration_not_found_t:
+                    except declaration_not_found_t as e1:
+                        if (
+                            class_info.template_signature is None
+                            or "=" not in class_info.template_signature
+                        ):
+                            logging.error(
+                                f"Could not find declaration for class {decl_name}"
+                            )
+                            raise e1
+
+                        # If class has default args, try to compress the template signature
                         logging.warning(
-                            f"Could not find declaration for {decl_name}: trying partial match."
+                            f"Could not find declaration for class {decl_name}: trying for a partial match."
                         )
 
-                        if "=" in class_info.template_signature:
-                            # Try to find the class without default template args
-                            # e.g. for template <int A, int B=A> class Foo {};
-                            # convert Foo<2,2> -> Foo<2 >
-                            pos = 0
-                            for i, s in enumerate(
-                                class_info.template_signature.split(",")
-                            ):
-                                if "=" in s:
-                                    pos = i
-                                    break
+                        # Try to find the class without default template args
+                        # e.g. for template <int A, int B=A> class Foo {};
+                        # Look for Foo<2> instead of Foo<2,2>
+                        pos = 0
+                        for i, s in enumerate(class_info.template_signature.split(",")):
+                            if "=" in s:
+                                pos = i
+                                break
 
-                            decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
+                        decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
+
+                        try:
                             class_decl = self.source_ns.class_(decl_name)
 
-                            logging.info(f"Found {decl_name}")
+                        except declaration_not_found_t as e2:
+                            logging.error(
+                                f"Could not find declaration for class {decl_name}"
+                            )
+                            raise e2
 
-                        else:
-                            logging.error(f"Could not find declaration for {decl_name}")
+                        logging.info(f"Found {decl_name}")
 
                     class_info.decls.append(class_decl)
 
@@ -391,6 +447,9 @@ class CppWrapperGenerator:
 
         # Add declarations to free function info objects
         self.add_free_function_decls()
+
+        # Log list of unknown classes in the source root
+        self.log_unknown_classes()
 
         # Write all the wrappers required
         self.write_wrappers()
