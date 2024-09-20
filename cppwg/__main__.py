@@ -120,21 +120,29 @@ def main() -> None:
     """Generate wrappers from command line arguments."""
     args = parse_args()
 
-    log_handlers = [logging.StreamHandler()]
+    log_handlers = []
+
+    # Set up logging
+    stream_handler = logging.StreamHandler()
+    if args.quiet:
+        stream_handler.setLevel(logging.ERROR)
+    else:
+        stream_handler.setLevel(logging.INFO)
+    log_handlers.append(stream_handler)
+
     if args.logfile:
-        log_handlers.append(logging.FileHandler(args.logfile))
+        file_handler = logging.FileHandler(args.logfile, "w+")
+        file_handler.setLevel(logging.INFO)
+        log_handlers.append(file_handler)
 
     logging.basicConfig(
         format="%(levelname)s %(message)s",
         handlers=log_handlers,
     )
     logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
 
-    if args.quiet:
-        logger.setLevel(logging.ERROR)
-    else:
-        logger.setLevel(logging.INFO)
-
+    # Generate the wrappers
     generate(args)
 
 
