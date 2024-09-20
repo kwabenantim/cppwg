@@ -99,9 +99,9 @@ class CppWrapperGenerator:
         logger.info(f"pygccxml version {pygccxml.__version__}")
 
         # Sanitize castxml_cflags
-        self.castxml_cflags: str = ""
+        self.castxml_cflags = "-w"
         if castxml_cflags:
-            self.castxml_cflags = castxml_cflags
+            self.castxml_cflags = f"{self.castxml_cflags} {castxml_cflags}"
 
         # Sanitize source_root
         self.source_root: str = os.path.abspath(source_root)
