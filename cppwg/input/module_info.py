@@ -80,7 +80,7 @@ class ModuleInfo(BaseInfo):
     def sort_classes(self) -> None:
         """Sort the class info collection in inheritance order."""
 
-        def compare(class_info_0: "ClassInfo", class_info_1: "ClassInfo"):
+        def compare(class_info_0: "ClassInfo", class_info_1: "ClassInfo"):  # noqa: F821
             # Sort classes with no declarations to the bottom
             if class_info_0.decls == class_info_1.decls:
                 return 0
