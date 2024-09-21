@@ -67,17 +67,17 @@ modules:
   - name: primitives
     source_locations:
     classes:
-      - name: Shape
       - name: Cuboid
       - name: Rectangle
+      - name: Shape
       - name: Triangle
         excluded: True # Exclude this class from wrapping.
 
   - name: mesh
     source_locations:
     classes:
-      - name: AbstractMesh
       - name: ConcreteMesh
+      - name: AbstractMesh
 
 # Text to add at the top of all wrappers
 prefix_text: |

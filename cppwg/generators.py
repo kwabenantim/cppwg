@@ -366,6 +366,9 @@ class CppWrapperGenerator:
 
                     class_info.decls.append(class_decl)
 
+            # Sort the class info collection in inheritance order
+            module_info.sort_classes()
+
     def add_discovered_free_functions(self) -> None:
         """
         Add discovered free function.

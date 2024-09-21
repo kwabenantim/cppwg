@@ -1,6 +1,7 @@
 """Module information structure."""
 
 import os
+from functools import cmp_to_key
 from typing import Any, Dict, List, Optional
 
 from cppwg.input.base_info import BaseInfo
@@ -75,3 +76,29 @@ class ModuleInfo(BaseInfo):
                 return True
 
         return False
+
+    def sort_classes(self) -> None:
+        """Sort the class info collection in inheritance order."""
+
+        def compare(class_info_0, class_info_1):
+            if class_info_0.decls == class_info_1.decls:
+                return 0
+            if class_info_0.decls is None:
+                return 1
+            if class_info_1.decls is None:
+                return -1
+
+            bases_0 = [
+                base.related_class for decl in class_info_0.decls for base in decl.bases
+            ]
+            bases_1 = [
+                base.related_class for decl in class_info_1.decls for base in decl.bases
+            ]
+
+            child_0 = int(any(base in class_info_1.decls for base in bases_0))
+            child_1 = int(any(base in class_info_0.decls for base in bases_1))
+
+            return child_0 - child_1
+
+        self.class_info_collection.sort(key=lambda x: x.name)
+        self.class_info_collection.sort(key=cmp_to_key(compare))

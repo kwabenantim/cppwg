@@ -8,4 +8,5 @@ exclude=
     examples,
     cppwg/templates,
     tests,
+    venv,
 docstring-convention=numpy
