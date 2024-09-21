@@ -1,6 +1,9 @@
 """Class information structure."""
 
+import logging
 from typing import Any, Dict, List, Optional
+
+from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
 from cppwg.input.cpp_type_info import CppTypeInfo
 
@@ -15,6 +18,8 @@ class CppClassInfo(CppTypeInfo):
         The C++ names of the class e.g. ["Foo<2,2>", "Foo<3,3>"]
     py_names : List[str]
         The Python names of the class e.g. ["Foo2_2", "Foo3_3"]
+    decls : pygccxml.declarations.declaration_t
+        Declarations for this type's base class, one per template instantiation
     """
 
     def __init__(self, name: str, class_config: Optional[Dict[str, Any]] = None):
@@ -23,6 +28,72 @@ class CppClassInfo(CppTypeInfo):
 
         self.cpp_names: List[str] = None
         self.py_names: List[str] = None
+        self.base_decls: Optional[List["declaration_t"]] = None  # noqa: F821
+
+    def update_from_ns(self, ns: "namespace_t") -> None:  # noqa: F821
+        """
+        Update the class information from the source namespace.
+
+        Adds the class declarations and base class declarations.
+
+        Parameters
+        ----------
+        ns : pygccxml.declarations.namespace_t
+            The source namespace
+        """
+        logger = logging.getLogger()
+
+        # Skip excluded classes
+        if self.excluded:
+            return
+
+        self.decls = []
+
+        for class_cpp_name in self.cpp_names:
+            decl_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
+
+            try:
+                class_decl = ns.class_(decl_name)
+
+            except declaration_not_found_t as e1:
+                if (
+                    self.template_signature is None
+                    or "=" not in self.template_signature
+                ):
+                    logger.error(f"Could not find declaration for class {decl_name}")
+                    raise e1
+
+                # If class has default args, try to compress the template signature
+                logger.warning(
+                    f"Could not find declaration for class {decl_name}: trying for a partial match."
+                )
+
+                # Try to find the class without default template args
+                # e.g. for template <int A, int B=A> class Foo {};
+                # Look for Foo<2> instead of Foo<2,2>
+                pos = 0
+                for i, s in enumerate(self.template_signature.split(",")):
+                    if "=" in s:
+                        pos = i
+                        break
+
+                decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
+
+                try:
+                    class_decl = ns.class_(decl_name)
+
+                except declaration_not_found_t as e2:
+                    logger.error(f"Could not find declaration for class {decl_name}")
+                    raise e2
+
+                logger.info(f"Found {decl_name}")
+
+            self.decls.append(class_decl)
+
+        # Update the base class declarations
+        self.base_decls = [
+            base.related_class for decl in self.decls for base in decl.bases
+        ]
 
     def update_py_names(self) -> None:
         """

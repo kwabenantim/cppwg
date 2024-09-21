@@ -89,21 +89,32 @@ class ModuleInfo(BaseInfo):
             if class_info_1.decls is None:
                 return -1
 
-            # Get the base classes for each class
-            bases_0 = [
-                base.related_class for decl in class_info_0.decls for base in decl.bases
-            ]
-            bases_1 = [
-                base.related_class for decl in class_info_1.decls for base in decl.bases
-            ]
-
             # 1 if class_0 is a child of class_1
-            child_0 = int(any(base in class_info_1.decls for base in bases_0))
+            child_0 = int(
+                any(base in class_info_1.decls for base in class_info_0.base_decls)
+            )
 
             # 1 if class_1 is a child of class 0
-            child_1 = int(any(base in class_info_0.decls for base in bases_1))
+            child_1 = int(
+                any(base in class_info_0.decls for base in class_info_1.base_decls)
+            )
 
             return child_0 - child_1
 
         self.class_info_collection.sort(key=lambda x: x.name)
         self.class_info_collection.sort(key=cmp_to_key(compare))
+
+    def update_from_ns(self, ns: "namespace_t") -> None:  # noqa: F821
+        """
+        Update class info objects with information from the source namespace.
+
+        Parameters
+        ----------
+        ns : pygccxml.declarations.namespace_t
+            The source namespace
+        """
+        for class_info in self.class_info_collection:
+            class_info.update_from_ns(ns)
+
+        # Sort the class info collection in inheritance order
+        self.sort_classes()

@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import List, Optional
 
 import pygccxml
-from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
 from cppwg.input.class_info import CppClassInfo
 from cppwg.input.free_function_info import CppFreeFunctionInfo
@@ -176,6 +175,8 @@ class CppWrapperGenerator:
         patterns e.g. "*.hpp". Skip the wrapper root and wrappers to
         avoid pollution.
         """
+        logger = logging.getLogger()
+
         for root, _, filenames in os.walk(self.source_root, followlinks=True):
             for pattern in self.package_info.source_hpp_patterns:
                 for filename in fnmatch.filter(filenames, pattern):
@@ -194,7 +195,7 @@ class CppWrapperGenerator:
 
         # Check if any source files were found
         if not self.package_info.source_hpp_files:
-            logging.error(f"No header files found in source root: {self.source_root}")
+            logger.error(f"No header files found in source root: {self.source_root}")
             raise FileNotFoundError()
 
     def extract_templates_from_source(self) -> None:
@@ -210,6 +211,8 @@ class CppWrapperGenerator:
 
     def log_unknown_classes(self) -> None:
         """Get unwrapped classes."""
+        logger = logging.getLogger()
+
         all_class_decls = self.source_ns.classes(allow_empty=True)
 
         seen_class_names = set()
@@ -226,7 +229,7 @@ class CppWrapperGenerator:
             ):
                 seen_class_names.add(decl.name)
                 seen_class_names.add(decl.name.split("<")[0].strip())
-                logging.info(
+                logger.info(
                     f"Unknown class {decl.name} from {decl.location.file_name}:{decl.location.line}"
                 )
 
@@ -238,7 +241,7 @@ class CppWrapperGenerator:
             for _, class_name, _ in class_list:
                 if class_name not in seen_class_names:
                     seen_class_names.add(class_name)
-                    logging.info(f"Unknown class {class_name} from {hpp_file_path}")
+                    logger.info(f"Unknown class {class_name} from {hpp_file_path}")
 
     def map_classes_to_hpp_files(self) -> None:
         """
@@ -314,60 +317,7 @@ class CppWrapperGenerator:
         declarations found by pygccxml in the C++ source code.
         """
         for module_info in self.package_info.module_info_collection:
-            for class_info in module_info.class_info_collection:
-                # Skip excluded classes
-                if class_info.excluded:
-                    continue
-
-                class_info.decls: List["class_t"] = []  # noqa: F821
-
-                for class_cpp_name in class_info.cpp_names:
-                    decl_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
-
-                    try:
-                        class_decl = self.source_ns.class_(decl_name)
-
-                    except declaration_not_found_t as e1:
-                        if (
-                            class_info.template_signature is None
-                            or "=" not in class_info.template_signature
-                        ):
-                            logging.error(
-                                f"Could not find declaration for class {decl_name}"
-                            )
-                            raise e1
-
-                        # If class has default args, try to compress the template signature
-                        logging.warning(
-                            f"Could not find declaration for class {decl_name}: trying for a partial match."
-                        )
-
-                        # Try to find the class without default template args
-                        # e.g. for template <int A, int B=A> class Foo {};
-                        # Look for Foo<2> instead of Foo<2,2>
-                        pos = 0
-                        for i, s in enumerate(class_info.template_signature.split(",")):
-                            if "=" in s:
-                                pos = i
-                                break
-
-                        decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
-
-                        try:
-                            class_decl = self.source_ns.class_(decl_name)
-
-                        except declaration_not_found_t as e2:
-                            logging.error(
-                                f"Could not find declaration for class {decl_name}"
-                            )
-                            raise e2
-
-                        logging.info(f"Found {decl_name}")
-
-                    class_info.decls.append(class_decl)
-
-            # Sort the class info collection in inheritance order
-            module_info.sort_classes()
+            module_info.update_from_ns(self.source_ns)
 
     def add_discovered_free_functions(self) -> None:
         """
