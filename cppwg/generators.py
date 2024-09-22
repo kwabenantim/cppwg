@@ -19,6 +19,7 @@ from cppwg.utils.constants import (
     CPPWG_DEFAULT_WRAPPER_DIR,
     CPPWG_HEADER_COLLECTION_FILENAME,
 )
+from cppwg.version import __version__ as cppwg_version
 from cppwg.writers.header_collection_writer import CppHeaderCollectionWriter
 from cppwg.writers.package_writer import CppPackageWrapperWriter
 
@@ -57,6 +58,8 @@ class CppWrapperGenerator:
         castxml_cflags: Optional[str] = None,
     ):
         logger = logging.getLogger()
+
+        logger.info(f"cppwg version {cppwg_version}")
 
         # Check that castxml_binary exists and is executable
         self.castxml_binary: str = ""

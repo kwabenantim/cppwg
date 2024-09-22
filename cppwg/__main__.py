@@ -3,7 +3,8 @@
 import argparse
 import logging
 
-from cppwg import CppWrapperGenerator, __version__
+from cppwg import CppWrapperGenerator
+from cppwg.version import __version__
 
 
 def parse_args() -> argparse.Namespace:
