@@ -1,4 +1,4 @@
-"""Contains the main interface for generating Python wrappers."""
+"""The main interface for generating Python wrappers."""
 
 import logging
 import os
@@ -20,7 +20,7 @@ from cppwg.utils.constants import (
     CPPWG_HEADER_COLLECTION_FILENAME,
 )
 from cppwg.writers.header_collection_writer import CppHeaderCollectionWriter
-from cppwg.writers.module_writer import CppModuleWrapperWriter
+from cppwg.writers.package_writer import CppPackageWrapperWriter
 
 
 class CppWrapperGenerator:
@@ -240,15 +240,12 @@ class CppWrapperGenerator:
 
     def write_wrappers(self) -> None:
         """
-        Write all the wrappers required for the package.
+        Write the wrapper code for the package.
         """
-        for module_info in self.package_info.module_info_collection:
-            module_writer = CppModuleWrapperWriter(
-                module_info,
-                wrapper_templates.template_collection,
-                self.wrapper_root,
-            )
-            module_writer.write()
+        package_writer = CppPackageWrapperWriter(
+            self.package_info, wrapper_templates.template_collection, self.wrapper_root
+        )
+        package_writer.write()
 
     def generate_wrappers(self) -> None:
         """
@@ -275,5 +272,5 @@ class CppWrapperGenerator:
         # Log list of unknown classes in the source root
         self.log_unknown_classes()
 
-        # Write all the wrappers required
+        #  Write the wrapper code for the package
         self.write_wrappers()
