@@ -1,6 +1,7 @@
 """Module information structure."""
 
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from cppwg.input.base_info import BaseInfo
@@ -51,7 +52,9 @@ class ModuleInfo(BaseInfo):
 
     @property
     def parent(self) -> "PackageInfo":  # noqa: F821
-        """Returns the parent package info object."""
+        """
+        Returns the associated package info object.
+        """
         return self.package_info
 
     def is_decl_in_source_path(self, decl: "declaration_t") -> bool:  # noqa: F821
@@ -73,51 +76,50 @@ class ModuleInfo(BaseInfo):
 
         for source_location in self.source_locations:
             full_path = os.path.join(self.package_info.source_root, source_location)
-            if full_path in decl.location.file_name:
+            if Path(full_path) in Path(decl.location.file_name).parents:
                 return True
 
         return False
 
     def sort_classes(self) -> None:
-        """Sort the class info collection in order of dependence."""
+        """
+        Sort the class info collection in order of dependence.
+        """
         self.class_info_collection.sort(key=lambda x: x.name)
 
-        order_changed = True
-        while order_changed:
-            order_changed = False
+        i = 0
+        n = len(self.class_info_collection)
+        while i < n - 1:
+            cls_i = self.class_info_collection[i]
+            ii = i  # Tracks destination of cls_i
+            j_pos = []  # Tracks positions of cls_i's dependents
 
-            i = 0
-            n = len(self.class_info_collection)
-            while i < n - 1:
-                cls_i = self.class_info_collection[i]
-                ii = i  # destination of cls_i
-                child_pos = []  # positions of cls_i's children
+            for j in range(i + 1, n):
+                cls_j = self.class_info_collection[j]
+                i_requires_j = cls_i.requires(cls_j)
+                j_requires_i = cls_j.requires(cls_i)
+                if cls_i.is_child_of(cls_j) or (i_requires_j and not j_requires_i):
+                    # Position cls_i after all classes it depends on,
+                    # ignoring forward declaration cycles
+                    ii = j
+                elif cls_j.is_child_of(cls_i) or (j_requires_i and not i_requires_j):
+                    # Collect positions of cls_i's dependents
+                    j_pos.append(j)
 
-                for j in range(i + 1, n):
-                    cls_j = self.class_info_collection[j]
-                    if cls_i.is_child_of(cls_j):
-                        # sort by inheritance
-                        ii = j
-                    elif cls_i.requires(cls_j) and not cls_j.requires(cls_i):
-                        # sort by dependence, ignoring forward declaration cycles
-                        ii = j
-                    elif cls_j.is_child_of(cls_i):
-                        child_pos.append(j)
+            if ii <= i:
+                i += 1
+                continue  # No change in position
 
-                if ii <= i:
-                    i += 1
-                    continue  # no change in cls_i's position
+            # Move cls_i into new position ii
+            cls_i = self.class_info_collection.pop(i)
+            self.class_info_collection.insert(ii, cls_i)
 
-                cls_i = self.class_info_collection.pop(i)
-                self.class_info_collection.insert(ii, cls_i)
-
-                for j, idx in enumerate(child_pos):
-                    if j > ii:
-                        break  # children already positioned after cls_i
-                    cls_j = self.class_info_collection.pop(j - 1 - idx)
-                    self.class_info_collection.insert(ii + idx, cls_j)
-
-                order_changed = True
+            # Move dependents into positions after ii
+            for j, idx in enumerate(j_pos):
+                if j > ii:
+                    break  # Rest of dependents already positioned after ii
+                cls_j = self.class_info_collection.pop(j - 1 - idx)
+                self.class_info_collection.insert(ii + idx, cls_j)
 
     def update_from_ns(self, source_ns: "namespace_t") -> None:  # noqa: F821
         """
