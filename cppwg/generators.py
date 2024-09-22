@@ -11,7 +11,6 @@ from typing import List, Optional
 
 import pygccxml
 
-from cppwg.input.info_helper import CppInfoHelper
 from cppwg.input.package_info import PackageInfo
 from cppwg.parsers.package_info_parser import PackageInfoParser
 from cppwg.parsers.source_parser import CppSourceParser
@@ -196,19 +195,10 @@ class CppWrapperGenerator:
             logger.error(f"No header files found in source root: {self.source_root}")
             raise FileNotFoundError()
 
-    def extract_templates_from_source(self) -> None:
-        """Extract template arguments for each class from the associated source file."""
-        for module_info in self.package_info.module_info_collection:
-            info_helper = CppInfoHelper(module_info)
-            for class_info in module_info.class_info_collection:
-                # Skip excluded classes
-                if class_info.excluded:
-                    continue
-                info_helper.extract_templates_from_source(class_info)
-                class_info.update_names()
-
     def log_unknown_classes(self) -> None:
-        """Get unwrapped classes."""
+        """
+        Log unwrapped classes.
+        """
         logger = logging.getLogger()
 
         all_class_decls = self.source_ns.classes(allow_empty=True)
@@ -277,7 +267,9 @@ class CppWrapperGenerator:
         self.source_ns = source_parser.parse()
 
     def parse_package_info(self) -> None:
-        """Parse the package info file to create a PackageInfo object."""
+        """
+        Parse the package info file to create a PackageInfo object.
+        """
         if self.package_info_path:
             # If a package info file exists, parse it to create a PackageInfo object
             info_parser = PackageInfoParser(self.package_info_path, self.source_root)
@@ -288,12 +280,23 @@ class CppWrapperGenerator:
             self.package_info = PackageInfo("cppwg_package", self.source_root)
 
     def update_from_ns(self) -> None:
-        """Update modules with information from the source namespace."""
+        """
+        Update modules with information from the parsed source namespace.
+        """
         for module_info in self.package_info.module_info_collection:
             module_info.update_from_ns(self.source_ns)
 
+    def update_from_source(self) -> None:
+        """
+        Update modules with information from the source headers.
+        """
+        for module_info in self.package_info.module_info_collection:
+            module_info.update_from_source()
+
     def write_header_collection(self) -> None:
-        """Write the header collection to file."""
+        """
+        Write the header collection to file.
+        """
         header_collection_writer = CppHeaderCollectionWriter(
             self.package_info,
             self.wrapper_root,
@@ -302,7 +305,9 @@ class CppWrapperGenerator:
         header_collection_writer.write()
 
     def write_wrappers(self) -> None:
-        """Write all the wrappers required for the package."""
+        """
+        Write all the wrappers required for the package.
+        """
         for module_info in self.package_info.module_info_collection:
             module_writer = CppModuleWrapperWriter(
                 module_info,
@@ -312,7 +317,9 @@ class CppWrapperGenerator:
             module_writer.write()
 
     def generate_wrapper(self) -> None:
-        """Parse input yaml and C++ source to generate Python wrappers."""
+        """
+        Parse input yaml and C++ source to generate Python wrappers.
+        """
         # Parse the input yaml for package, module, and class information
         self.parse_package_info()
 
@@ -322,8 +329,8 @@ class CppWrapperGenerator:
         # Map each class to a header file
         self.map_classes_to_hpp_files()
 
-        # Attempt to extract templates for each class from the source files
-        self.extract_templates_from_source()
+        # Update modules with information from the source headers
+        self.update_from_source()
 
         # Write the header collection to file
         self.write_header_collection()
@@ -331,7 +338,7 @@ class CppWrapperGenerator:
         # Parse the headers with pygccxml and castxml
         self.parse_header_collection()
 
-        # Update modules with information from the source namespace
+        # Update modules with information from the parsed source namespace
         self.update_from_ns()
 
         # Log list of unknown classes in the source root

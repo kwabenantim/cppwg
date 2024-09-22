@@ -8,6 +8,7 @@ from pygccxml.declarations.matchers import access_type_matcher_t
 from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
 from cppwg.input.cpp_type_info import CppTypeInfo
+from cppwg.utils import utils
 
 
 class CppClassInfo(CppTypeInfo):
@@ -31,6 +32,69 @@ class CppClassInfo(CppTypeInfo):
         self.cpp_names: List[str] = None
         self.py_names: List[str] = None
         self.base_decls: Optional[List["declaration_t"]] = None  # noqa: F821
+
+    def extract_templates_from_source(self) -> None:
+        """
+        Extract template args from the associated source file.
+
+        Search the source file for a class signature matching one of the
+        template signatures defined in `template_substitutions`. If a match
+        is found, set the corresponding template arg replacements for the class.
+        """
+        # Skip if there are template args attached directly to the class
+        if self.template_arg_lists:
+            return
+
+        # Skip if there is no source file
+        source_path = self.source_file_full_path
+        if not source_path:
+            return
+
+        # Get list of template substitutions applicable to this class
+        # e.g. [ {"signature":"<int A, int B>", "replacement":[[2,2], [3,3]]} ]
+        substitutions = self.hierarchy_attribute_gather("template_substitutions")
+
+        # Skip if there are no applicable template substitutions
+        if not substitutions:
+            return
+
+        source = utils.read_source_file(
+            source_path,
+            strip_comments=True,
+            strip_preprocessor=True,
+            strip_whitespace=True,
+        )
+
+        # Search for template signatures in the source file
+        for substitution in substitutions:
+            # Signature e.g. <int A, int B>
+            signature = substitution["signature"].strip()
+
+            class_list = utils.find_classes_in_source(
+                source,
+                class_name=self.name,
+                template_signature=signature,
+            )
+
+            if class_list:
+                self.template_signature = signature
+
+                # Replacement e.g. [[2,2], [3,3]]
+                self.template_arg_lists = substitution["replacement"]
+
+                # Extract parameters ["A", "B"] from "<int A, int B = A>"
+                self.template_params = []
+                for part in signature.split(","):
+                    param = (
+                        part.strip()
+                        .replace("<", "")
+                        .replace(">", "")
+                        .split(" ")[1]
+                        .split("=")[0]
+                        .strip()
+                    )
+                    self.template_params.append(param)
+                break
 
     def is_child_of(self, other: "ClassInfo") -> bool:  # noqa: F821
         """
@@ -151,6 +215,17 @@ class CppClassInfo(CppTypeInfo):
             base.related_class for decl in self.decls for base in decl.bases
         ]
 
+    def update_from_source(self) -> None:
+        """
+        Update class with information from the source headers.
+        """
+        # Skip excluded classes
+        if self.excluded:
+            return
+
+        self.extract_templates_from_source()
+        self.update_names()
+
     def update_py_names(self) -> None:
         """
         Set the Python names for the class, accounting for template args.
@@ -243,11 +318,15 @@ class CppClassInfo(CppTypeInfo):
             self.cpp_names.append(self.name + template_string)
 
     def update_names(self) -> None:
-        """Update the C++ and Python names for the class."""
+        """
+        Update the C++ and Python names for the class.
+        """
         self.update_cpp_names()
         self.update_py_names()
 
     @property
     def parent(self) -> "ModuleInfo":  # noqa: F821
-        """Returns the parent module info object."""
+        """
+        Returns the parent module info object.
+        """
         return self.module_info

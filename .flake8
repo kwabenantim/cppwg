@@ -1,6 +1,8 @@
 [flake8]
 max_line_length = 120
-exclude=
+
+exclude =
+    __pycache__,
     .git,
     .github,
     build,
@@ -9,4 +11,8 @@ exclude=
     cppwg/templates,
     tests,
     venv,
+
 docstring-convention=numpy
+
+# D200 One-line docstring should fit on one line with quotes
+extend-ignore = D200

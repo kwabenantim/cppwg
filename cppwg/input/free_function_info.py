@@ -30,4 +30,5 @@ class CppFreeFunctionInfo(CppTypeInfo):
         source_ns : pygccxml.declarations.namespace_t
             The source namespace
         """
-        self.decls = source_ns.free_functions(self.name, allow_empty=True)[0]
+        ff_decls = source_ns.free_functions(self.name, allow_empty=True)
+        self.decls = [ff_decls[0]]
