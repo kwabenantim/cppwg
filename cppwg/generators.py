@@ -11,8 +11,6 @@ from typing import List, Optional
 
 import pygccxml
 
-from cppwg.input.class_info import CppClassInfo
-from cppwg.input.free_function_info import CppFreeFunctionInfo
 from cppwg.input.info_helper import CppInfoHelper
 from cppwg.input.package_info import PackageInfo
 from cppwg.parsers.package_info_parser import PackageInfoParser
@@ -289,66 +287,10 @@ class CppWrapperGenerator:
             # If no package info file exists, create a PackageInfo object with default settings
             self.package_info = PackageInfo("cppwg_package", self.source_root)
 
-    def add_discovered_classes(self) -> None:
-        """
-        Add discovered classes.
-
-        Add class info objects for classes discovered by pygccxml from
-        parsing the C++ source code. This is run for modules which set
-        `use_all_classes` to True. No class info objects were created for
-        those modules while parsing the package info yaml file.
-        """
-        for module_info in self.package_info.module_info_collection:
-            if module_info.use_all_classes:
-                class_decls = self.source_ns.classes(allow_empty=True)
-
-                for class_decl in class_decls:
-                    if module_info.is_decl_in_source_path(class_decl):
-                        class_info = CppClassInfo(class_decl.name)
-                        class_info.update_names()
-                        class_info.module_info = module_info
-                        module_info.class_info_collection.append(class_info)
-
-    def add_class_decls(self) -> None:
-        """
-        Add declarations to class info objects.
-
-        Update all class info objects with their corresponding
-        declarations found by pygccxml in the C++ source code.
-        """
+    def update_from_ns(self) -> None:
+        """Update modules with information from the source namespace."""
         for module_info in self.package_info.module_info_collection:
             module_info.update_from_ns(self.source_ns)
-
-    def add_discovered_free_functions(self) -> None:
-        """
-        Add discovered free function.
-
-        Add free function info objects discovered by pygccxml from
-        parsing the C++ source code. This is run for modules which set
-        `use_all_free_functions` to True. No free function info objects were
-        created for those modules while parsing the package info yaml file.
-        """
-        for module_info in self.package_info.module_info_collection:
-            if module_info.use_all_free_functions:
-                free_functions = self.source_ns.free_functions(allow_empty=True)
-
-                for free_function in free_functions:
-                    if module_info.is_decl_in_source_path(free_function):
-                        ff_info = CppFreeFunctionInfo(free_function.name)
-                        ff_info.module_info = module_info
-                        module_info.free_function_info_collection.append(ff_info)
-
-    def add_free_function_decls(self) -> None:
-        """
-        Add declarations to free function info objects.
-
-        Update all free function info objects with their corresponding
-        declarations found by pygccxml in the C++ source code.
-        """
-        for module_info in self.package_info.module_info_collection:
-            for ff_info in module_info.free_function_info_collection:
-                decls = self.source_ns.free_functions(ff_info.name, allow_empty=True)
-                ff_info.decls = [decls[0]]
 
     def write_header_collection(self) -> None:
         """Write the header collection to file."""
@@ -389,17 +331,8 @@ class CppWrapperGenerator:
         # Parse the headers with pygccxml and castxml
         self.parse_header_collection()
 
-        # Add discovered classes from the parsed code
-        self.add_discovered_classes()
-
-        # Add declarations to class info objects
-        self.add_class_decls()
-
-        # Add discovered free functions from the parsed code
-        self.add_discovered_free_functions()
-
-        # Add declarations to free function info objects
-        self.add_free_function_decls()
+        # Update modules with information from the source namespace
+        self.update_from_ns()
 
         # Log list of unknown classes in the source root
         self.log_unknown_classes()

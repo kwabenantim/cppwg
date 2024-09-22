@@ -26,7 +26,7 @@ class CppClassInfo(CppTypeInfo):
 
     def __init__(self, name: str, class_config: Optional[Dict[str, Any]] = None):
 
-        super(CppClassInfo, self).__init__(name, class_config)
+        super().__init__(name, class_config)
 
         self.cpp_names: List[str] = None
         self.py_names: List[str] = None
@@ -86,7 +86,7 @@ class CppClassInfo(CppTypeInfo):
                         return True
         return False
 
-    def update_from_ns(self, ns: "namespace_t") -> None:  # noqa: F821
+    def update_from_ns(self, source_ns: "namespace_t") -> None:  # noqa: F821
         """
         Update class with information from the source namespace.
 
@@ -94,7 +94,7 @@ class CppClassInfo(CppTypeInfo):
 
         Parameters
         ----------
-        ns : pygccxml.declarations.namespace_t
+        source_ns : pygccxml.declarations.namespace_t
             The source namespace
         """
         logger = logging.getLogger()
@@ -109,7 +109,7 @@ class CppClassInfo(CppTypeInfo):
             class_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
 
             try:
-                class_decl = ns.class_(class_name)
+                class_decl = source_ns.class_(class_name)
 
             except declaration_not_found_t as e1:
                 if (
@@ -136,7 +136,7 @@ class CppClassInfo(CppTypeInfo):
                 class_name = ",".join(class_name.split(",")[0:pos]) + " >"
 
                 try:
-                    class_decl = ns.class_(class_name)
+                    class_decl = source_ns.class_(class_name)
 
                 except declaration_not_found_t as e2:
                     logger.error(f"Could not find declaration for class {class_name}")

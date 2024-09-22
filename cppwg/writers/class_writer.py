@@ -45,7 +45,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
     ) -> None:
         logger = logging.getLogger()
 
-        super(CppClassWrapperWriter, self).__init__(wrapper_templates)
+        super().__init__(wrapper_templates)
 
         self.class_info: "CppClassInfo" = class_info  # noqa: F821
 

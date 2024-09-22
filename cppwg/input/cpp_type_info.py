@@ -31,7 +31,7 @@ class CppTypeInfo(BaseInfo):
 
     def __init__(self, name: str, type_config: Optional[Dict[str, Any]] = None):
 
-        super(CppTypeInfo, self).__init__(name)
+        super().__init__(name)
 
         self.module_info: Optional["ModuleInfo"] = None  # noqa: F821
         self.source_file_full_path: Optional[str] = None

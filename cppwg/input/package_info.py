@@ -50,7 +50,7 @@ class PackageInfo(BaseInfo):
         package_config : Dict[str, Any]
             A dictionary of package configuration settings
         """
-        super(PackageInfo, self).__init__(name)
+        super().__init__(name)
 
         self.name: str = name
         self.source_locations: List[str] = None

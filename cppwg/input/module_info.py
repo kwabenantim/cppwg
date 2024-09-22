@@ -4,6 +4,8 @@ import os
 from typing import Any, Dict, List, Optional
 
 from cppwg.input.base_info import BaseInfo
+from cppwg.input.class_info import CppClassInfo
+from cppwg.input.free_function_info import CppFreeFunctionInfo
 
 
 class ModuleInfo(BaseInfo):
@@ -32,7 +34,7 @@ class ModuleInfo(BaseInfo):
 
     def __init__(self, name: str, module_config: Optional[Dict[str, Any]] = None):
 
-        super(ModuleInfo, self).__init__(name)
+        super().__init__(name)
 
         self.package_info: Optional["PackageInfo"] = None  # noqa: F821
         self.source_locations: List[str] = None
@@ -117,17 +119,45 @@ class ModuleInfo(BaseInfo):
 
                 order_changed = True
 
-    def update_from_ns(self, ns: "namespace_t") -> None:  # noqa: F821
+    def update_from_ns(self, source_ns: "namespace_t") -> None:  # noqa: F821
         """
         Update module with information from the source namespace.
 
         Parameters
         ----------
-        ns : pygccxml.declarations.namespace_t
+        source_ns : pygccxml.declarations.namespace_t
             The source namespace
         """
-        for class_info in self.class_info_collection:
-            class_info.update_from_ns(ns)
+        # Add discovered classes: if `use_all_classes` is True, this module
+        # has no class info objects. Use class declarations from the
+        # source namespace to create class info objects.
+        if self.use_all_classes:
+            class_decls = source_ns.classes(allow_empty=True)
+            for class_decl in class_decls:
+                if self.is_decl_in_source_path(class_decl):
+                    class_info = CppClassInfo(class_decl.name)
+                    class_info.update_names()
+                    class_info.module_info = self
+                    self.class_info_collection.append(class_info)
 
-        # Sort the class info collection in inheritance order
+        # Update classes with information from source namespace.
+        for class_info in self.class_info_collection:
+            class_info.update_from_ns(source_ns)
+
+        # Sort classes by dependence
         self.sort_classes()
+
+        # Add discovered free functions: if `use_all_free_functions` is True,
+        # this module has no free function info objects. Use free function
+        # decls from the source namespace to create free function info objects.
+        if self.use_all_free_functions:
+            free_functions = source_ns.free_functions(allow_empty=True)
+            for free_function in free_functions:
+                if self.is_decl_in_source_path(free_function):
+                    ff_info = CppFreeFunctionInfo(free_function.name)
+                    ff_info.module_info = self
+                    self.free_function_info_collection.append(ff_info)
+
+        # Update free functions with information from source namespace.
+        for ff_info in self.free_function_info_collection:
+            ff_info.update_from_ns(source_ns)

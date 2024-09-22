@@ -40,7 +40,7 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
         wrapper_templates: Dict[str, str],
     ) -> None:
 
-        super(CppConstructorWrapperWriter, self).__init__(wrapper_templates)
+        super().__init__(wrapper_templates)
 
         self.class_info: "CppClassInfo" = class_info  # noqa: F821
         self.ctor_decl: "constructor_t" = ctor_decl  # noqa: F821

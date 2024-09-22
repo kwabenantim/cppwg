@@ -10,4 +10,4 @@ class CppVariableInfo(CppTypeInfo):
 
     def __init__(self, name: str, variable_config: Optional[Dict[str, Any]] = None):
 
-        super(CppVariableInfo, self).__init__(name, variable_config)
+        super().__init__(name, variable_config)
