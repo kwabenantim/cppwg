@@ -186,7 +186,7 @@ class CppClassInfo(CppTypeInfo):
 
                 # If class has default args, try to compress the template signature
                 logger.warning(
-                    f"Could not find declaration for class {class_name}: trying for a partial match."
+                    f"Could not find declaration for class {class_name}: trying a partial match."
                 )
 
                 # Try to find the class without default template args

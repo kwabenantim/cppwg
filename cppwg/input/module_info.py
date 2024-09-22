@@ -96,13 +96,13 @@ class ModuleInfo(BaseInfo):
 
             for j in range(i + 1, n):
                 cls_j = self.class_info_collection[j]
-                i_requires_j = cls_i.requires(cls_j)
-                j_requires_i = cls_j.requires(cls_i)
-                if cls_i.is_child_of(cls_j) or (i_requires_j and not j_requires_i):
+                i_req_j = cls_i.requires(cls_j)
+                j_req_i = cls_j.requires(cls_i)
+                if cls_i.is_child_of(cls_j) or (i_req_j and not j_req_i):
                     # Position cls_i after all classes it depends on,
                     # ignoring forward declaration cycles
                     ii = j
-                elif cls_j.is_child_of(cls_i) or (j_requires_i and not i_requires_j):
+                elif cls_j.is_child_of(cls_i) or (j_req_i and not i_req_j):
                     # Collect positions of cls_i's dependents
                     j_pos.append(j)
 
@@ -115,9 +115,9 @@ class ModuleInfo(BaseInfo):
             self.class_info_collection.insert(ii, cls_i)
 
             # Move dependents into positions after ii
-            for j, idx in enumerate(j_pos):
+            for idx, j in enumerate(j_pos):
                 if j > ii:
-                    break  # Rest of dependents already positioned after ii
+                    break  # Rest of dependents are already positioned after ii
                 cls_j = self.class_info_collection.pop(j - 1 - idx)
                 self.class_info_collection.insert(ii + idx, cls_j)
 
