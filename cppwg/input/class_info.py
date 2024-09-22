@@ -30,9 +30,29 @@ class CppClassInfo(CppTypeInfo):
         self.py_names: List[str] = None
         self.base_decls: Optional[List["declaration_t"]] = None  # noqa: F821
 
+    def is_child_of(self, other: "ClassInfo") -> bool:  # noqa: F821
+        """
+        Check if the class is a child of the specified class.
+
+        Parameters
+        ----------
+        other : ClassInfo
+            The other class to check
+
+        Returns
+        -------
+        bool
+            True if the class is a child of the specified class, False otherwise
+        """
+        if not self.base_decls:
+            return False
+        if not other.decls:
+            return False
+        return any(base in other.decls for base in self.base_decls)
+
     def update_from_ns(self, ns: "namespace_t") -> None:  # noqa: F821
         """
-        Update the class information from the source namespace.
+        Update class with information from the source namespace.
 
         Adds the class declarations and base class declarations.
 

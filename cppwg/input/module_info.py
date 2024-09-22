@@ -1,7 +1,6 @@
 """Module information structure."""
 
 import os
-from functools import cmp_to_key
 from typing import Any, Dict, List, Optional
 
 from cppwg.input.base_info import BaseInfo
@@ -79,34 +78,44 @@ class ModuleInfo(BaseInfo):
 
     def sort_classes(self) -> None:
         """Sort the class info collection in inheritance order."""
-
-        def compare(class_info_0: "ClassInfo", class_info_1: "ClassInfo"):  # noqa: F821
-            # Sort classes with no declarations to the bottom
-            if class_info_0.decls == class_info_1.decls:
-                return 0
-            if class_info_0.decls is None:
-                return 1
-            if class_info_1.decls is None:
-                return -1
-
-            # 1 if class_0 is a child of class_1
-            child_0 = int(
-                any(base in class_info_1.decls for base in class_info_0.base_decls)
-            )
-
-            # 1 if class_1 is a child of class 0
-            child_1 = int(
-                any(base in class_info_0.decls for base in class_info_1.base_decls)
-            )
-
-            return child_0 - child_1
-
         self.class_info_collection.sort(key=lambda x: x.name)
-        self.class_info_collection.sort(key=cmp_to_key(compare))
+
+        order_changed = True
+        while order_changed:
+            order_changed = False
+
+            i = 0
+            n = len(self.class_info_collection)
+            while i < n - 1:
+                cls_i = self.class_info_collection[i]
+                ii = i  # destination of cls_i
+                child_pos = []  # positions of cls_i's children
+
+                for j in range(i + 1, n):
+                    cls_j = self.class_info_collection[j]
+                    if cls_i.is_child_of(cls_j):
+                        ii = j
+                    elif cls_j.is_child_of(cls_i):
+                        child_pos.append(j)
+
+                if ii <= i:
+                    i += 1
+                    continue  # no change in cls_i's position
+
+                cls_i = self.class_info_collection.pop(i)
+                self.class_info_collection.insert(ii, cls_i)
+
+                for j, idx in enumerate(child_pos):
+                    if j > ii:
+                        break  # children already positioned after cls_i
+                    cls_j = self.class_info_collection.pop(j - 1 - idx)
+                    self.class_info_collection.insert(ii + idx, cls_j)
+
+                order_changed = True
 
     def update_from_ns(self, ns: "namespace_t") -> None:  # noqa: F821
         """
-        Update class info objects with information from the source namespace.
+        Update module with information from the source namespace.
 
         Parameters
         ----------
