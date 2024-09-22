@@ -12,9 +12,23 @@ class CppFreeFunctionInfo(CppTypeInfo):
         self, name: str, free_function_config: Optional[Dict[str, Any]] = None
     ):
 
-        super(CppFreeFunctionInfo, self).__init__(name, free_function_config)
+        super().__init__(name, free_function_config)
 
     @property
     def parent(self) -> "ModuleInfo":  # noqa: F821
         """Returns the parent module info object."""
         return self.module_info
+
+    def update_from_ns(self, source_ns: "namespace_t") -> None:  # noqa: F821
+        """
+        Update with information from the source namespace.
+
+        Adds the free function declaration.
+
+        Parameters
+        ----------
+        source_ns : pygccxml.declarations.namespace_t
+            The source namespace
+        """
+        ff_decls = source_ns.free_functions(self.name, allow_empty=True)
+        self.decls = [ff_decls[0]]

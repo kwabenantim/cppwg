@@ -13,21 +13,14 @@ templates
     Contains string templates for Python wrappers.
 utils
     Contains utility functions and constants.
+version
+    Contains version information.
 writers
     Contains writers for creating Python wrappers and writing to file.
-
-Utilities
----------
-__version__
-    cppwg version string
 """
-
-from importlib import metadata
 
 from cppwg.generators import CppWrapperGenerator
 
 __all__ = [
     "CppWrapperGenerator",
 ]
-
-__version__ = metadata.version("cppwg")

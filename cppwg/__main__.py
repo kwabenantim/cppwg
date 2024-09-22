@@ -3,7 +3,8 @@
 import argparse
 import logging
 
-from cppwg import CppWrapperGenerator, __version__
+from cppwg import CppWrapperGenerator
+from cppwg.version import __version__
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,7 +114,7 @@ def generate(args: argparse.Namespace) -> None:
         castxml_cflags=castxml_cflags,
     )
 
-    generator.generate_wrapper()
+    generator.generate()
 
 
 def main() -> None:

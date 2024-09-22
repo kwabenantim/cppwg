@@ -4,7 +4,8 @@ import logging
 import os
 from typing import Dict, List
 
-from pygccxml import declarations
+from pygccxml.declarations import type_traits_classes
+from pygccxml.declarations.matchers import access_type_matcher_t
 
 from cppwg.utils.constants import (
     CPPWG_CLASS_OVERRIDE_SUFFIX,
@@ -44,7 +45,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
     ) -> None:
         logger = logging.getLogger()
 
-        super(CppClassWrapperWriter, self).__init__(wrapper_templates)
+        super().__init__(wrapper_templates)
 
         self.class_info: "CppClassInfo" = class_info  # noqa: F821
 
@@ -258,7 +259,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             #   struct Foo{
             #     enum Value{A, B, C};
             #   };
-            if declarations.is_struct(class_decl):
+            if type_traits_classes.is_struct(class_decl):
                 enums = class_decl.enumerations(allow_empty=True)
 
                 if len(enums) == 1:
@@ -326,7 +327,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             self.cpp_string += class_definition_template.format(**class_definition_dict)
 
             # Add public constructors
-            query = declarations.access_type_matcher_t("public")
+            query = access_type_matcher_t("public")
             for constructor in class_decl.constructors(
                 function=query, allow_empty=True
             ):
@@ -339,7 +340,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 self.cpp_string += constructor_writer.generate_wrapper()
 
             # Add public member functions
-            query = declarations.access_type_matcher_t("public")
+            query = access_type_matcher_t("public")
             for member_function in class_decl.member_functions(
                 function=query, allow_empty=True
             ):
