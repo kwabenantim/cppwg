@@ -3,7 +3,7 @@
 import re
 from typing import Dict
 
-from pygccxml import declarations
+from pygccxml.declarations import type_traits, type_traits_classes
 
 from cppwg.writers.base_writer import CppBaseWrapperWriter
 
@@ -87,9 +87,9 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
         if self.ctor_decl.parent != self.class_decl:
             return True
 
-        # Exclude default copy constructors e.g. Foo::Foo(Foo const & foo)
+        # Exclude compiler-added copy constructors e.g. Foo::Foo(Foo const & foo)
         if (
-            declarations.is_copy_constructor(self.ctor_decl)
+            type_traits_classes.is_copy_constructor(self.ctor_decl)
             and self.ctor_decl.is_artificial
         ):
             return True
@@ -200,11 +200,8 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
                 # `Foo(std::vector<Bar*> laminas = std::vector<Bar*>{})`
                 # which generates `py::arg("laminas") = std::vector<Bar*>{}`
                 if default_value.replace(" ", "") == "{}":
-                    default_value = arg.decl_type.decl_string + " {}"
-
-                    # Remove const keyword
-                    default_value = re.sub(r"\bconst\b", "", default_value)
-                    default_value = default_value.replace("  ", " ")
+                    decl_type = type_traits.remove_const(arg.decl_type)
+                    default_value = decl_type.decl_string + " {}"
 
                 keyword_args += f" = {default_value}"
 

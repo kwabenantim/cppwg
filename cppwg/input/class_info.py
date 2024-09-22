@@ -1,8 +1,10 @@
 """Class information structure."""
 
 import logging
+import re
 from typing import Any, Dict, List, Optional
 
+from pygccxml.declarations.matchers import access_type_matcher_t
 from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
 from cppwg.input.cpp_type_info import CppTypeInfo
@@ -48,7 +50,41 @@ class CppClassInfo(CppTypeInfo):
             return False
         if not other.decls:
             return False
-        return any(base in other.decls for base in self.base_decls)
+        return any(decl in other.decls for decl in self.base_decls)
+
+    def requires(self, other: "ClassInfo") -> bool:  # noqa: F821
+        """
+        Check if the specified class is used in method signatures of this class.
+
+        Parameters
+        ----------
+        other : ClassInfo
+            The specified class to check.
+
+        Returns
+        -------
+        bool
+            True if the specified class is used in method signatures of this class.
+        """
+        if not self.decls:
+            return False
+
+        query = access_type_matcher_t("public")
+        name_regex = re.compile(r"\b" + re.escape(other.name) + r"\b")
+
+        for class_decl in self.decls:
+            method_decls = class_decl.member_functions(function=query, allow_empty=True)
+            for method_decl in method_decls:
+                for arg_type in method_decl.argument_types:
+                    if name_regex.search(arg_type.decl_string):
+                        return True
+
+            ctor_decls = class_decl.constructors(function=query, allow_empty=True)
+            for ctor_decl in ctor_decls:
+                for arg_type in ctor_decl.argument_types:
+                    if name_regex.search(arg_type.decl_string):
+                        return True
+        return False
 
     def update_from_ns(self, ns: "namespace_t") -> None:  # noqa: F821
         """
@@ -70,22 +106,22 @@ class CppClassInfo(CppTypeInfo):
         self.decls = []
 
         for class_cpp_name in self.cpp_names:
-            decl_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
+            class_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
 
             try:
-                class_decl = ns.class_(decl_name)
+                class_decl = ns.class_(class_name)
 
             except declaration_not_found_t as e1:
                 if (
                     self.template_signature is None
                     or "=" not in self.template_signature
                 ):
-                    logger.error(f"Could not find declaration for class {decl_name}")
+                    logger.error(f"Could not find declaration for class {class_name}")
                     raise e1
 
                 # If class has default args, try to compress the template signature
                 logger.warning(
-                    f"Could not find declaration for class {decl_name}: trying for a partial match."
+                    f"Could not find declaration for class {class_name}: trying for a partial match."
                 )
 
                 # Try to find the class without default template args
@@ -97,16 +133,16 @@ class CppClassInfo(CppTypeInfo):
                         pos = i
                         break
 
-                decl_name = ",".join(decl_name.split(",")[0:pos]) + " >"
+                class_name = ",".join(class_name.split(",")[0:pos]) + " >"
 
                 try:
-                    class_decl = ns.class_(decl_name)
+                    class_decl = ns.class_(class_name)
 
                 except declaration_not_found_t as e2:
-                    logger.error(f"Could not find declaration for class {decl_name}")
+                    logger.error(f"Could not find declaration for class {class_name}")
                     raise e2
 
-                logger.info(f"Found {decl_name}")
+                logger.info(f"Found {class_name}")
 
             self.decls.append(class_decl)
 

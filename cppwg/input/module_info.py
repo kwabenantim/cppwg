@@ -77,7 +77,7 @@ class ModuleInfo(BaseInfo):
         return False
 
     def sort_classes(self) -> None:
-        """Sort the class info collection in inheritance order."""
+        """Sort the class info collection in order of dependence."""
         self.class_info_collection.sort(key=lambda x: x.name)
 
         order_changed = True
@@ -94,6 +94,10 @@ class ModuleInfo(BaseInfo):
                 for j in range(i + 1, n):
                     cls_j = self.class_info_collection[j]
                     if cls_i.is_child_of(cls_j):
+                        # sort by inheritance
+                        ii = j
+                    elif cls_i.requires(cls_j) and not cls_j.requires(cls_i):
+                        # sort by dependence, ignoring forward declaration cycles
                         ii = j
                     elif cls_j.is_child_of(cls_i):
                         child_pos.append(j)

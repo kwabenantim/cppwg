@@ -3,7 +3,7 @@
 import re
 from typing import Dict
 
-from pygccxml import declarations
+from pygccxml.declarations import type_traits
 
 from cppwg.writers.base_writer import CppBaseWrapperWriter
 
@@ -129,7 +129,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         # Pybind11 def type e.g. "_static" for def_static()
         def_adorn = ""
         if self.method_decl.has_static:
-            def_adorn += "_static"
+            def_adorn = "_static"
 
         # How to point to class
         if self.method_decl.has_static:
@@ -178,12 +178,12 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
 
         # Call policy, e.g. "py::return_value_policy::reference"
         call_policy = ""
-        if declarations.is_pointer(self.method_decl.return_type):
+        if type_traits.is_pointer(self.method_decl.return_type):
             ptr_policy = self.class_info.hierarchy_attribute("pointer_call_policy")
             if ptr_policy:
                 call_policy = f", py::return_value_policy::{ptr_policy}"
 
-        elif declarations.is_reference(self.method_decl.return_type):
+        elif type_traits.is_reference(self.method_decl.return_type):
             ref_policy = self.class_info.hierarchy_attribute("reference_call_policy")
             if ref_policy:
                 call_policy = f", py::return_value_policy::{ref_policy}"
