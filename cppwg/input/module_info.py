@@ -162,10 +162,9 @@ class ModuleInfo(BaseInfo):
         for ff_info in self.free_function_info_collection:
             ff_info.update_from_ns(source_ns)
 
-    def update_from_source(self) -> None:
+    def update_from_source(self, source_files: List[str]) -> None:
         """
         Update module with information from the source headers.
-
         """
         for class_info in self.class_info_collection:
-            class_info.update_from_source()
+            class_info.update_from_source(source_files)

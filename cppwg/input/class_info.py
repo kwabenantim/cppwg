@@ -1,6 +1,7 @@
 """Class information structure."""
 
 import logging
+import os
 import re
 from typing import Any, Dict, List, Optional
 
@@ -215,7 +216,7 @@ class CppClassInfo(CppTypeInfo):
             base.related_class for decl in self.decls for base in decl.bases
         ]
 
-    def update_from_source(self) -> None:
+    def update_from_source(self, source_files: List[str]) -> None:
         """
         Update class with information from the source headers.
         """
@@ -223,7 +224,18 @@ class CppClassInfo(CppTypeInfo):
         if self.excluded:
             return
 
+        # Map class to a source file, assuming the file name is the class name
+        for file_path in source_files:
+            file_name = os.path.basename(file_path)
+            if self.name == os.path.splitext(file_name)[0]:
+                self.source_file_full_path = file_path
+                if self.source_file is None:
+                    self.source_file = file_name
+
+        # Extract template args from the source file
         self.extract_templates_from_source()
+
+        # Update the C++ and Python class names
         self.update_names()
 
     def update_py_names(self) -> None:

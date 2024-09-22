@@ -231,26 +231,7 @@ class CppWrapperGenerator:
                     seen_class_names.add(class_name)
                     logger.info(f"Unknown class {class_name} from {hpp_file_path}")
 
-    def map_classes_to_hpp_files(self) -> None:
-        """
-        Map each class to a header file.
-
-        Attempt to map source file paths to each class, assuming the containing
-        file name is the class name.
-        """
-        for module_info in self.package_info.module_info_collection:
-            for class_info in module_info.class_info_collection:
-                # Skip excluded classes
-                if class_info.excluded:
-                    continue
-                for hpp_file_path in self.package_info.source_hpp_files:
-                    hpp_file_name = os.path.basename(hpp_file_path)
-                    if class_info.name == os.path.splitext(hpp_file_name)[0]:
-                        class_info.source_file_full_path = hpp_file_path
-                        if class_info.source_file is None:
-                            class_info.source_file = hpp_file_name
-
-    def parse_header_collection(self) -> None:
+    def parse_headers(self) -> None:
         """
         Parse the hpp files to collect C++ declarations.
 
@@ -279,19 +260,19 @@ class CppWrapperGenerator:
             # If no package info file exists, create a PackageInfo object with default settings
             self.package_info = PackageInfo("cppwg_package", self.source_root)
 
-    def update_from_ns(self) -> None:
+    def update_modules_from_ns(self) -> None:
         """
         Update modules with information from the parsed source namespace.
         """
         for module_info in self.package_info.module_info_collection:
             module_info.update_from_ns(self.source_ns)
 
-    def update_from_source(self) -> None:
+    def update_modules_from_source(self) -> None:
         """
         Update modules with information from the source headers.
         """
         for module_info in self.package_info.module_info_collection:
-            module_info.update_from_source()
+            module_info.update_from_source(self.package_info.source_hpp_files)
 
     def write_header_collection(self) -> None:
         """
@@ -326,20 +307,17 @@ class CppWrapperGenerator:
         # Search for header files in the source root
         self.collect_source_hpp_files()
 
-        # Map each class to a header file
-        self.map_classes_to_hpp_files()
-
         # Update modules with information from the source headers
-        self.update_from_source()
+        self.update_modules_from_source()
 
-        # Write the header collection to file
+        # Write the header collection file
         self.write_header_collection()
 
-        # Parse the headers with pygccxml and castxml
-        self.parse_header_collection()
+        # Parse the headers with pygccxml (+ castxml)
+        self.parse_headers()
 
         # Update modules with information from the parsed source namespace
-        self.update_from_ns()
+        self.update_modules_from_ns()
 
         # Log list of unknown classes in the source root
         self.log_unknown_classes()
