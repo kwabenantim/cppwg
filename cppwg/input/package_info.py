@@ -110,3 +110,22 @@ class PackageInfo(BaseInfo):
         if not self.source_hpp_files:
             logger.error(f"No header files found in source root: {self.source_root}")
             raise FileNotFoundError()
+
+    def update_from_source(self) -> None:
+        """
+        Update modules with information from the source headers.
+        """
+        for module_info in self.module_info_collection:
+            module_info.update_from_source(self.source_hpp_files)
+
+    def update_from_ns(self, source_ns: "namespace_t") -> None:  # noqa: F821
+        """
+        Update modules with information from the parsed source namespace.
+
+        Parameters
+        ----------
+        source_ns : pygccxml.declarations.namespace_t
+            The source namespace
+        """
+        for module_info in self.module_info_collection:
+            module_info.update_from_ns(source_ns)

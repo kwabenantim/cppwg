@@ -216,16 +216,21 @@ class CppClassInfo(CppTypeInfo):
             base.related_class for decl in self.decls for base in decl.bases
         ]
 
-    def update_from_source(self, source_files: List[str]) -> None:
+    def update_from_source(self, source_file_paths: List[str]) -> None:
         """
         Update class with information from the source headers.
+
+        Parameters
+        ----------
+        source_file_paths : List[str]
+            A list of source file paths
         """
         # Skip excluded classes
         if self.excluded:
             return
 
         # Map class to a source file, assuming the file name is the class name
-        for file_path in source_files:
+        for file_path in source_file_paths:
             file_name = os.path.basename(file_path)
             if self.name == os.path.splitext(file_name)[0]:
                 self.source_file_full_path = file_path

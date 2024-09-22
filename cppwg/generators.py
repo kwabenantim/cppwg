@@ -227,20 +227,6 @@ class CppWrapperGenerator:
             # If no package info file exists, create a PackageInfo object with default settings
             self.package_info = PackageInfo("cppwg_package", self.source_root)
 
-    def update_modules_from_ns(self) -> None:
-        """
-        Update modules with information from the parsed source namespace.
-        """
-        for module_info in self.package_info.module_info_collection:
-            module_info.update_from_ns(self.source_ns)
-
-    def update_modules_from_source(self) -> None:
-        """
-        Update modules with information from the source headers.
-        """
-        for module_info in self.package_info.module_info_collection:
-            module_info.update_from_source(self.package_info.source_hpp_files)
-
     def write_header_collection(self) -> None:
         """
         Write the header collection to file.
@@ -274,8 +260,8 @@ class CppWrapperGenerator:
         # Collect header files, skipping wrappers to avoid pollution
         self.package_info.collect_source_headers(restricted_paths=[self.wrapper_root])
 
-        # Update modules with information from the source headers
-        self.update_modules_from_source()
+        # Update info objects with data from the source headers
+        self.package_info.update_from_source()
 
         # Write the header collection file
         self.write_header_collection()
@@ -283,8 +269,8 @@ class CppWrapperGenerator:
         # Parse the headers with pygccxml (+ castxml)
         self.parse_headers()
 
-        # Update modules with information from the parsed source namespace
-        self.update_modules_from_ns()
+        # Update info objects with data from the parsed source namespace
+        self.package_info.update_from_ns(self.source_ns)
 
         # Log list of unknown classes in the source root
         self.log_unknown_classes()
