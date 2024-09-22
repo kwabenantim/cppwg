@@ -113,7 +113,7 @@ def generate(args: argparse.Namespace) -> None:
         castxml_cflags=castxml_cflags,
     )
 
-    generator.generate_wrappers()
+    generator.generate()
 
 
 def main() -> None:

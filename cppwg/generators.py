@@ -178,15 +178,17 @@ class CppWrapperGenerator:
                     seen_class_names.update(decl.name for decl in class_info.decls)
 
         for decl in all_class_decls:
-            if (
-                Path(self.source_root) in Path(decl.location.file_name).parents
-                and decl.name not in seen_class_names
-            ):
-                seen_class_names.add(decl.name)
-                seen_class_names.add(decl.name.split("<")[0].strip())
-                logger.info(
-                    f"Unknown class {decl.name} from {decl.location.file_name}:{decl.location.line}"
-                )
+            if decl.name in seen_class_names:
+                continue
+
+            if Path(self.source_root) not in Path(decl.location.file_name).parents:
+                continue
+
+            seen_class_names.add(decl.name)  # e.g. Foo<2,2>
+            seen_class_names.add(decl.name.split("<")[0].strip())  # e.g. Foo
+            logger.info(
+                f"Unknown class {decl.name} from {decl.location.file_name}:{decl.location.line}"
+            )
 
         # Check for uninstantiated class templates not parsed by pygccxml
         for hpp_file_path in self.package_info.source_hpp_files:
@@ -247,7 +249,7 @@ class CppWrapperGenerator:
         )
         package_writer.write()
 
-    def generate_wrappers(self) -> None:
+    def generate(self) -> None:
         """
         Parse yaml configuration and C++ source to generate Python wrappers.
         """
