@@ -1,6 +1,5 @@
 """Contains the main interface for generating Python wrappers."""
 
-import fnmatch
 import logging
 import os
 import re
@@ -18,7 +17,6 @@ from cppwg.templates import pybind11_default as wrapper_templates
 from cppwg.utils import utils
 from cppwg.utils.constants import (
     CPPWG_DEFAULT_WRAPPER_DIR,
-    CPPWG_EXT,
     CPPWG_HEADER_COLLECTION_FILENAME,
 )
 from cppwg.writers.header_collection_writer import CppHeaderCollectionWriter
@@ -164,37 +162,6 @@ class CppWrapperGenerator:
             self.wrapper_root, CPPWG_HEADER_COLLECTION_FILENAME
         )
 
-    def collect_source_hpp_files(self) -> None:
-        """
-        Collect *.hpp files from the source root.
-
-        Walk through the source root and add any files matching the provided
-        patterns e.g. "*.hpp". Skip the wrapper root and wrappers to
-        avoid pollution.
-        """
-        logger = logging.getLogger()
-
-        for root, _, filenames in os.walk(self.source_root, followlinks=True):
-            for pattern in self.package_info.source_hpp_patterns:
-                for filename in fnmatch.filter(filenames, pattern):
-                    filepath = os.path.abspath(os.path.join(root, filename))
-
-                    # Skip files in wrapper root dir
-                    if Path(self.wrapper_root) in Path(filepath).parents:
-                        continue
-
-                    # Skip files with the extensions like .cppwg.hpp
-                    suffix = os.path.splitext(os.path.splitext(filename)[0])[1]
-                    if suffix == CPPWG_EXT:
-                        continue
-
-                    self.package_info.source_hpp_files.append(filepath)
-
-        # Check if any source files were found
-        if not self.package_info.source_hpp_files:
-            logger.error(f"No header files found in source root: {self.source_root}")
-            raise FileNotFoundError()
-
     def log_unknown_classes(self) -> None:
         """
         Log unwrapped classes.
@@ -297,15 +264,15 @@ class CppWrapperGenerator:
             )
             module_writer.write()
 
-    def generate_wrapper(self) -> None:
+    def generate_wrappers(self) -> None:
         """
-        Parse input yaml and C++ source to generate Python wrappers.
+        Parse yaml configuration and C++ source to generate Python wrappers.
         """
         # Parse the input yaml for package, module, and class information
         self.parse_package_info()
 
-        # Search for header files in the source root
-        self.collect_source_hpp_files()
+        # Collect header files, skipping wrappers to avoid pollution
+        self.package_info.collect_source_headers(restricted_paths=[self.wrapper_root])
 
         # Update modules with information from the source headers
         self.update_modules_from_source()
