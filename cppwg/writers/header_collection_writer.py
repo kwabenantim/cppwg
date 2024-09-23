@@ -141,14 +141,14 @@ class CppHeaderCollectionWriter:
                     continue
 
                 # C++ class names eg. ["Foo<2,2>", "Foo<3,3>"]
-                cpp_names = [name.replace(" ", "") for name in class_info.cpp_names]
+                cpp_names = [name.strip() for name in class_info.cpp_names]
 
                 # Python class names eg. ["Foo_2_2", "Foo_3_3"]
-                py_names = [name.replace(" ", "") for name in class_info.py_names]
+                py_names = [name.strip() for name in class_info.py_names]
 
                 for cpp_name, py_name in zip(cpp_names, py_names):
                     template_instantiations += f"template class {cpp_name};\n"
-                    template_typedefs += f"typedef {cpp_name} {py_name};\n"
+                    template_typedefs += f"    typedef {cpp_name} {py_name};\n"
 
         self.hpp_collection_string += "\n// Instantiate Template Classes\n"
         self.hpp_collection_string += template_instantiations
