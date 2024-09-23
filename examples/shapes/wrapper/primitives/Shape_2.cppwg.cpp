@@ -5,30 +5,30 @@
 #include <pybind11/stl.h>
 #include "wrapper_header_collection.hpp"
 
-#include "Shape2.cppwg.hpp"
+#include "Shape_2.cppwg.hpp"
 
 namespace py = pybind11;
-typedef Shape<2> Shape2;
+typedef Shape<2> Shape_2;
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
-void register_Shape2_class(py::module &m)
+void register_Shape_2_class(py::module &m)
 {
-    py::class_<Shape2, std::shared_ptr<Shape2>>(m, "Shape2")
+    py::class_<Shape_2, std::shared_ptr<Shape_2>>(m, "Shape_2")
         .def(py::init<>())
         .def("GetIndex",
-            (unsigned int(Shape2::*)() const) &Shape2::GetIndex,
+            (unsigned int(Shape_2::*)() const) &Shape_2::GetIndex,
             " ")
         .def("rGetVertices",
-            (::std::vector<std::shared_ptr<Point<2> > > const &(Shape2::*)() const) &Shape2::rGetVertices,
+            (::std::vector<std::shared_ptr<Point<2>>> const &(Shape_2::*)() const) &Shape_2::rGetVertices,
             " ", py::return_value_policy::reference_internal)
         .def("SetIndex",
-            (void(Shape2::*)(unsigned int)) &Shape2::SetIndex,
+            (void(Shape_2::*)(unsigned int)) &Shape_2::SetIndex,
             " ", py::arg("index"))
         .def("SetVertices",
-            (void(Shape2::*)(::std::vector<std::shared_ptr<Point<2>>> const &)) &Shape2::SetVertices,
+            (void(Shape_2::*)(::std::vector<std::shared_ptr<Point<2>>> const &)) &Shape_2::SetVertices,
             " ", py::arg("rVertices"))
         .def("AddVertex",
-            (void(Shape2::*)(::std::shared_ptr<Point<2>>)) &Shape2::AddVertex,
+            (void(Shape_2::*)(::std::shared_ptr<Point<2>>)) &Shape_2::AddVertex,
             " ", py::arg("point") = std::make_shared<Point<2>>())
     ;
 }

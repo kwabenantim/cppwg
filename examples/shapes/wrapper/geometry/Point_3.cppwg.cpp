@@ -5,31 +5,31 @@
 #include <pybind11/stl.h>
 #include "wrapper_header_collection.hpp"
 
-#include "Point3.cppwg.hpp"
+#include "Point_3.cppwg.hpp"
 
 namespace py = pybind11;
-typedef Point<3> Point3;
+typedef Point<3> Point_3;
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
-void register_Point3_class(py::module &m)
+void register_Point_3_class(py::module &m)
 {
-    py::class_<Point3, std::shared_ptr<Point3>>(m, "Point3")
+    py::class_<Point_3, std::shared_ptr<Point_3>>(m, "Point_3")
         .def(py::init<>())
         .def(py::init<double, double, double>(), py::arg("x"), py::arg("y"), py::arg("z") = (3 - 3))
         .def("GetLocation",
-            (::std::array<double, 3>(Point3::*)() const) &Point3::GetLocation,
+            (::std::array<double, 3>(Point_3::*)() const) &Point_3::GetLocation,
             " ")
         .def("rGetLocation",
-            (::std::array<double, 3> const &(Point3::*)() const) &Point3::rGetLocation,
+            (::std::array<double, 3> const &(Point_3::*)() const) &Point_3::rGetLocation,
             " ", py::return_value_policy::reference_internal)
         .def("GetIndex",
-            (unsigned int(Point3::*)() const) &Point3::GetIndex,
+            (unsigned int(Point_3::*)() const) &Point_3::GetIndex,
             " ")
         .def("SetIndex",
-            (void(Point3::*)(unsigned int)) &Point3::SetIndex,
+            (void(Point_3::*)(unsigned int)) &Point_3::SetIndex,
             " ", py::arg("index"))
         .def("SetLocation",
-            (void(Point3::*)(::std::array<double, 3> const &)) &Point3::SetLocation,
+            (void(Point_3::*)(::std::array<double, 3> const &)) &Point_3::SetLocation,
             " ", py::arg("rLocation"))
     ;
 }

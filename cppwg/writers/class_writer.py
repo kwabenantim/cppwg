@@ -67,7 +67,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         Parameters
         ----------
         class_py_name: str
-            The Python name of the class e.g. Foo2_2
+            The Python name of the class e.g. Foo_2_2
         """
         # Add the top prefix text
         self.hpp_string += self.class_info.module_info.package_info.prefix_text + "\n"
@@ -88,7 +88,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         class_cpp_name : str
             The C++ name of the class e.g. Foo<2,2>
         class_py_name : str
-            The Python name of the class e.g. Foo2_2
+            The Python name of the class e.g. Foo_2_2
         """
         # Add the top prefix text
         self.cpp_string += self.class_info.module_info.package_info.prefix_text + "\n"
@@ -214,7 +214,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             #   void bar(double d) const override {
             #       PYBIND11_OVERRIDE_PURE(
             #           bar,
-            #           Foo2_2,
+            #           Foo_2_2,
             #           bar,
             #           d);
             #   }
@@ -378,7 +378,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             work_dir : str
                 The directory to write the files to
             class_py_name : str
-                The Python name of the class e.g. Foo2_2
+                The Python name of the class e.g. Foo_2_2
         """
         hpp_filepath = os.path.join(work_dir, f"{class_py_name}.{CPPWG_EXT}.hpp")
         cpp_filepath = os.path.join(work_dir, f"{class_py_name}.{CPPWG_EXT}.cpp")

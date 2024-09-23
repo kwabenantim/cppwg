@@ -14,7 +14,7 @@ class CppHeaderCollectionWriter:
 
     The header collection file includes all the headers to be parsed by CastXML.
     It also contains explicit template instantiations and their corresponding
-    typedefs (e.g. typedef Foo<2,2> Foo2_2) for all classes that are to be
+    typedefs (e.g. typedef Foo<2,2> Foo_2_2) for all classes that are to be
     automatically wrapped.
 
     Attributes
@@ -126,7 +126,7 @@ class CppHeaderCollectionWriter:
                             included_files.add(hpp_filename)
 
         # Add the template instantiations e.g. `template class Foo<2,2>;`
-        # and typdefs e.g. `typedef Foo<2,2> Foo2_2;`
+        # and typdefs e.g. `typedef Foo<2,2> Foo_2_2;`
         template_instantiations = ""
         template_typedefs = ""
 
@@ -143,7 +143,7 @@ class CppHeaderCollectionWriter:
                 # C++ class names eg. ["Foo<2,2>", "Foo<3,3>"]
                 cpp_names = [name.replace(" ", "") for name in class_info.cpp_names]
 
-                # Python class names eg. ["Foo2_2", "Foo3_3"]
+                # Python class names eg. ["Foo_2_2", "Foo_3_3"]
                 py_names = [name.replace(" ", "") for name in class_info.py_names]
 
                 for cpp_name, py_name in zip(cpp_names, py_names):

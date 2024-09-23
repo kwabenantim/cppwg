@@ -5,32 +5,32 @@
 #include <pybind11/stl.h>
 #include "wrapper_header_collection.hpp"
 
-#include "ConcreteMesh2.cppwg.hpp"
+#include "ConcreteMesh_2.cppwg.hpp"
 
 namespace py = pybind11;
-typedef ConcreteMesh<2> ConcreteMesh2;
+typedef ConcreteMesh<2> ConcreteMesh_2;
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
-class ConcreteMesh2_Overrides : public ConcreteMesh2
+class ConcreteMesh_2_Overrides : public ConcreteMesh_2
 {
 public:
-    using ConcreteMesh2::ConcreteMesh;
+    using ConcreteMesh_2::ConcreteMesh;
     void Scale(double const factor) override
     {
         PYBIND11_OVERRIDE(
             void,
-            ConcreteMesh2,
+            ConcreteMesh_2,
             Scale,
             factor);
     }
 };
 
-void register_ConcreteMesh2_class(py::module &m)
+void register_ConcreteMesh_2_class(py::module &m)
 {
-    py::class_<ConcreteMesh2, ConcreteMesh2_Overrides, std::shared_ptr<ConcreteMesh2>, AbstractMesh<2>>(m, "ConcreteMesh2")
+    py::class_<ConcreteMesh_2, ConcreteMesh_2_Overrides, std::shared_ptr<ConcreteMesh_2>, AbstractMesh<2>>(m, "ConcreteMesh_2")
         .def(py::init<>())
         .def("Scale",
-            (void(ConcreteMesh2::*)(double const)) &ConcreteMesh2::Scale,
+            (void(ConcreteMesh_2::*)(double const)) &ConcreteMesh_2::Scale,
             " ", py::arg("factor"))
     ;
 }

@@ -21,7 +21,7 @@ class CppClassInfo(CppTypeInfo):
     cpp_names : List[str]
         The C++ names of the class e.g. ["Foo<2,2>", "Foo<3,3>"]
     py_names : List[str]
-        The Python names of the class e.g. ["Foo2_2", "Foo3_3"]
+        The Python names of the class e.g. ["Foo_2_2", "Foo_3_3"]
     decls : pygccxml.declarations.declaration_t
         Declarations for this type's base class, one per template instantiation
     """
@@ -252,7 +252,7 @@ class CppClassInfo(CppTypeInfo):
         special characters. The return type is a list, as a class can have
         multiple names if it is templated. For example, a class "Foo" with
         template arguments [[2, 2], [3, 3]] will have a python name list
-        ["Foo2_2", "Foo3_3"].
+        ["Foo_2_2", "Foo_3_3"].
         """
         # Handles untemplated classes
         if self.template_arg_lists is None:
@@ -308,7 +308,7 @@ class CppClassInfo(CppTypeInfo):
                 if idx < len(template_arg_list) - 1:
                     template_string += "_"
 
-            self.py_names.append(type_name + template_string)
+            self.py_names.append(type_name + "_" + template_string)
 
     def update_cpp_names(self) -> None:
         """
@@ -318,7 +318,7 @@ class CppClassInfo(CppTypeInfo):
         The return type is a list, as a class can have multiple names
         if it is templated. For example, a class "Foo" with
         template arguments [[2, 2], [3, 3]] will have a C++ name list
-        ["Foo<2,2 >", "Foo<3,3 >"].
+        ["Foo<2, 2>", "Foo<3, 3>"].
         """
         # Handles untemplated classes
         if self.template_arg_lists is None:

@@ -91,7 +91,7 @@ class CppModuleWrapperWriter:
                 continue
 
             for py_name in class_info.py_names:
-                # Example: #include "Foo2_2.cppwg.hpp"
+                # Example: #include "Foo_2_2.cppwg.hpp"
                 cpp_string += f'#include "{py_name}.{CPPWG_EXT}.hpp"\n'
 
         # Format module name as _packagename_modulename
@@ -118,7 +118,7 @@ class CppModuleWrapperWriter:
                 continue
 
             for py_name in class_info.py_names:
-                # Example: register_Foo2_2_class(m);"
+                # Example: register_Foo_2_2_class(m);"
                 cpp_string += f"    register_{py_name}_class(m);\n"
 
         # Add code from the module's custom generator

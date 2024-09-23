@@ -25,7 +25,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
     class_py_name : Optional[str]
-        The Python name of the class e.g. 'Foo2_2'
+        The Python name of the class e.g. 'Foo_2_2'
     template_params: Optional[List[str]]
         The template params for the class e.g. ['DIM_A', 'DIM_B']
     template_args: Optional[List[str]]
@@ -135,7 +135,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         if self.method_decl.has_static:
             self_ptr = "*"
         else:
-            # e.g. Foo2_2::*
+            # e.g. Foo_2_2::*
             self_ptr = self.class_py_name + "::*"
 
         # Const-ness
@@ -214,7 +214,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         void bar(double d) const override {
             PYBIND11_OVERRIDE_PURE(
                 bar,
-                Foo2_2,
+                Foo_2_2,
                 bar,
                 d);
         }

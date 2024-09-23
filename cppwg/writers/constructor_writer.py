@@ -25,7 +25,7 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
     class_py_name : Optional[str]
-        The Python name of the class e.g. 'Foo2_2'
+        The Python name of the class e.g. 'Foo_2_2'
     template_params: Optional[List[str]]
         The template params for the class e.g. ['DIM_A', 'DIM_B']
     template_args: Optional[List[str]]
