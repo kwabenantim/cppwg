@@ -8,39 +8,38 @@
 #include "AbstractMesh2_2.cppwg.hpp"
 
 namespace py = pybind11;
-typedef AbstractMesh<2,2 > AbstractMesh2_2;
+typedef AbstractMesh<2, 2> AbstractMesh2_2;
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
-class AbstractMesh2_2_Overrides : public AbstractMesh2_2{
-    public:
+class AbstractMesh2_2_Overrides : public AbstractMesh2_2
+{
+public:
     using AbstractMesh2_2::AbstractMesh;
-    void Scale(double const factor) override {
+    void Scale(double const factor) override
+    {
         PYBIND11_OVERRIDE_PURE(
             void,
             AbstractMesh2_2,
             Scale,
-                    factor);
+            factor);
     }
-
 };
-void register_AbstractMesh2_2_class(py::module &m){
-py::class_<AbstractMesh2_2 , AbstractMesh2_2_Overrides , std::shared_ptr<AbstractMesh2_2 >   >(m, "AbstractMesh2_2")
-        .def(py::init< >())
-        .def(
-            "GetIndex",
-            (unsigned int(AbstractMesh2_2::*)() const ) &AbstractMesh2_2::GetIndex,
-            " "  )
-        .def(
-            "SetIndex",
+
+void register_AbstractMesh2_2_class(py::module &m)
+{
+    py::class_<AbstractMesh2_2, AbstractMesh2_2_Overrides, std::shared_ptr<AbstractMesh2_2>>(m, "AbstractMesh2_2")
+        .def(py::init<>())
+        .def("GetIndex",
+            (unsigned int(AbstractMesh2_2::*)() const) &AbstractMesh2_2::GetIndex,
+            " ")
+        .def("SetIndex",
             (void(AbstractMesh2_2::*)(unsigned int)) &AbstractMesh2_2::SetIndex,
-            " " , py::arg("index") )
-        .def(
-            "AddVertex",
+            " ", py::arg("index"))
+        .def("AddVertex",
             (void(AbstractMesh2_2::*)(::Point<2>)) &AbstractMesh2_2::AddVertex,
-            " " , py::arg("vertex") )
-        .def(
-            "Scale",
+            " ", py::arg("vertex"))
+        .def("Scale",
             (void(AbstractMesh2_2::*)(double const)) &AbstractMesh2_2::Scale,
-            " " , py::arg("factor") )
+            " ", py::arg("factor"))
     ;
 }

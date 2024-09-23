@@ -141,7 +141,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         # Const-ness
         const_adorn = ""
         if self.method_decl.has_const:
-            const_adorn = " const "
+            const_adorn = " const"
 
         # Get the arg signature e.g. "int, bool"
         arg_types = [t.decl_string for t in self.method_decl.argument_types]
@@ -237,7 +237,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             self.method_decl.arguments, self.method_decl.argument_types
         ):
             arg_list.append(f"{arg_type.decl_string} {arg.name}")
-            arg_name_list.append(f"        {arg.name}")
+            arg_name_list.append(f"{arg.name}")
 
         arg_string = ", ".join(arg_list)  # e.g. "int a, bool b, double c"
         arg_name_string = ",\n".join(arg_name_list)  # e.g. "a,\n b,\n c"
@@ -245,7 +245,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         # Const-ness
         const_adorn = ""
         if self.method_decl.has_const:
-            const_adorn = " const "
+            const_adorn = " const"
 
         # For pure virtual methods, use PYBIND11_OVERRIDE_PURE
         overload_adorn = ""

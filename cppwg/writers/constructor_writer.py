@@ -165,7 +165,7 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
         arg_types = [t.decl_string for t in self.ctor_decl.argument_types]
         wrapper_string += ", ".join(arg_types)
 
-        wrapper_string += " >()"
+        wrapper_string += ">()"
 
         # Keyword args with default values e.g. py::arg("i") = 1
         keyword_args = ""

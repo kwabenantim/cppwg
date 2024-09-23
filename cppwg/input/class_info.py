@@ -327,11 +327,11 @@ class CppClassInfo(CppTypeInfo):
 
         self.cpp_names = []
         for template_arg_list in self.template_arg_lists:
-            # Create template string from arg list e.g. [2, 2] -> "<2,2 >"
-            template_string = ",".join([str(arg) for arg in template_arg_list])
-            template_string = "<" + template_string + " >"
+            # Create template string from arg list e.g. [2, 2] -> "<2, 2>"
+            template_string = ", ".join([str(arg) for arg in template_arg_list])
+            template_string = "<" + template_string + ">"
 
-            # Join full name e.g. "Foo<2,2 >"
+            # Join full name e.g. "Foo<2, 2>"
             self.cpp_names.append(self.name + template_string)
 
     def update_names(self) -> None:

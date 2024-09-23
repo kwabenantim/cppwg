@@ -36,20 +36,23 @@ void register_{class_py_name}_class(pybind11::module &m);
 """ % tuple([CPPWG_EXT]*3)
 
 class_virtual_override_header = """\
-class {class_py_name}%s : public {class_py_name}{{
-    public:
+class {class_py_name}%s : public {class_py_name}
+{{
+public:
     using {class_py_name}::{class_base_name};
 """ % CPPWG_CLASS_OVERRIDE_SUFFIX
 
 class_virtual_override_footer = "}\n"
 
 class_definition = """\
-void register_{class_py_name}_class(py::module &m){{
-py::class_<{class_py_name} {overrides_string} {ptr_support} {bases} >(m, "{class_py_name}")
+void register_{class_py_name}_class(py::module &m)
+{{
+    py::class_<{class_py_name}{overrides_string}{ptr_support}{bases}>(m, "{class_py_name}")
 """
 
 method_virtual_override = """\
-    {return_type} {method_name}({arg_string}){const_adorn} override {{
+    {return_type} {method_name}({arg_string}){const_adorn} override
+    {{
         PYBIND11_OVERRIDE{overload_adorn}(
             {tidy_method_name},
             {class_py_name},
@@ -61,14 +64,13 @@ method_virtual_override = """\
 smart_pointer_holder = "PYBIND11_DECLARE_HOLDER_TYPE(T, {}<T>)"
 
 free_function = """\
-    m.def{def_adorn}("{function_name}", &{function_name}, {function_docs} {default_args});
+    m.def{def_adorn}("{function_name}", &{function_name}, {function_docs}{default_args});
 """
 
 class_method = """\
-        .def{def_adorn}(
-            "{method_name}",
+        .def{def_adorn}("{method_name}",
             ({return_type}({self_ptr})({arg_signature}){const_adorn}) &{class_py_name}::{method_name},
-            {method_docs} {default_args} {call_policy})
+            {method_docs}{default_args}{call_policy})
 """
 
 template_collection = {
