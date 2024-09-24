@@ -67,7 +67,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         Parameters
         ----------
         class_py_name: str
-            The Python name of the class e.g. Foo2_2
+            The Python name of the class e.g. Foo_2_2
         """
         # Add the top prefix text
         self.hpp_string += self.class_info.module_info.package_info.prefix_text + "\n"
@@ -88,7 +88,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         class_cpp_name : str
             The C++ name of the class e.g. Foo<2,2>
         class_py_name : str
-            The Python name of the class e.g. Foo2_2
+            The Python name of the class e.g. Foo_2_2
         """
         # Add the top prefix text
         self.cpp_string += self.class_info.module_info.package_info.prefix_text + "\n"
@@ -214,7 +214,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             #   void bar(double d) const override {
             #       PYBIND11_OVERRIDE_PURE(
             #           bar,
-            #           Foo2_2,
+            #           Foo_2_2,
             #           bar,
             #           d);
             #   }
@@ -227,7 +227,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 )
                 self.cpp_string += method_writer.generate_virtual_override_wrapper()
 
-            self.cpp_string += "\n};\n"
+            self.cpp_string += "};\n\n"
 
         return methods_needing_override
 
@@ -301,7 +301,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             smart_ptr_type: str = self.class_info.hierarchy_attribute("smart_ptr_type")
             ptr_support = ""
             if self.has_shared_ptr and smart_ptr_type:
-                ptr_support = f", {smart_ptr_type}<{class_py_name} > "
+                ptr_support = f", {smart_ptr_type}<{class_py_name}>"
 
             # Add base classes to the wrapper class definition if needed
             # e.g. py::class_<Foo, AbstractFoo, InterfaceFoo >(m, "Foo")
@@ -314,7 +314,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
                 # Check if the base class is also wrapped in the module
                 if base.related_class in self.module_class_decls:
-                    bases += f", {base.related_class.name} "
+                    bases += f", {base.related_class.name}"
 
             # Add the class registration
             class_definition_dict = {
@@ -378,7 +378,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             work_dir : str
                 The directory to write the files to
             class_py_name : str
-                The Python name of the class e.g. Foo2_2
+                The Python name of the class e.g. Foo_2_2
         """
         hpp_filepath = os.path.join(work_dir, f"{class_py_name}.{CPPWG_EXT}.hpp")
         cpp_filepath = os.path.join(work_dir, f"{class_py_name}.{CPPWG_EXT}.cpp")

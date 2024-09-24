@@ -9,21 +9,21 @@ class TestClasses(unittest.TestCase):
 
     def testGeometry(self):
 
-        p0 = pyshapes.geometry.Point2()
+        p0 = pyshapes.geometry.Point_2()
         self.assertTrue(p0.GetLocation() == [0.0, 0.0])
 
-        p1 = pyshapes.geometry.Point2(5.0, 0.0)
+        p1 = pyshapes.geometry.Point_2(5.0, 0.0)
         self.assertTrue(p1.GetLocation() == [5.0, 0.0])
 
-        p2 = pyshapes.geometry.Point2(5.0, 5.0)
+        p2 = pyshapes.geometry.Point_2(5.0, 5.0)
         self.assertTrue(p2.GetLocation() == [5.0, 5.0])
 
-        p3 = pyshapes.geometry.Point2(0.0, 5.0)
+        p3 = pyshapes.geometry.Point_2(0.0, 5.0)
         self.assertTrue(p3.GetLocation() == [0.0, 5.0])
 
         points = [p1, p2, p3]
 
-        triangle = pyshapes.primitives.Shape2()
+        triangle = pyshapes.primitives.Shape_2()
         triangle.SetVertices(points)
         self.assertTrue(len(triangle.rGetVertices()) == 3)
 
@@ -38,7 +38,7 @@ class TestClasses(unittest.TestCase):
 
     def testMesh(self):
 
-        cmesh = pyshapes.mesh.ConcreteMesh2()
+        cmesh = pyshapes.mesh.ConcreteMesh_2()
         self.assertTrue(cmesh.GetIndex() == 0)
 
         cmesh.SetIndex(1)

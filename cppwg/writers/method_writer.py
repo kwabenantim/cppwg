@@ -25,7 +25,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
     class_py_name : Optional[str]
-        The Python name of the class e.g. 'Foo2_2'
+        The Python name of the class e.g. 'Foo_2_2'
     template_params: Optional[List[str]]
         The template params for the class e.g. ['DIM_A', 'DIM_B']
     template_args: Optional[List[str]]
@@ -135,13 +135,13 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         if self.method_decl.has_static:
             self_ptr = "*"
         else:
-            # e.g. Foo2_2::*
+            # e.g. Foo_2_2::*
             self_ptr = self.class_py_name + "::*"
 
         # Const-ness
         const_adorn = ""
         if self.method_decl.has_const:
-            const_adorn = " const "
+            const_adorn = " const"
 
         # Get the arg signature e.g. "int, bool"
         arg_types = [t.decl_string for t in self.method_decl.argument_types]
@@ -214,7 +214,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         void bar(double d) const override {
             PYBIND11_OVERRIDE_PURE(
                 bar,
-                Foo2_2,
+                Foo_2_2,
                 bar,
                 d);
         }
@@ -237,7 +237,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             self.method_decl.arguments, self.method_decl.argument_types
         ):
             arg_list.append(f"{arg_type.decl_string} {arg.name}")
-            arg_name_list.append(f"        {arg.name}")
+            arg_name_list.append(f"{arg.name}")
 
         arg_string = ", ".join(arg_list)  # e.g. "int a, bool b, double c"
         arg_name_string = ",\n".join(arg_name_list)  # e.g. "a,\n b,\n c"
@@ -245,7 +245,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         # Const-ness
         const_adorn = ""
         if self.method_decl.has_const:
-            const_adorn = " const "
+            const_adorn = " const"
 
         # For pure virtual methods, use PYBIND11_OVERRIDE_PURE
         overload_adorn = ""
