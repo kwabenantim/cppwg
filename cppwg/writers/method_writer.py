@@ -233,11 +233,14 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         arg_list = []
         arg_name_list = []
 
-        for arg, arg_type in zip(
-            self.method_decl.arguments, self.method_decl.argument_types
+        for i, (arg, arg_type) in enumerate(
+            zip(self.method_decl.arguments, self.method_decl.argument_types)
         ):
             arg_list.append(f"{arg_type.decl_string} {arg.name}")
-            arg_name_list.append(f"{arg.name}")
+            if i == 0:
+                arg_name_list.append(f"{arg.name}")
+            else:
+                arg_name_list.append(" "*12 + f"{arg.name}")
 
         arg_string = ", ".join(arg_list)  # e.g. "int a, bool b, double c"
         arg_name_string = ",\n".join(arg_name_list)  # e.g. "a,\n b,\n c"
