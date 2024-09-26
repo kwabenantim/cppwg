@@ -211,6 +211,11 @@ class CppClassInfo(CppTypeInfo):
 
             self.decls.append(class_decl)
 
+        # Update the class source file if not already set
+        if not self.source_file_full_path:
+            self.source_file_full_path = self.decls[0].location.file_name
+            self.source_file = os.path.basename(self.source_file_full_path)
+
         # Update the base class declarations
         self.base_decls = [
             base.related_class for decl in self.decls for base in decl.bases
@@ -229,13 +234,17 @@ class CppClassInfo(CppTypeInfo):
         if self.excluded:
             return
 
-        # Map class to a source file, assuming the file name is the class name
-        for file_path in source_file_paths:
-            file_name = os.path.basename(file_path)
-            if self.name == os.path.splitext(file_name)[0]:
-                self.source_file_full_path = file_path
-                if self.source_file is None:
+        # Attempt to map class to a source file
+        if not self.source_file_full_path:
+            for file_path in source_file_paths:
+                file_name = os.path.basename(file_path)
+                # Match file name if set
+                if self.source_file == file_name:
+                    self.source_file_full_path = file_path
+                # Match class name, assuming the file name is the class name
+                elif self.name == os.path.splitext(file_name)[0]:
                     self.source_file = file_name
+                    self.source_file_full_path = file_path
 
         # Extract template args from the source file
         self.extract_templates_from_source()
