@@ -96,7 +96,7 @@ class CppModuleWrapperWriter:
 
         # Format module name as _packagename_modulename
         full_module_name = (
-            "_" + self.module_info.package_info.name + "_" + self.module_info.name
+            f"_{self.module_info.package_info.name}_{self.module_info.name}"
         )
 
         # Create the pybind11 module
@@ -132,7 +132,9 @@ class CppModuleWrapperWriter:
         if not os.path.isdir(module_dir):
             os.makedirs(module_dir)
 
-        module_cpp_file = os.path.join(module_dir, self.module_info.name + ".main.cpp")
+        module_cpp_file = os.path.join(
+            module_dir, f"{full_module_name}.main.{CPPWG_EXT}.cpp"
+        )
 
         with open(module_cpp_file, "w") as out_file:
             out_file.write(cpp_string)

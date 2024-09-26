@@ -2,7 +2,7 @@
 // Do not modify this file directly.
 
 #include <pybind11/pybind11.h>
-#include "wrapper_header_collection.hpp"
+#include "wrapper_header_collection.cppwg.hpp"
 #include "Shape_2.cppwg.hpp"
 #include "Shape_3.cppwg.hpp"
 #include "Rectangle.cppwg.hpp"

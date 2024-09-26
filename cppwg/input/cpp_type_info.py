@@ -34,8 +34,8 @@ class CppTypeInfo(BaseInfo):
         super().__init__(name)
 
         self.module_info: Optional["ModuleInfo"] = None  # noqa: F821
-        self.source_file_full_path: Optional[str] = None
-        self.source_file: Optional[str] = None
+        self.source_file_full_path: str = ""
+        self.source_file: str = ""
         self.name_override: Optional[str] = None
         self.template_signature: Optional[str] = None
         self.template_params: Optional[List[str]] = None

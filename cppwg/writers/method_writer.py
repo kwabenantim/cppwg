@@ -240,7 +240,7 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             if i == 0:
                 arg_name_list.append(f"{arg.name}")
             else:
-                arg_name_list.append(" "*12 + f"{arg.name}")
+                arg_name_list.append(" " * 12 + f"{arg.name}")
 
         arg_string = ", ".join(arg_list)  # e.g. "int a, bool b, double c"
         arg_name_string = ",\n".join(arg_name_list)  # e.g. "a,\n b,\n c"

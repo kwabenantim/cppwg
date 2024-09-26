@@ -1,55 +1,35 @@
 import os
 import subprocess
 import unittest
+from difflib import context_diff
 from glob import glob
-from typing import List
 
 
-def get_file_lines(file_path: str) -> List[str]:
-    """
-    Load a file into a list of lines
-
-    Parameters
-    ----------
-    file_path : str
-      The path to the file to load
-
-    Returns
-    -------
-    List[str]
-      A list of lines read from the file, with excess whitespace and empty lines removed
-    """
-
-    with open(file_path, "r") as in_file:
-        # remove excess whitespace
-        lines = [line.rstrip().lstrip() for line in in_file]
-        # remove empty lines
-        lines = [line for line in lines if line]
-
-    return lines
-
-
-def compare_files(file_path_a: str, file_path_b: str) -> bool:
-    """
-    Check if two files have the same content
+def file_diff(file_a: str, file_b: str) -> bool:
+    """Check if two files have the same content.
 
     Parameters
     __________
-    file_path_a: str
+    file_a: str
         The path to the first file
-    file_path_b: str
+    file__b: str
         The path to the second file
 
     Returns
     __________
-    bool
-        True if the files have the same content
+    str
+        A diff of the two files
     """
-    # Get file lines with whitespace and empty lines stripped
-    file_lines_a = get_file_lines(file_path_a)
-    file_lines_b = get_file_lines(file_path_b)
+    # Read files and remove excess whitespace
+    with open(file_a, "r") as fa:
+        a = [line.strip() for line in fa]
+        a = [line for line in a if line]
 
-    return file_lines_a == file_lines_b
+    with open(file_b, "r") as fb:
+        b = [line.strip() for line in fb]
+        b = [line for line in b if line]
+
+    return "\n".join(context_diff(a, b))
 
 
 class TestShapes(unittest.TestCase):
@@ -96,6 +76,7 @@ class TestShapes(unittest.TestCase):
         self.assertTrue(os.path.isdir(wrapper_root_gen))
 
         # Compare the generated files with reference files
+        self.maxDiff = None
         for dirpath, _, filenames in os.walk(wrapper_root_ref):
             for filename in filenames:
                 if filename.endswith(".cppwg.cpp") or filename.endswith(".cppwg.hpp"):
@@ -104,7 +85,7 @@ class TestShapes(unittest.TestCase):
 
                     self.assertTrue(os.path.isfile(file_ref))
                     self.assertTrue(os.path.isfile(file_gen))
-                    self.assertTrue(compare_files(file_gen, file_ref))
+                    self.assertEqual(file_diff(file_gen, file_ref), "", f"\n{file_ref}")
 
 
 if __name__ == "__main__":

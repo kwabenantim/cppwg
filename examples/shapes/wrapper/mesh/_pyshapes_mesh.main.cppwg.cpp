@@ -2,7 +2,7 @@
 // Do not modify this file directly.
 
 #include <pybind11/pybind11.h>
-#include "wrapper_header_collection.hpp"
+#include "wrapper_header_collection.cppwg.hpp"
 #include "AbstractMesh_2_2.cppwg.hpp"
 #include "AbstractMesh_3_3.cppwg.hpp"
 #include "ConcreteMesh_2.cppwg.hpp"
