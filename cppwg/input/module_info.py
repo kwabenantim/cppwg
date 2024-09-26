@@ -125,7 +125,9 @@ class ModuleInfo(BaseInfo):
             cache[(b, a)] = 0
             return 0
 
-        self.class_info_collection.sort(key=lambda x: x.source_file_full_path)
+        self.class_info_collection.sort(
+            key=lambda x: (os.path.dirname(x.source_file_full_path), x.name)
+        )
 
         i = 0
         n = len(self.class_info_collection)
