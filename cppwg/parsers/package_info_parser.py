@@ -215,6 +215,8 @@ class PackageInfoParser:
                         class_info.module_info = module_info
                         module_info.class_info_collection.append(class_info)
 
+                    module_info.class_info_collection.sort(key=lambda x: x.name)
+
             # Parse the free function data and create free function info objects.
             # Note: if module_config["use_all_free_functions"] == True, free function
             # info objects will be added later after parsing the C++ source code.
@@ -242,6 +244,8 @@ class PackageInfoParser:
                         module_info.free_function_info_collection.append(
                             free_function_info
                         )
+
+                    module_info.free_function_info_collection.sort(key=lambda x: x.name)
 
             # Parse the variable data
             if not module_config["use_all_variables"]:

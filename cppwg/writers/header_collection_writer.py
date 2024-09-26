@@ -23,9 +23,9 @@ class CppHeaderCollectionWriter:
             The package information
         wrapper_root : str
             The output directory for the generated wrapper code
-        hpp_collection_filepath : str
+        hpp_collection_file : str
             The path to save the header collection file to
-        hpp_collection_string : str
+        hpp_collection : str
             The output string that gets written to the header collection file
         class_dict : Dict[str, CppClassInfo]
             A dictionary of all class info objects
@@ -37,13 +37,13 @@ class CppHeaderCollectionWriter:
         self,
         package_info: PackageInfo,
         wrapper_root: str,
-        hpp_collection_filepath: str,
+        hpp_collection_file: str,
     ):
 
         self.package_info: PackageInfo = package_info
         self.wrapper_root: str = wrapper_root
-        self.hpp_collection_filepath: str = hpp_collection_filepath
-        self.hpp_collection_string: str = ""
+        self.hpp_collection_file: str = hpp_collection_file
+        self.hpp_collection: str = ""
 
         # For convenience, collect all class and free function info into dicts keyed by name
         self.class_dict: Dict[str, CppClassInfo] = {}
@@ -73,24 +73,23 @@ class CppHeaderCollectionWriter:
     def write(self) -> None:
         """Generate the header file output string and write it to file."""
         # Add the top prefix text
-        self.hpp_collection_string += self.package_info.prefix_text + "\n"
+        self.hpp_collection += self.package_info.prefix_text + "\n"
 
         # Add opening header guard
-        self.hpp_collection_string += f"#ifndef {self.package_info.name}_HEADERS_HPP_\n"
-        self.hpp_collection_string += f"#define {self.package_info.name}_HEADERS_HPP_\n"
+        self.hpp_collection += f"#ifndef {self.package_info.name}_HEADERS_HPP_\n"
+        self.hpp_collection += f"#define {self.package_info.name}_HEADERS_HPP_\n"
 
-        self.hpp_collection_string += "\n// Includes\n"
+        self.hpp_collection += "\n// Includes\n"
 
-        included_files = set()  # Keep track of included files to avoid duplicates
+        seen_files = set()  # Keep track of included files to avoid duplicates
 
         if self.should_include_all():
             # Include all the headers
-            for hpp_filepath in self.package_info.source_hpp_files:
-                hpp_filename = os.path.basename(hpp_filepath)
-
-                if hpp_filename not in included_files:
-                    self.hpp_collection_string += f'#include "{hpp_filename}"\n'
-                    included_files.add(hpp_filename)
+            for filepath in self.package_info.source_hpp_files:
+                filename = os.path.basename(filepath)
+                if filename not in seen_files:
+                    self.hpp_collection += f'#include "{filename}"\n'
+                    seen_files.add(filename)
 
         else:
             # Include specific headers needed by classes
@@ -100,30 +99,20 @@ class CppHeaderCollectionWriter:
                     if class_info.excluded:
                         continue
 
-                    hpp_filename = None
-
-                    if class_info.source_file:
-                        hpp_filename = class_info.source_file
-
-                    elif class_info.source_file_full_path:
-                        hpp_filename = os.path.basename(
-                            class_info.source_file_full_path
-                        )
-
-                    if hpp_filename and hpp_filename not in included_files:
-                        self.hpp_collection_string += f'#include "{hpp_filename}"\n'
-                        included_files.add(hpp_filename)
+                    filename = class_info.source_file
+                    if filename and filename not in seen_files:
+                        self.hpp_collection += f'#include "{filename}"\n'
+                        seen_files.add(filename)
 
                 # Include specific headers needed by free functions
                 for free_function_info in module_info.free_function_info_collection:
                     if free_function_info.source_file_full_path:
-                        hpp_filename = os.path.basename(
+                        filename = os.path.basename(
                             free_function_info.source_file_full_path
                         )
-
-                        if hpp_filename not in included_files:
-                            self.hpp_collection_string += f'#include "{hpp_filename}"\n'
-                            included_files.add(hpp_filename)
+                        if filename not in seen_files:
+                            self.hpp_collection += f'#include "{filename}"\n'
+                            seen_files.add(filename)
 
         # Add the template instantiations e.g. `template class Foo<2,2>;`
         # and typdefs e.g. `typedef Foo<2,2> Foo_2_2;`
@@ -150,19 +139,17 @@ class CppHeaderCollectionWriter:
                     template_instantiations += f"template class {cpp_name};\n"
                     template_typedefs += f"    typedef {cpp_name} {py_name};\n"
 
-        self.hpp_collection_string += "\n// Instantiate Template Classes\n"
-        self.hpp_collection_string += template_instantiations
+        self.hpp_collection += "\n// Instantiate Template Classes\n"
+        self.hpp_collection += template_instantiations
 
-        self.hpp_collection_string += "\n// Typedefs for nicer naming\n"
-        self.hpp_collection_string += "namespace cppwg\n{\n"
-        self.hpp_collection_string += template_typedefs
-        self.hpp_collection_string += "} // namespace cppwg\n"
+        self.hpp_collection += "\n// Typedefs for nicer naming\n"
+        self.hpp_collection += "namespace cppwg\n{\n"
+        self.hpp_collection += template_typedefs
+        self.hpp_collection += "} // namespace cppwg\n"
 
         # Add closing header guard
-        self.hpp_collection_string += (
-            f"\n#endif // {self.package_info.name}_HEADERS_HPP_\n"
-        )
+        self.hpp_collection += f"\n#endif // {self.package_info.name}_HEADERS_HPP_\n"
 
         # Write the header collection string to file
-        with open(self.hpp_collection_filepath, "w") as hpp_file:
-            hpp_file.write(self.hpp_collection_string)
+        with open(self.hpp_collection_file, "w") as hpp_file:
+            hpp_file.write(self.hpp_collection)

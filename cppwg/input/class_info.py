@@ -235,7 +235,9 @@ class CppClassInfo(CppTypeInfo):
             return
 
         # Attempt to map class to a source file
-        if not self.source_file_full_path:
+        if self.source_file_full_path:
+            self.source_file = os.path.basename(self.source_file_full_path)
+        else:
             for file_path in source_file_paths:
                 file_name = os.path.basename(file_path)
                 # Match file name if set

@@ -111,6 +111,9 @@ class PackageInfo(BaseInfo):
             logger.error(f"No header files found in source root: {self.source_root}")
             raise FileNotFoundError()
 
+        # Sort by filename
+        self.source_hpp_files.sort(key=lambda x: os.path.basename(x))
+
     def update_from_source(self) -> None:
         """
         Update modules with information from the source headers.
