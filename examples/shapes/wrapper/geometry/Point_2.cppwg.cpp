@@ -3,7 +3,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "wrapper_header_collection.hpp"
+#include "wrapper_header_collection.cppwg.hpp"
 
 #include "Point_2.cppwg.hpp"
 
