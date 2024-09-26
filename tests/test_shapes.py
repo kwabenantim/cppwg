@@ -76,6 +76,7 @@ class TestShapes(unittest.TestCase):
         self.assertTrue(os.path.isdir(wrapper_root_gen))
 
         # Compare the generated files with reference files
+        self.maxDiff = None
         for dirpath, _, filenames in os.walk(wrapper_root_ref):
             for filename in filenames:
                 if filename.endswith(".cppwg.cpp") or filename.endswith(".cppwg.hpp"):
@@ -84,7 +85,7 @@ class TestShapes(unittest.TestCase):
 
                     self.assertTrue(os.path.isfile(file_ref))
                     self.assertTrue(os.path.isfile(file_gen))
-                    self.assertEqual(file_diff(file_gen, file_ref), "")
+                    self.assertEqual(file_diff(file_gen, file_ref), "", f"\n{file_ref}")
 
 
 if __name__ == "__main__":
