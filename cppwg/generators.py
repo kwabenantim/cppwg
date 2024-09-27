@@ -259,11 +259,8 @@ class CppWrapperGenerator:
         # Parse the input yaml for package, module, and class information
         self.parse_package_info()
 
-        # Collect header files, skipping wrappers to avoid pollution
-        self.package_info.collect_source_headers(restricted_paths=[self.wrapper_root])
-
-        # Update info objects with data from the source headers
-        self.package_info.update_from_source()
+        # Collect header files (skip wrappers), and update info
+        self.package_info.init(restricted_paths=[self.wrapper_root])
 
         # Write the header collection file
         self.write_header_collection()

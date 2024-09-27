@@ -75,6 +75,18 @@ class PackageInfo(BaseInfo):
         """Returns None as this is the top level object in the hierarchy."""
         return None
 
+    def init(self, restricted_paths: List[str]) -> None:
+        """
+        Initialise - collect header files and update info.
+
+        Parameters
+        ----------
+        restricted_paths : List[str]
+            A list of restricted paths to skip when collecting header files.
+        """
+        self.collect_source_headers(restricted_paths)
+        self.update_from_source()
+
     def collect_source_headers(self, restricted_paths: List[str]) -> None:
         """
         Collect header files from the source root.
@@ -116,7 +128,7 @@ class PackageInfo(BaseInfo):
 
     def update_from_source(self) -> None:
         """
-        Update modules with information from the source headers.
+        Update with data from the source headers.
         """
         for module_info in self.module_info_collection:
             module_info.update_from_source(self.source_hpp_files)
