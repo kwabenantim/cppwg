@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from cppwg.input.base_info import BaseInfo
+from cppwg.info.base_info import BaseInfo
 from cppwg.utils.constants import CPPWG_EXT
 
 

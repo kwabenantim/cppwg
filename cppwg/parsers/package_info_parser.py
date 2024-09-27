@@ -9,11 +9,11 @@ from typing import Any, Dict, Optional
 import yaml
 
 import cppwg.templates.custom
-from cppwg.input.base_info import BaseInfo
-from cppwg.input.class_info import CppClassInfo
-from cppwg.input.free_function_info import CppFreeFunctionInfo
-from cppwg.input.module_info import ModuleInfo
-from cppwg.input.package_info import PackageInfo
+from cppwg.info.base_info import BaseInfo
+from cppwg.info.class_info import CppClassInfo
+from cppwg.info.free_function_info import CppFreeFunctionInfo
+from cppwg.info.module_info import ModuleInfo
+from cppwg.info.package_info import PackageInfo
 from cppwg.utils import utils
 from cppwg.utils.constants import CPPWG_SOURCEROOT_STRING
 

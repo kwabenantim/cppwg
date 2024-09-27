@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from cppwg.input.cpp_type_info import CppTypeInfo
+from cppwg.info.cpp_type_info import CppTypeInfo
 
 
 class CppMethodInfo(CppTypeInfo):

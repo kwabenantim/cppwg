@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from pygccxml.declarations.matchers import access_type_matcher_t
 from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
-from cppwg.input.cpp_type_info import CppTypeInfo
+from cppwg.info.cpp_type_info import CppTypeInfo
 from cppwg.utils import utils
 
 

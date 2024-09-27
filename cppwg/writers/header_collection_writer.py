@@ -3,9 +3,9 @@
 import os
 from typing import Dict
 
-from cppwg.input.class_info import CppClassInfo
-from cppwg.input.free_function_info import CppFreeFunctionInfo
-from cppwg.input.package_info import PackageInfo
+from cppwg.info.class_info import CppClassInfo
+from cppwg.info.free_function_info import CppFreeFunctionInfo
+from cppwg.info.package_info import PackageInfo
 
 
 class CppHeaderCollectionWriter:

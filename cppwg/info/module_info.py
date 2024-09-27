@@ -4,9 +4,9 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from cppwg.input.base_info import BaseInfo
-from cppwg.input.class_info import CppClassInfo
-from cppwg.input.free_function_info import CppFreeFunctionInfo
+from cppwg.info.base_info import BaseInfo
+from cppwg.info.class_info import CppClassInfo
+from cppwg.info.free_function_info import CppFreeFunctionInfo
 
 
 class ModuleInfo(BaseInfo):
