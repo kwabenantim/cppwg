@@ -15,7 +15,7 @@ class CppMethodInfo(CppTypeInfo):
         The class info parent object associated with this method
     """
 
-    def __init__(self, name: str, _):
+    def __init__(self, name: str, _) -> None:
 
         super().__init__(name)
 

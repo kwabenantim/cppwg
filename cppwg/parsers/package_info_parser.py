@@ -50,24 +50,25 @@ class PackageInfoParser:
         with open(self.config_file, "r") as config_file:
             raw_package_info = yaml.safe_load(config_file)
 
-        # Default config options that apply to package, modules, classes, etc.
-        global_config: Dict[str, Any] = {
-            "calldef_excludes": None,
-            "constructor_arg_type_excludes": None,
-            "constructor_signature_excludes": None,
-            "custom_generator": None,
+        # Base config options that apply to package, modules, classes, etc.
+        base_config: Dict[str, Any] = {
+            "calldef_excludes": "",
+            "constructor_arg_type_excludes": "",
+            "constructor_signature_excludes": "",
+            "custom_generator": "",
             "excluded": False,
             "excluded_methods": [],
             "excluded_variables": [],
-            "pointer_call_policy": None,
-            "reference_call_policy": None,
-            "return_type_excludes": None,
-            "smart_ptr_type": None,
+            "extra_code": [],
+            "pointer_call_policy": "",
+            "prefix_code": [],
+            "prefix_text": "",
+            "reference_call_policy": "",
+            "return_type_excludes": "",
+            "smart_ptr_type": "",
             "source_includes": [],
             "source_root": self.source_root,
             "template_substitutions": [],
-            "prefix_code": [],
-            "prefix_text": "",
         }
 
         # Get package config from the raw package info
@@ -77,7 +78,7 @@ class PackageInfoParser:
             "exclude_default_args": False,
             "source_hpp_patterns": ["*.hpp"],
         }
-        package_config.update(global_config)
+        package_config.update(base_config)
 
         for key in package_config.keys():
             if key in raw_package_info:
@@ -95,14 +96,15 @@ class PackageInfoParser:
             # Get module config from the raw module info
             module_config = {
                 "name": "cppwg_module",
-                "source_locations": None,
+                "source_locations": "",
+                "use_all_classes": False,
+                "use_all_free_functions": False,
+                "use_all_variables": False,
                 "classes": [],
                 "free_functions": [],
                 "variables": [],
-                "use_all_classes": False,
-                "use_all_free_functions": False,
             }
-            module_config.update(global_config)
+            module_config.update(base_config)
 
             for key in module_config.keys():
                 if key in raw_module_info:
@@ -133,8 +135,12 @@ class PackageInfoParser:
                 if module_config["classes"]:
                     for raw_class_info in module_config["classes"]:
                         # Get class config from the raw class info
-                        class_config = {"name_override": None, "source_file": None}
-                        class_config.update(global_config)
+                        class_config = {
+                            "name_override": "",
+                            "source_file": "",
+                            "source_file_path": "",
+                        }
+                        class_config.update(base_config)
 
                         for key in class_config.keys():
                             if key in raw_class_info:
@@ -154,10 +160,11 @@ class PackageInfoParser:
                     for raw_free_function_info in module_config["free_functions"]:
                         # Get free function config from the raw free function info
                         free_function_config = {
-                            "name_override": None,
-                            "source_file": None,
+                            "name_override": "",
+                            "source_file": "",
+                            "source_file_path": "",
                         }
-                        free_function_config.update(global_config)
+                        free_function_config.update(base_config)
 
                         for key in free_function_config.keys():
                             if key in raw_free_function_info:
@@ -173,21 +180,26 @@ class PackageInfoParser:
 
             # Parse the variable data
             if not module_config["use_all_variables"]:
-                for raw_variable_info in module_config["variables"]:
-                    # Get variable config from the raw variable info
-                    variable_config = {"name_override": None, "source_file": None}
-                    variable_config.update(global_config)
+                if module_config["variables"]:
+                    for raw_variable_info in module_config["variables"]:
+                        # Get variable config from the raw variable info
+                        variable_config = {
+                            "name_override": "",
+                            "source_file": "",
+                            "source_file_path": "",
+                        }
+                        variable_config.update(base_config)
 
-                    for key in variable_config.keys():
-                        if key in raw_variable_info:
-                            variable_config[key] = raw_variable_info[key]
+                        for key in variable_config.keys():
+                            if key in raw_variable_info:
+                                variable_config[key] = raw_variable_info[key]
 
-                    # Create the CppVariableInfo object from the variable config dict
-                    variable_info = CppVariableInfo(
-                        variable_config["name"], variable_config
-                    )
+                        # Create the CppVariableInfo object from the variable config dict
+                        variable_info = CppVariableInfo(
+                            variable_config["name"], variable_config
+                        )
 
-                    # Add the variable to the module
-                    module_info.add_variable(variable_info)
+                        # Add the variable to the module
+                        module_info.add_variable(variable_info)
 
         return package_info

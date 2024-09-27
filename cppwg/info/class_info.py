@@ -30,10 +30,9 @@ class CppClassInfo(CppTypeInfo):
 
         super().__init__(name, class_config)
 
-        self.base_decls: Optional[List["declaration_t"]] = None  # noqa: F821
-
-        self.cpp_names: List[str] = None
-        self.py_names: List[str] = None
+        self.base_decls: List["declaration_t"] = []  # noqa: F821
+        self.cpp_names: List[str] = []
+        self.py_names: List[str] = []
 
     def extract_templates_from_source(self) -> None:
         """
@@ -48,13 +47,19 @@ class CppClassInfo(CppTypeInfo):
             return
 
         # Skip if there is no source file
-        source_path = self.source_file_full_path
+        source_path = self.source_file_path
         if not source_path:
             return
 
         # Get list of template substitutions applicable to this class
         # e.g. [ {"signature":"<int A, int B>", "replacement":[[2,2], [3,3]]} ]
-        substitutions = self.hierarchy_attribute_gather("template_substitutions")
+        substitutions = [
+            ts_dict
+            for ts_dict_list in self.hierarchy_attribute_gather(
+                "template_substitutions"
+            )
+            for ts_dict in ts_dict_list
+        ]
 
         # Skip if there are no applicable template substitutions
         if not substitutions:
@@ -85,7 +90,6 @@ class CppClassInfo(CppTypeInfo):
                 self.template_arg_lists = substitution["replacement"]
 
                 # Extract parameters ["A", "B"] from "<int A, int B = A>"
-                self.template_params = []
                 for part in signature.split(","):
                     param = (
                         part.strip()
@@ -169,8 +173,6 @@ class CppClassInfo(CppTypeInfo):
         if self.excluded:
             return
 
-        self.decls = []
-
         for class_cpp_name in self.cpp_names:
             class_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
 
@@ -178,10 +180,7 @@ class CppClassInfo(CppTypeInfo):
                 class_decl = source_ns.class_(class_name)
 
             except declaration_not_found_t as e1:
-                if (
-                    self.template_signature is None
-                    or "=" not in self.template_signature
-                ):
+                if "=" not in self.template_signature:
                     logger.error(f"Could not find declaration for class {class_name}")
                     raise e1
 
@@ -213,9 +212,9 @@ class CppClassInfo(CppTypeInfo):
             self.decls.append(class_decl)
 
         # Update the class source file if not already set
-        if not self.source_file_full_path:
-            self.source_file_full_path = self.decls[0].location.file_name
-            self.source_file = os.path.basename(self.source_file_full_path)
+        if not self.source_file_path:
+            self.source_file_path = self.decls[0].location.file_name
+            self.source_file = os.path.basename(self.source_file_path)
 
         # Update the base class declarations
         self.base_decls = [
@@ -236,18 +235,18 @@ class CppClassInfo(CppTypeInfo):
             return
 
         # Attempt to map class to a source file
-        if self.source_file_full_path:
-            self.source_file = os.path.basename(self.source_file_full_path)
+        if self.source_file_path:
+            self.source_file = os.path.basename(self.source_file_path)
         else:
             for file_path in source_file_paths:
                 file_name = os.path.basename(file_path)
                 # Match file name if set
                 if self.source_file == file_name:
-                    self.source_file_full_path = file_path
+                    self.source_file_path = file_path
                 # Match class name, assuming the file name is the class name
                 elif self.name == os.path.splitext(file_name)[0]:
                     self.source_file = file_name
-                    self.source_file_full_path = file_path
+                    self.source_file_path = file_path
 
         # Extract template args from the source file
         self.extract_templates_from_source()
@@ -267,14 +266,12 @@ class CppClassInfo(CppTypeInfo):
         ["Foo_2_2", "Foo_3_3"].
         """
         # Handles untemplated classes
-        if self.template_arg_lists is None:
+        if not self.template_arg_lists:
             if self.name_override:
-                self.py_names = [self.name_override]
+                self.py_names.append(self.name_override)
             else:
-                self.py_names = [self.name]
+                self.py_names.append(self.name)
             return
-
-        self.py_names = []
 
         # Table of special characters for removal
         rm_chars = {"<": None, ">": None, ",": None, " ": None}
@@ -282,7 +279,7 @@ class CppClassInfo(CppTypeInfo):
 
         # Clean the type name
         type_name = self.name
-        if self.name_override is not None:
+        if self.name_override:
             type_name = self.name_override
 
         # Do standard name replacements e.g. "unsigned int" -> "Unsigned"
@@ -333,11 +330,10 @@ class CppClassInfo(CppTypeInfo):
         ["Foo<2, 2>", "Foo<3, 3>"].
         """
         # Handles untemplated classes
-        if self.template_arg_lists is None:
-            self.cpp_names = [self.name]
+        if not self.template_arg_lists:
+            self.cpp_names.append(self.name)
             return
 
-        self.cpp_names = []
         for template_arg_list in self.template_arg_lists:
             # Create template string from arg list e.g. [2, 2] -> "<2, 2>"
             template_string = ", ".join([str(arg) for arg in template_arg_list])

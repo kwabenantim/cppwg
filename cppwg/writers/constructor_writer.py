@@ -107,29 +107,39 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
 
         # Exclude constructors with args matching patterns in calldef_excludes
         calldef_excludes = [
-            x.replace(" ", "")
-            for x in self.class_info.hierarchy_attribute_gather("calldef_excludes")
+            ex
+            for ex_list in self.class_info.hierarchy_attribute_gather(
+                "calldef_excludes"
+            )
+            for ex in ex_list
         ]
+        calldef_excludes = [ex.replace(" ", "") for ex in calldef_excludes]
         for arg_type in arg_types:
             if arg_type in calldef_excludes:
                 return True
 
         # Exclude constructors with args matching patterns in constructor_arg_type_excludes
         ctor_arg_type_excludes = [
-            x.replace(" ", "")
-            for x in self.class_info.hierarchy_attribute_gather(
+            ex
+            for ex_list in self.class_info.hierarchy_attribute_gather(
                 "constructor_arg_type_excludes"
             )
+            for ex in ex_list
         ]
+        ctor_arg_type_excludes = [ex.replace(" ", "") for ex in ctor_arg_type_excludes]
         for exclude_type in ctor_arg_type_excludes:
             for arg_type in arg_types:
                 if exclude_type in arg_type:
                     return True
 
         # Exclude constructors matching a signature in constructor_signature_excludes
-        ctor_signature_excludes = self.class_info.hierarchy_attribute_gather(
-            "constructor_signature_excludes"
-        )
+        ctor_signature_excludes = [
+            ex
+            for ex_list in self.class_info.hierarchy_attribute_gather(
+                "constructor_signature_excludes"
+            )
+            for ex in ex_list
+        ]
 
         for exclude_types in ctor_signature_excludes:
             if len(exclude_types) != len(arg_types):

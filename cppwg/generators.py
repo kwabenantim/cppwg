@@ -174,8 +174,8 @@ class CppWrapperGenerator:
         all_class_decls = self.source_ns.classes(allow_empty=True)
 
         seen_class_names = set()
-        for module_info in self.package_info.module_info_collection:
-            for class_info in module_info.class_info_collection:
+        for module_info in self.package_info.module_collection:
+            for class_info in module_info.class_collection:
                 seen_class_names.add(class_info.name)
                 if class_info.decls:
                     seen_class_names.update(decl.name for decl in class_info.decls)

@@ -29,7 +29,7 @@ class BaseInfo:
         List of exclude patterns for arg types in constructors.
     constructor_signature_excludes : List[List[str]]
         List of exclude patterns for constructor signatures.
-    custom_generator : str, optional
+    custom_generator : str
         A custom generator for the feature.
     excluded: bool
         Exclude this feature.
@@ -43,30 +43,45 @@ class BaseInfo:
         The name of the package, module, class etc. represented by this object.
     name_replacements : Dict[str, str]
         A dictionary of name replacements e.g. {"double":"Double"}
-    pointer_call_policy : str, optional
+    pointer_call_policy : str
         The default pointer call policy.
     prefix_code : List[str]
         Any wrapper code that precedes the feature.
-    prefix_text : str, optional
+    prefix_text : str
         Text to add at the top of all wrappers.
-    reference_call_policy : str, optional
+    reference_call_policy : str
         The default reference call policy.
     return_type_excludes : List[str]
         List of exclude patterns for return types.
-    smart_ptr_type : str, optional
+    smart_ptr_type : str
         Handle classes with this smart pointer type.
     source_includes : List[str]
         A list of source files to be included with the feature.
+    source_root : str
+        The root directory of the C++ source code.
     template_substitutions : Dict[str, List[Any]]
         A list of template substitution sequences.
+
+    custom_generator_instance : cppwg_custom.Custom
+        An instance of the custom generator class.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str, info_config: Optional[Dict[str, Any]] = None) -> None:
+        """
+        Create a base info object from a config dict.
+
+        Parameters
+        ----------
+        name : str
+            The name of the package, module, class, etc. represented by this object.
+        info_config : Dict[str, Any]
+            A dictionary of configuration settings
+        """
         self.name: str = name
 
         # Paths
         self.source_includes: List[str] = []
-        self.source_root: str = None
+        self.source_root: str = ""
 
         # Exclusions
         self.arg_type_excludes: List[str] = []
@@ -79,14 +94,9 @@ class BaseInfo:
         self.return_type_excludes: List[str] = []
 
         # Pointers
-        self.pointer_call_policy: Optional[str] = None
-        self.reference_call_policy: Optional[str] = None
-        self.smart_ptr_type: Optional[str] = None
-
-        # Custom Code
-        self.extra_code: List[str] = []
-        self.prefix_code: List[str] = []
-        self.custom_generator: Optional[str] = None
+        self.pointer_call_policy: str = ""
+        self.reference_call_policy: str = ""
+        self.smart_ptr_type: str = ""
 
         # Substitutions
         self.template_substitutions: Dict[str, List[Any]] = []
@@ -105,6 +115,70 @@ class BaseInfo:
             "c_vector": "CVector",
             "std::set": "Set",
         }
+
+        # Custom Code
+        self.extra_code: List[str] = []
+        self.prefix_code: List[str] = []
+        self.prefix_text: str = ""
+        self.custom_generator: str = ""
+
+        self.custom_generator_instance: cppwg_custom.Custom = None
+
+        if info_config:
+            # Paths
+            self.source_includes = info_config.get(
+                "source_includes", self.source_includes
+            )
+            self.source_root = info_config.get("source_root", self.source_root)
+
+            # Exclusions
+            self.arg_type_excludes = info_config.get(
+                "arg_type_excludes", self.arg_type_excludes
+            )
+            self.calldef_excludes = info_config.get(
+                "calldef_excludes", self.calldef_excludes
+            )
+            self.constructor_arg_type_excludes = info_config.get(
+                "constructor_arg_type_excludes", self.constructor_arg_type_excludes
+            )
+            self.constructor_signature_excludes = info_config.get(
+                "constructor_signature_excludes", self.constructor_signature_excludes
+            )
+            self.excluded = info_config.get("excluded", self.excluded)
+            self.excluded_methods = info_config.get(
+                "excluded_methods", self.excluded_methods
+            )
+            self.excluded_variables = info_config.get(
+                "excluded_variables", self.excluded_variables
+            )
+            self.return_type_excludes = info_config.get(
+                "return_type_excludes", self.return_type_excludes
+            )
+
+            # Pointers
+            self.pointer_call_policy = info_config.get(
+                "pointer_call_policy", self.pointer_call_policy
+            )
+            self.reference_call_policy = info_config.get(
+                "reference_call_policy", self.reference_call_policy
+            )
+            self.smart_ptr_type = info_config.get("smart_ptr_type", self.smart_ptr_type)
+
+            # Substitutions
+            self.template_substitutions = info_config.get(
+                "template_substitutions", self.template_substitutions
+            )
+            self.name_replacements = info_config.get(
+                "name_replacements", self.name_replacements
+            )
+
+            # Custom Code
+            self.extra_code = info_config.get("extra_code", self.extra_code)
+            self.prefix_code = info_config.get("prefix_code", self.prefix_code)
+            self.prefix_text = info_config.get("prefix_text", self.prefix_text)
+            self.custom_generator = info_config.get(
+                "custom_generator", self.custom_generator
+            )
 
         self.load_custom_generator()
 
@@ -134,7 +208,7 @@ class BaseInfo:
         logger = logging.getLogger()
 
         # Replace the `CPPWG_SOURCEROOT` placeholder in the custom generator
-        # string if needed. For example, a custom generator might be specified
+        # path if needed. For example, a custom generator might be specified
         # as `custom_generator: CPPWG_SOURCEROOT/path/to/CustomGenerator.py`
         filepath = self.custom_generator.replace(
             CPPWG_SOURCEROOT_STRING, self.source_root
@@ -163,17 +237,15 @@ class BaseInfo:
         # Note: The custom generator class name must match the filename.
         CustomGeneratorClass: cppwg_custom.Custom = getattr(module, class_name)
 
-        # Replace the `info.custom_generator` string with a new object created
-        # from the provided custom generator class
-        self.custom_generator = CustomGeneratorClass()
+        # Instantiate the custom generator from the provided class
+        self.custom_generator_instance = CustomGeneratorClass()
 
     def hierarchy_attribute(self, attribute_name: str) -> Any:
         """
-        Get the attribute value from this object or one of its parents.
+        Get the attribute value from this object or the one that owns this.
 
-        For the supplied attribute, iterate through parent objects until a non-None
-        value is found. If the top level parent (i.e. package) attribute is
-        None, return None.
+        Search higher level objects recursively and return the first
+        value found for the attribute.
 
         Parameters
         ----------
@@ -183,21 +255,24 @@ class BaseInfo:
         Returns
         -------
         Any
-            The attribute value.
+            The attribute value, or None if not found.
         """
-        if hasattr(self, attribute_name) and getattr(self, attribute_name) is not None:
-            return getattr(self, attribute_name)
+        value = getattr(self, attribute_name, None)
+        if value:
+            return value
 
-        if hasattr(self, "parent") and self.parent is not None:
-            return self.parent.hierarchy_attribute(attribute_name)
+        if self.parent is None:
+            # Reached the top of the hierarchy (i.e. PackageInfo)
+            return None
 
-        return None
+        return self.parent.hierarchy_attribute(attribute_name)
 
     def hierarchy_attribute_gather(self, attribute_name: str) -> List[Any]:
         """
-        Get a list of attribute values from this object and its parents.
+        Get a list of attribute values from this object or the one that owns it.
 
-        For the supplied attribute, iterate through parent objects gathering list entries.
+        Search higher level objects recursively, gathering attribute values
+        into a list wherever the attribute is found.
 
         Parameters
         ----------
@@ -209,12 +284,15 @@ class BaseInfo:
         List[Any]
             The list of attribute values.
         """
-        att_list: List[Any] = []
+        value_list: List[Any] = []
 
-        if hasattr(self, attribute_name) and getattr(self, attribute_name) is not None:
-            att_list.extend(getattr(self, attribute_name))
+        value = getattr(self, attribute_name, None)
+        if value:
+            value_list.append(value)
 
-        if hasattr(self, "parent") and self.parent is not None:
-            att_list.extend(self.parent.hierarchy_attribute_gather(attribute_name))
+        if self.parent is None:
+            # Reached the top of the hierarchy (i.e. PackageInfo)
+            return value_list
 
-        return att_list
+        value_list.extend(self.parent.hierarchy_attribute_gather(attribute_name))
+        return value_list

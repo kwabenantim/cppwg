@@ -44,7 +44,7 @@ class CppModuleWrapperWriter:
         # classes to be wrapped in the module
         self.class_decls: List["class_t"] = []  # noqa: F821
 
-        for class_info in self.module_info.class_info_collection:
+        for class_info in self.module_info.class_collection:
             # Skip excluded classes
             if class_info.excluded:
                 continue
@@ -72,7 +72,9 @@ class CppModuleWrapperWriter:
         cpp_string = ""
 
         # Add the top prefix text
-        cpp_string += self.module_info.package_info.prefix_text + "\n"
+        prefix_text = self.module_info.hierarchy_attribute("prefix_text")
+        if prefix_text:
+            cpp_string += prefix_text + "\n"
 
         # Add top level includes
         cpp_string += "#include <pybind11/pybind11.h>\n"
@@ -81,11 +83,13 @@ class CppModuleWrapperWriter:
             cpp_string += f'#include "{CPPWG_HEADER_COLLECTION_FILENAME}"\n'
 
         # Add outputs from running custom generator code
-        if self.module_info.custom_generator:
-            cpp_string += self.module_info.custom_generator.get_module_pre_code()
+        if self.module_info.custom_generator_instance:
+            cpp_string += (
+                self.module_info.custom_generator_instance.get_module_pre_code()
+            )
 
         # Add includes for class wrappers in the module
-        for class_info in self.module_info.class_info_collection:
+        for class_info in self.module_info.class_collection:
             # Skip excluded classes
             if class_info.excluded:
                 continue
@@ -105,14 +109,14 @@ class CppModuleWrapperWriter:
         cpp_string += "{\n"
 
         # Add free functions
-        for free_function_info in self.module_info.free_function_info_collection:
+        for free_function_info in self.module_info.free_function_collection:
             function_writer = CppFreeFunctionWrapperWriter(
                 free_function_info, self.wrapper_templates
             )
             cpp_string += function_writer.generate_wrapper()
 
         # Add classes
-        for class_info in self.module_info.class_info_collection:
+        for class_info in self.module_info.class_collection:
             # Skip excluded classes
             if class_info.excluded:
                 continue
@@ -122,8 +126,8 @@ class CppModuleWrapperWriter:
                 cpp_string += f"    register_{py_name}_class(m);\n"
 
         # Add code from the module's custom generator
-        if self.module_info.custom_generator:
-            cpp_string += self.module_info.custom_generator.get_module_code()
+        if self.module_info.custom_generator_instance:
+            cpp_string += self.module_info.custom_generator_instance.get_module_code()
 
         cpp_string += "}\n"  # End of the pybind11 module
 
@@ -143,7 +147,7 @@ class CppModuleWrapperWriter:
         """Write wrappers for classes in the module."""
         logger = logging.getLogger()
 
-        for class_info in self.module_info.class_info_collection:
+        for class_info in self.module_info.class_collection:
             # Skip excluded classes
             if class_info.excluded:
                 logger.info(f"Skipping class {class_info.name}")

@@ -70,7 +70,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             The Python name of the class e.g. Foo_2_2
         """
         # Add the top prefix text
-        self.hpp_string += self.class_info.module_info.package_info.prefix_text + "\n"
+        prefix_text = self.class_info.hierarchy_attribute("prefix_text")
+        if prefix_text:
+            self.hpp_string += prefix_text + "\n"
 
         # Add the header guard, includes and declarations
         class_hpp_dict = {"class_py_name": class_py_name}
@@ -91,7 +93,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             The Python name of the class e.g. Foo_2_2
         """
         # Add the top prefix text
-        self.cpp_string += self.class_info.module_info.package_info.prefix_text + "\n"
+        prefix_text = self.class_info.hierarchy_attribute("prefix_text")
+        if prefix_text:
+            self.cpp_string += prefix_text + "\n"
 
         # Add the includes for this class
         includes = ""
@@ -100,9 +104,13 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             includes += f'#include "{CPPWG_HEADER_COLLECTION_FILENAME}"\n'
 
         else:
-            source_includes = self.class_info.hierarchy_attribute_gather(
-                "source_includes"
-            )
+            source_includes = [
+                inc
+                for inc_list in self.class_info.hierarchy_attribute_gather(
+                    "source_includes"
+                )
+                for inc in inc_list
+            ]
 
             for source_include in source_includes:
                 if source_include[0] == "<":
@@ -146,9 +154,11 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             self.cpp_string += code_line + "\n"
 
         # Run any custom generators to add additional prefix code
-        if self.class_info.custom_generator:
-            self.cpp_string += self.class_info.custom_generator.get_class_cpp_pre_code(
-                class_py_name
+        if self.class_info.custom_generator_instance:
+            self.cpp_string += (
+                self.class_info.custom_generator_instance.get_class_cpp_pre_code(
+                    class_py_name
+                )
             )
 
     def add_virtual_overrides(
@@ -353,9 +363,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 self.cpp_string += method_writer.generate_wrapper()
 
             # Run any custom generators to add additional class code
-            if self.class_info.custom_generator:
+            if self.class_info.custom_generator_instance:
                 self.cpp_string += (
-                    self.class_info.custom_generator.get_class_cpp_def_code(
+                    self.class_info.custom_generator_instance.get_class_cpp_def_code(
                         class_py_name
                     )
                 )

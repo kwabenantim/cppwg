@@ -49,11 +49,11 @@ class CppHeaderCollectionWriter:
         self.class_dict: Dict[str, CppClassInfo] = {}
         self.free_func_dict: Dict[str, CppFreeFunctionInfo] = {}
 
-        for module_info in self.package_info.module_info_collection:
-            for class_info in module_info.class_info_collection:
+        for module_info in self.package_info.module_collection:
+            for class_info in module_info.class_collection:
                 self.class_dict[class_info.name] = class_info
 
-            for free_function_info in module_info.free_function_info_collection:
+            for free_function_info in module_info.free_function_collection:
                 self.free_func_dict[free_function_info.name] = free_function_info
 
     def should_include_all(self) -> bool:
@@ -65,7 +65,7 @@ class CppHeaderCollectionWriter:
         bool
         """
         # True if any module uses all classes or all free functions
-        for module_info in self.package_info.module_info_collection:
+        for module_info in self.package_info.module_collection:
             if module_info.use_all_classes or module_info.use_all_free_functions:
                 return True
         return False
@@ -73,7 +73,9 @@ class CppHeaderCollectionWriter:
     def write(self) -> None:
         """Generate the header file output string and write it to file."""
         # Add the top prefix text
-        self.hpp_collection += self.package_info.prefix_text + "\n"
+        prefix_text = self.package_info.hierarchy_attribute("prefix_text")
+        if prefix_text:
+            self.hpp_collection += prefix_text + "\n"
 
         # Add opening header guard
         self.hpp_collection += f"#ifndef {self.package_info.name}_HEADERS_HPP_\n"
@@ -93,8 +95,8 @@ class CppHeaderCollectionWriter:
 
         else:
             # Include specific headers needed by classes
-            for module_info in self.package_info.module_info_collection:
-                for class_info in module_info.class_info_collection:
+            for module_info in self.package_info.module_collection:
+                for class_info in module_info.class_collection:
                     # Skip excluded classes
                     if class_info.excluded:
                         continue
@@ -105,11 +107,9 @@ class CppHeaderCollectionWriter:
                         seen_files.add(filename)
 
                 # Include specific headers needed by free functions
-                for free_function_info in module_info.free_function_info_collection:
-                    if free_function_info.source_file_full_path:
-                        filename = os.path.basename(
-                            free_function_info.source_file_full_path
-                        )
+                for free_function_info in module_info.free_function_collection:
+                    if free_function_info.source_file_path:
+                        filename = os.path.basename(free_function_info.source_file_path)
                         if filename not in seen_files:
                             self.hpp_collection += f'#include "{filename}"\n'
                             seen_files.add(filename)
@@ -119,8 +119,8 @@ class CppHeaderCollectionWriter:
         template_instantiations = ""
         template_typedefs = ""
 
-        for module_info in self.package_info.module_info_collection:
-            for class_info in module_info.class_info_collection:
+        for module_info in self.package_info.module_collection:
+            for class_info in module_info.class_collection:
                 # Skip excluded classes
                 if class_info.excluded:
                     continue

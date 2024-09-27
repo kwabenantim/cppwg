@@ -11,16 +11,18 @@ class CppTypeInfo(BaseInfo):
 
     Attributes
     ----------
-    decls : pygccxml.declarations.declaration_t
-        The pygccxml declarations associated with this type, one per template arg if templated
-    module_info : ModuleInfo
-        The module info parent object associated with this type
     name_override : str
         The name override specified in config e.g. "CustomFoo" -> "Foo"
     source_file : str
         The source file containing the type
-    source_file_full_path : str
+    source_file_path : str
         The full path to the source file containing the type
+
+    module_info : ModuleInfo
+        The module info parent object associated with this type
+
+    decls : pygccxml.declarations.declaration_t
+        The pygccxml declarations associated with this type, one per template arg if templated
     template_arg_lists : List[List[Any]]
         List of template replacement arguments e.g. [[2, 2], [3, 3]]
     template_params : List[str]
@@ -31,24 +33,25 @@ class CppTypeInfo(BaseInfo):
 
     def __init__(self, name: str, type_config: Optional[Dict[str, Any]] = None):
 
-        super().__init__(name)
+        super().__init__(name, type_config)
+
+        self.name_override: str = ""
+        self.source_file: str = ""
+        self.source_file_path: str = ""
 
         self.module_info: Optional["ModuleInfo"] = None  # noqa: F821
 
-        self.name_override: Optional[str] = None
-
-        self.source_file: str = ""
-        self.source_file_full_path: str = ""
-
-        self.template_arg_lists: Optional[List[List[Any]]] = None
-        self.template_params: Optional[List[str]] = None
-        self.template_signature: Optional[str] = None
-
-        self.decls: Optional[List["declaration_t"]] = None  # noqa: F821
+        self.decls: List["declaration_t"] = []  # noqa: F821
+        self.template_arg_lists: List[List[Any]] = []
+        self.template_params: List[str] = []
+        self.template_signature: str = ""
 
         if type_config:
-            for key, value in type_config.items():
-                setattr(self, key, value)
+            self.name_override = type_config.get("name_override", self.name_override)
+            self.source_file = type_config.get("source_file", self.source_file)
+            self.source_file_path = type_config.get(
+                "source_file_path", self.source_file_path
+            )
 
     def set_module(self, module_info: "ModuleInfo") -> None:  # noqa: F821
         """
