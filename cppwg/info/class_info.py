@@ -18,21 +18,22 @@ class CppClassInfo(CppTypeInfo):
 
     Attributes
     ----------
+    base_decls : pygccxml.declarations.declaration_t
+        Declarations for this type's base classes, one per template instantiation
     cpp_names : List[str]
         The C++ names of the class e.g. ["Foo<2,2>", "Foo<3,3>"]
     py_names : List[str]
         The Python names of the class e.g. ["Foo_2_2", "Foo_3_3"]
-    decls : pygccxml.declarations.declaration_t
-        Declarations for this type's base class, one per template instantiation
     """
 
     def __init__(self, name: str, class_config: Optional[Dict[str, Any]] = None):
 
         super().__init__(name, class_config)
 
+        self.base_decls: Optional[List["declaration_t"]] = None  # noqa: F821
+
         self.cpp_names: List[str] = None
         self.py_names: List[str] = None
-        self.base_decls: Optional[List["declaration_t"]] = None  # noqa: F821
 
     def extract_templates_from_source(self) -> None:
         """

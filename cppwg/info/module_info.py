@@ -15,33 +15,47 @@ class ModuleInfo(BaseInfo):
 
     Attributes
     ----------
-    package_info : PackageInfo
-        The package info parent object associated with this module
-    source_locations : List[str]
-        A list of source locations for this module
     class_info_collection : List[CppClassInfo]
         A list of class info objects associated with this module
     free_function_info_collection : List[CppFreeFunctionInfo]
         A list of free function info objects associated with this module
-    variable_info_collection : List[CppFreeFunctionInfo]
-        A list of variable info objects associated with this module
+    package_info : PackageInfo
+        The package info parent object associated with this module
+    source_locations : List[str]
+        A list of source locations for this module
     use_all_classes : bool
         Use all classes in the module
     use_all_free_functions : bool
         Use all free functions in the module
     use_all_variables : bool
         Use all variables in the module
+    variable_info_collection : List[CppFreeFunctionInfo]
+        A list of variable info objects associated with this module
     """
 
-    def __init__(self, name: str, module_config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, name: str, module_config: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        Create a module info object from a module_config dict.
 
+        Parameters
+        ----------
+        name : str
+            The name of the module
+        module_config : Dict[str, Any]
+            A dictionary of module configuration settings
+        """
         super().__init__(name)
 
         self.package_info: Optional["PackageInfo"] = None  # noqa: F821
+
         self.source_locations: List[str] = None
-        self.class_info_collection: List["CppClassInfo"] = []  # noqa: F821
-        self.free_function_info_collection: List["CppFreeFunctionInfo"] = []  # fmt: skip # noqa: F821
-        self.variable_info_collection: List["CppFreeFunctionInfo"] = []  # noqa: F821
+
+        self.class_info_collection: List[CppClassInfo] = []
+        self.free_function_info_collection: List[CppFreeFunctionInfo] = []
+        self.variable_info_collection: List["CppVariableInfo"] = []  # noqa: F821
+
         self.use_all_classes: bool = False
         self.use_all_free_functions: bool = False
         self.use_all_variables: bool = False
@@ -56,6 +70,27 @@ class ModuleInfo(BaseInfo):
         Returns the associated package info object.
         """
         return self.package_info
+
+    def add_class(self, class_info: CppClassInfo) -> None:
+        """
+        Add a class info object to the module.
+        """
+        self.class_info_collection.append(class_info)
+        class_info.set_module(self)
+
+    def add_free_function(self, free_function_info: CppFreeFunctionInfo) -> None:
+        """
+        Add a free function info object to the module.
+        """
+        self.free_function_info_collection.append(free_function_info)
+        free_function_info.set_module(self)
+
+    def add_variable(self, variable_info: "CppVariableInfo") -> None:  # noqa: F821
+        """
+        Add a variable info object to the module.
+        """
+        self.variable_info_collection.append(variable_info)
+        variable_info.set_module(self)
 
     def is_decl_in_source_path(self, decl: "declaration_t") -> bool:  # noqa: F821
         """
@@ -80,6 +115,12 @@ class ModuleInfo(BaseInfo):
                 return True
 
         return False
+
+    def set_package(self, package_info: "PackageInfo") -> None:  # noqa: F821
+        """
+        Set the package info object associated with this module.
+        """
+        self.package_info = package_info
 
     def sort_classes(self) -> None:
         """
@@ -215,3 +256,6 @@ class ModuleInfo(BaseInfo):
         """
         for class_info in self.class_info_collection:
             class_info.update_from_source(source_file_paths)
+
+        self.class_info_collection.sort(key=lambda x: x.name)
+        self.free_function_info_collection.sort(key=lambda x: x.name)

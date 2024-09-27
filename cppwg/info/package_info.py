@@ -35,32 +35,22 @@ class PackageInfo(BaseInfo):
     """
 
     def __init__(
-        self,
-        name: str,
-        source_root: str,
-        package_config: Optional[Dict[str, Any]] = None,
+        self, name: str, package_config: Optional[Dict[str, Any]] = None
     ) -> None:
         """
-        Create a package info object from a package_config.
-
-        The package_config is a dictionary of package configuration settings
-        extracted from a yaml input file.
+        Create a package info object from a package_config dict.
 
         Parameters
         ----------
         name : str
             The name of the package
-        source_root : str
-            The root directory of the C++ source code
         package_config : Dict[str, Any]
             A dictionary of package configuration settings
         """
         super().__init__(name)
 
-        self.name: str = name
         self.source_locations: List[str] = None
         self.module_info_collection: List["ModuleInfo"] = []  # noqa: F821
-        self.source_root: str = source_root
         self.source_hpp_patterns: List[str] = ["*.hpp"]
         self.source_hpp_files: List[str] = []
         self.common_include_file: bool = False
@@ -74,6 +64,18 @@ class PackageInfo(BaseInfo):
     def parent(self) -> None:
         """Returns None as this is the top level object in the hierarchy."""
         return None
+
+    def add_module(self, module_info: "ModuleInfo") -> None:  # noqa: F821
+        """
+        Add a module info object to the package.
+
+        Parameters
+        ----------
+        module_info : ModuleInfo
+            The module info object to add
+        """
+        self.module_info_collection.append(module_info)
+        module_info.set_package(self)
 
     def init(self, restricted_paths: List[str]) -> None:
         """
