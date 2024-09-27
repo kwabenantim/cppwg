@@ -15,9 +15,9 @@ class BaseInfo:
     A generic information structure for features.
 
     Features include packages, modules, classes, free functions, etc.
-    Information structures are used to store information about the features. The
-    information structures for each feature type inherit from BaseInfo, which
-    sets a number of default attributes common to all features.
+    Information structures are used to store information about the features.
+    BaseInfo is the base information structure, and set up attributes that are
+    common to all features.
 
     Attributes
     ----------
@@ -183,18 +183,18 @@ class BaseInfo:
         self.load_custom_generator()
 
     @property
-    def parent(self) -> Optional["BaseInfo"]:
+    def owner(self) -> Optional["BaseInfo"]:
         """
-        Get this object's parent.
+        Get this object's owner.
 
-        Return the parent object of the feature in the hierarchy. This is
-        overriden in subclasses e.g. ModuleInfo returns a PackageInfo, ClassInfo
-        returns a ModuleInfo, etc.
+        Return the higher level object that holds this object. This is
+        overriden in subclasses e.g. a ModuleInfo object returns a PackageInfo
+        object, a ClassInfo object returns a ModuleInfo object, etc.
 
         Returns
         -------
         Optional[BaseInfo]
-            The parent object.
+            The owning object.
         """
         return None
 
@@ -261,11 +261,11 @@ class BaseInfo:
         if value:
             return value
 
-        if self.parent is None:
+        if self.owner is None:
             # Reached the top of the hierarchy (i.e. PackageInfo)
             return None
 
-        return self.parent.hierarchy_attribute(attribute_name)
+        return self.owner.hierarchy_attribute(attribute_name)
 
     def hierarchy_attribute_gather(self, attribute_name: str) -> List[Any]:
         """
@@ -290,9 +290,9 @@ class BaseInfo:
         if value:
             value_list.append(value)
 
-        if self.parent is None:
+        if self.owner is None:
             # Reached the top of the hierarchy (i.e. PackageInfo)
             return value_list
 
-        value_list.extend(self.parent.hierarchy_attribute_gather(attribute_name))
+        value_list.extend(self.owner.hierarchy_attribute_gather(attribute_name))
         return value_list

@@ -2,10 +2,10 @@
 
 from typing import Any, Dict, Optional
 
-from cppwg.info.cpp_type_info import CppTypeInfo
+from cppwg.info.cpp_entity_info import CppEntityInfo
 
 
-class CppVariableInfo(CppTypeInfo):
+class CppVariableInfo(CppEntityInfo):
     """An information structure for individual variables to be wrapped."""
 
     def __init__(self, name: str, variable_config: Optional[Dict[str, Any]] = None):

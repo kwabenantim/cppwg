@@ -2,10 +2,10 @@
 
 from typing import Any, Dict, Optional
 
-from cppwg.info.cpp_type_info import CppTypeInfo
+from cppwg.info.cpp_entity_info import CppEntityInfo
 
 
-class CppFreeFunctionInfo(CppTypeInfo):
+class CppFreeFunctionInfo(CppEntityInfo):
     """An information structure for individual free functions to be wrapped."""
 
     def __init__(
@@ -15,8 +15,10 @@ class CppFreeFunctionInfo(CppTypeInfo):
         super().__init__(name, free_function_config)
 
     @property
-    def parent(self) -> "ModuleInfo":  # noqa: F821
-        """Returns the parent module info object."""
+    def owner(self) -> "ModuleInfo":  # noqa: F821
+        """
+        Returns the module info object that holds this free function info object.
+        """
         return self.module_info
 
     def update_from_ns(self, source_ns: "namespace_t") -> None:  # noqa: F821

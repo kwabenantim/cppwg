@@ -8,18 +8,18 @@ from typing import Any, Dict, List, Optional
 from pygccxml.declarations.matchers import access_type_matcher_t
 from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
-from cppwg.info.cpp_type_info import CppTypeInfo
+from cppwg.info.cpp_entity_info import CppEntityInfo
 from cppwg.utils import utils
 
 
-class CppClassInfo(CppTypeInfo):
+class CppClassInfo(CppEntityInfo):
     """
     An information structure for individual C++ classes to be wrapped.
 
     Attributes
     ----------
     base_decls : pygccxml.declarations.declaration_t
-        Declarations for this type's base classes, one per template instantiation
+        Declarations for the base classes, one per template instantiation
     cpp_names : List[str]
         The C++ names of the class e.g. ["Foo<2,2>", "Foo<3,3>"]
     py_names : List[str]
@@ -258,12 +258,11 @@ class CppClassInfo(CppTypeInfo):
         """
         Set the Python names for the class, accounting for template args.
 
-        Set the name of the class as it will appear on the Python side. This
-        collapses template arguments, separating them by underscores and removes
-        special characters. The return type is a list, as a class can have
-        multiple names if it is templated. For example, a class "Foo" with
-        template arguments [[2, 2], [3, 3]] will have a python name list
-        ["Foo_2_2", "Foo_3_3"].
+        Set the name(s) of the class as it should appear in Python. This
+        collapses template arguments, separates them by underscores, and removes
+        special characters. There can be multiple names, one for each template
+        class instantiation. For example, class "Foo" with template arguments
+        [[2, 2], [3, 3]] will have a Python name list ["Foo_2_2", "Foo_3_3"].
         """
         # Handles untemplated classes
         if not self.template_arg_lists:
@@ -277,21 +276,21 @@ class CppClassInfo(CppTypeInfo):
         rm_chars = {"<": None, ">": None, ",": None, " ": None}
         rm_table = str.maketrans(rm_chars)
 
-        # Clean the type name
-        type_name = self.name
+        # Clean the class name
+        class_name = self.name
         if self.name_override:
-            type_name = self.name_override
+            class_name = self.name_override
 
         # Do standard name replacements e.g. "unsigned int" -> "Unsigned"
         for name, replacement in self.name_replacements.items():
-            type_name = type_name.replace(name, replacement)
+            class_name = class_name.replace(name, replacement)
 
         # Remove special characters
-        type_name = type_name.translate(rm_table)
+        class_name = class_name.translate(rm_table)
 
         # Capitalize the first letter e.g. "foo" -> "Foo"
-        if len(type_name) > 1:
-            type_name = type_name[0].capitalize() + type_name[1:]
+        if len(class_name) > 1:
+            class_name = class_name[0].capitalize() + class_name[1:]
 
         # Create a string of template args separated by "_" e.g. 2_2
         for template_arg_list in self.template_arg_lists:
@@ -317,17 +316,16 @@ class CppClassInfo(CppTypeInfo):
                 if idx < len(template_arg_list) - 1:
                     template_string += "_"
 
-            self.py_names.append(type_name + "_" + template_string)
+            self.py_names.append(class_name + "_" + template_string)
 
     def update_cpp_names(self) -> None:
         """
         Set the C++ names for the class, accounting for template args.
 
-        Set the name of the class as it should appear in C++.
-        The return type is a list, as a class can have multiple names
-        if it is templated. For example, a class "Foo" with
-        template arguments [[2, 2], [3, 3]] will have a C++ name list
-        ["Foo<2, 2>", "Foo<3, 3>"].
+        Set the name(s) of the class as it appears in C++. There can be
+        multiple names, one for each template class instantiation.
+        For example, a class "Foo" with template arguments [[2, 2], [3, 3]]
+        will have a C++ name list ["Foo<2, 2>", "Foo<3, 3>"].
         """
         # Handles untemplated classes
         if not self.template_arg_lists:
@@ -350,8 +348,8 @@ class CppClassInfo(CppTypeInfo):
         self.update_py_names()
 
     @property
-    def parent(self) -> "ModuleInfo":  # noqa: F821
+    def owner(self) -> "ModuleInfo":  # noqa: F821
         """
-        Returns the parent module info object.
+        Returns the module info object that holds this class info object.
         """
         return self.module_info

@@ -65,7 +65,7 @@ class PackageInfo(BaseInfo):
             )
 
     @property
-    def parent(self) -> None:
+    def owner(self) -> None:
         """Returns None as this is the top level object in the hierarchy."""
         return None
 

@@ -154,12 +154,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             self.cpp_string += code_line + "\n"
 
         # Run any custom generators to add additional prefix code
-        if self.class_info.custom_generator_instance:
-            self.cpp_string += (
-                self.class_info.custom_generator_instance.get_class_cpp_pre_code(
-                    class_py_name
-                )
-            )
+        generator = self.class_info.custom_generator_instance
+        if generator:
+            self.cpp_string += generator.get_class_cpp_pre_code(class_py_name)
 
     def add_virtual_overrides(
         self, template_idx: int
@@ -168,7 +165,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         Add virtual "trampoline" overrides for the class.
 
         Identify any methods needing overrides (i.e. any that are virtual in the
-        current class or in a parent), and add the overrides to the cpp string.
+        current class or in a base class), and add the overrides to the cpp string.
 
         Parameters
         ----------
@@ -363,12 +360,9 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 self.cpp_string += method_writer.generate_wrapper()
 
             # Run any custom generators to add additional class code
-            if self.class_info.custom_generator_instance:
-                self.cpp_string += (
-                    self.class_info.custom_generator_instance.get_class_cpp_def_code(
-                        class_py_name
-                    )
-                )
+            generator = self.class_info.custom_generator_instance
+            if generator:
+                self.cpp_string += generator.get_class_cpp_def_code(class_py_name)
 
             # Close the class definition
             self.cpp_string += "    ;\n}\n"

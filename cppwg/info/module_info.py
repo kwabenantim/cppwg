@@ -76,9 +76,9 @@ class ModuleInfo(BaseInfo):
             )
 
     @property
-    def parent(self) -> "PackageInfo":  # noqa: F821
+    def owner(self) -> "PackageInfo":  # noqa: F821
         """
-        Returns the associated package info object that this module belongs to.
+        Returns the package info object that holds this module info object.
         """
         return self.package_info
 
