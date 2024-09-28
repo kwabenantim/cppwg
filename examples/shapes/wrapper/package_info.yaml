@@ -34,6 +34,7 @@ modules:
 
   - name: geometry
     source_locations:
+    # List of source directories for this module, relative to the source root.
     classes:
       - name: Point
         # Name of class source file. Not required if class name matches file name.
@@ -58,11 +59,15 @@ modules:
           - [int, int, int]
 
         # Path to a custom script for generating wrappers for this class.
-        # CPPWG_SOURCEROOT points to the supplied source root directory.
+        # The custom generator must extend cppwg.templates.custom.Custom.
+        # CPPWG_SOURCEROOT can be used in the path for the source root directory.
         # custom_generator: "CPPWG_SOURCEROOT/point_generator.py"
 
         # Custom C++ code to place at the top of the class wrapper.
         # prefix_code:
+
+        # Custom C++ code to place at the bottom of the class wrapper.
+        # suffix_code:
 
   - name: primitives
     source_locations:

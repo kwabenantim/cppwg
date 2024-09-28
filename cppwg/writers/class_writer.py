@@ -364,6 +364,10 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
             if generator:
                 self.cpp_string += generator.get_class_cpp_def_code(class_py_name)
 
+            # Add any specified custom suffix code
+            for code_line in self.class_info.suffix_code:
+                self.cpp_string += code_line + "\n"
+
             # Close the class definition
             self.cpp_string += "    ;\n}\n"
 
