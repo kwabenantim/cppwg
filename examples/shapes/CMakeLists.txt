@@ -20,16 +20,16 @@ FetchContent_MakeAvailable(pybind11)
 add_subdirectory(extern/meshgen meshgen_build)
 
 # Add a shared library for the main C++ source
-file(GLOB_RECURSE SHAPES_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE SHAPES_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/*.cpp)
 add_library(shapes SHARED ${SHAPES_SOURCES})
 target_include_directories(
     shapes
     PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/geometry
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/math_funcs
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/mesh
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/primitives
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/geometry
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/math_funcs
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/mesh
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/primitives
 )
 target_link_libraries(shapes PUBLIC meshgen::meshgen)
 

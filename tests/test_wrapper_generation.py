@@ -32,7 +32,7 @@ def file_diff(file_a: str, file_b: str) -> bool:
     return "\n".join(context_diff(a, b))
 
 
-class TestShapes(unittest.TestCase):
+class TestWrapperGeneration(unittest.TestCase):
 
     def test_wrapper_generation(self) -> None:
         """
