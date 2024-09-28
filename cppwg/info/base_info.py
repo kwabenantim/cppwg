@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 from abc import ABC, abstractmethod
+from numbers import Number
 from typing import Any, Dict, List, Optional
 
 
@@ -212,7 +213,7 @@ class BaseInfo(ABC):
             The attribute value, or None if not found.
         """
         value = getattr(self, attribute_name, None)
-        if value:
+        if value or isinstance(value, bool) or isinstance(value, Number):
             return value
 
         if self.parent is None:
@@ -241,7 +242,7 @@ class BaseInfo(ABC):
         value_list: List[Any] = []
 
         value = getattr(self, attribute_name, None)
-        if value:
+        if value or isinstance(value, bool) or isinstance(value, Number):
             value_list.append(value)
 
         if self.parent is None:

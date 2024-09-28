@@ -1,14 +1,18 @@
-name: pyshapes # Package name: prepended to all modules.
+# Package name: prepended to all modules.
+name: pyshapes
 
 # Smart pointer type for PYBIND11_DECLARE_HOLDER_TYPE in all wrappers.
 smart_ptr_type: std::shared_ptr
+
 # Default value of pybind11::return_value_policy for pointers.
 pointer_call_policy: reference
+
 # Default value of pybind11::return_value_policy for references.
 reference_call_policy: reference_internal
 
 # Set False to not include the common include file (all headers) in all wrappers.
 common_include_file: True
+
 # Headers to include in all wrappers.
 source_includes:
   - <memory>
@@ -24,24 +28,36 @@ template_substitutions:
     replacement: [[2, 2], [3, 3]]
 
 modules:
-  - name: math_funcs # Module name
+  # Module name
+  - name: math_funcs
+
+    # List of source directories for this module relative to the source root.
     # Restrict to headers from these directories. Blank means unrestricted.
     source_locations:
+
     # List of classes to wrap. Blank means none, CPPWG_ALL means discover all.
     classes:
+
     # List of free functions to wrap. Blank means none, CPPWG_ALL means discover all.
     free_functions: CPPWG_ALL
 
   - name: geometry
     source_locations:
-    # List of source directories for this module, relative to the source root.
+      - geometry
+
     classes:
+      # Name of class.
       - name: Point
+
         # Name of class source file. Not required if class name matches file name.
         source_file: Point.hpp
-        # Additional headers to include in this class wrapper.
+
+        # Optional path to the class source file, relative to the source root.
+        # source_file_path: geometry/Point.hpp
+
         source_includes:
           - <map>
+
         # List of methods that should not be wrapped.
         excluded_methods:
           - ExcludedMethod
