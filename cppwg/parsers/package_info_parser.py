@@ -1,6 +1,7 @@
 """Parser for input yaml."""
 
 import logging
+import os
 from typing import Any, Dict
 
 import yaml
@@ -11,6 +12,7 @@ from cppwg.info.module_info import ModuleInfo
 from cppwg.info.package_info import PackageInfo
 from cppwg.info.variable_info import CppVariableInfo
 from cppwg.utils import utils
+from cppwg.utils.constants import CPPWG_SOURCEROOT_STRING
 
 
 class PackageInfoParser:
@@ -68,6 +70,7 @@ class PackageInfoParser:
             "smart_ptr_type": "",
             "source_includes": [],
             "source_root": self.source_root,
+            "suffix_code": [],
             "template_substitutions": [],
         }
 
@@ -85,8 +88,15 @@ class PackageInfoParser:
                 package_config[key] = raw_package_info[key]
 
         # Replace boolean strings with booleans
-        utils.substitute_bool_for_string(package_config, "common_include_file")
-        utils.substitute_bool_for_string(package_config, "exclude_default_args")
+        package_config["common_include_file"] = utils.convert_to_bool(
+            package_config["common_include_file"]
+        )
+        package_config["exclude_default_args"] = utils.convert_to_bool(
+            package_config["exclude_default_args"]
+        )
+
+        # Convert custom generator path to a full path
+        self.convert_custom_generator(package_config)
 
         # Create the PackageInfo object from the package config dict
         package_info = PackageInfo(package_config["name"], package_config)
@@ -96,7 +106,7 @@ class PackageInfoParser:
             # Get module config from the raw module info
             module_config = {
                 "name": "cppwg_module",
-                "source_locations": "",
+                "source_locations": [],
                 "use_all_classes": False,
                 "use_all_free_functions": False,
                 "use_all_variables": False,
@@ -110,6 +120,18 @@ class PackageInfoParser:
                 if key in raw_module_info:
                     module_config[key] = raw_module_info[key]
 
+            # Convert source locations to full paths
+            if module_config["source_locations"]:
+                locations = []
+                for location in module_config["source_locations"]:
+                    locations.append(self.full_path(location))
+                    self.verify_path(locations[-1])
+                module_config["source_locations"] = locations
+
+            # Convert custom generator path to a full path
+            self.convert_custom_generator(module_config)
+
+            # Convert boolean options
             module_config["use_all_classes"] = utils.is_option_ALL(
                 module_config["classes"]
             )
@@ -146,6 +168,15 @@ class PackageInfoParser:
                             if key in raw_class_info:
                                 class_config[key] = raw_class_info[key]
 
+                        # Convert source file path to a full path
+                        class_config["source_file_path"] = self.full_path(
+                            class_config["source_file_path"]
+                        )
+                        self.verify_path(class_config["source_file_path"])
+
+                        # Convert custom generator path to a full path
+                        self.convert_custom_generator(class_config)
+
                         # Create the CppClassInfo object from the class config dict
                         class_info = CppClassInfo(raw_class_info["name"], class_config)
 
@@ -169,6 +200,15 @@ class PackageInfoParser:
                         for key in free_function_config.keys():
                             if key in raw_free_function_info:
                                 free_function_config[key] = raw_free_function_info[key]
+
+                        # Convert source file path to a full path
+                        free_function_config["source_file_path"] = self.full_path(
+                            free_function_config["source_file_path"]
+                        )
+                        self.verify_path(free_function_config["source_file_path"])
+
+                        # Convert custom generator path to a full path
+                        self.convert_custom_generator(free_function_config)
 
                         # Create the CppFreeFunctionInfo object from the free function config dict
                         free_function_info = CppFreeFunctionInfo(
@@ -194,6 +234,15 @@ class PackageInfoParser:
                             if key in raw_variable_info:
                                 variable_config[key] = raw_variable_info[key]
 
+                        # Convert source file path to a full path
+                        variable_config["source_file_path"] = self.full_path(
+                            variable_config["source_file_path"]
+                        )
+                        self.verify_path(variable_config["source_file_path"])
+
+                        # Convert custom generator path to a full path
+                        self.convert_custom_generator(variable_config)
+
                         # Create the CppVariableInfo object from the variable config dict
                         variable_info = CppVariableInfo(
                             variable_config["name"], variable_config
@@ -203,3 +252,63 @@ class PackageInfoParser:
                         module_info.add_variable(variable_info)
 
         return package_info
+
+    def convert_custom_generator(self, config: Dict[str, Any]) -> None:
+        """
+        Convert the custom generator path to a full path if set in the config.
+
+        Parameters
+        ----------
+        config: Dict[str, Any]
+            The config dictionary.
+        """
+        if not config["custom_generator"]:
+            return
+
+        config["custom_generator"] = self.convert_path(config["custom_generator"])
+        self.verify_path(config["custom_generator"])
+
+    def convert_path(self, raw_path: str) -> str:
+        """
+        Convert a path which has a CPPWG_SOURCEROOT_STRING placeholder.
+
+        Parameters
+        ----------
+        raw_path: str
+            The path to convert.
+        """
+        if not raw_path:
+            return ""
+        path = raw_path.replace(CPPWG_SOURCEROOT_STRING, self.source_root)
+        return os.path.abspath(path)
+
+    def full_path(self, relative_path: str) -> str:
+        """
+        Get the full path for a path specified relative to the source root.
+
+        Parameters
+        ----------
+        relative_path: str
+            The path relative to the source root.
+        """
+        if not relative_path:
+            return ""
+        path = os.path.join(self.source_root, relative_path)
+        return os.path.abspath(path)
+
+    def verify_path(self, path: str) -> None:
+        """
+        Verify that the path exists if set.
+
+        Parameters
+        ----------
+        path: str
+            The path.
+        """
+        if not path:
+            return
+
+        logger = logging.getLogger()
+        if not os.path.exists(path):
+            logger.error(f"Could not find {path}")
+            raise FileNotFoundError()

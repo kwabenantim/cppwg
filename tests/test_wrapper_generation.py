@@ -32,7 +32,7 @@ def file_diff(file_a: str, file_b: str) -> bool:
     return "\n".join(context_diff(a, b))
 
 
-class TestShapes(unittest.TestCase):
+class TestWrapperGeneration(unittest.TestCase):
 
     def test_wrapper_generation(self) -> None:
         """
@@ -41,7 +41,7 @@ class TestShapes(unittest.TestCase):
 
         # Set paths to the shapes code, reference and generated wrappers, etc.
         shapes_root = os.path.abspath("examples/shapes")
-        shapes_src = os.path.join(shapes_root, "src")
+        shapes_src = os.path.join(shapes_root, "src/cpp")
         extern_src = os.path.join(shapes_root, "extern")
 
         wrapper_root_ref = os.path.join(shapes_root, "wrapper")

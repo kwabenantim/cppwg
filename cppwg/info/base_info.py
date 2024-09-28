@@ -5,10 +5,8 @@ import logging
 import os
 import sys
 from abc import ABC, abstractmethod
+from numbers import Number
 from typing import Any, Dict, List, Optional
-
-import cppwg.templates.custom as cppwg_custom
-from cppwg.utils.constants import CPPWG_SOURCEROOT_STRING
 
 
 class BaseInfo(ABC):
@@ -47,7 +45,7 @@ class BaseInfo(ABC):
     pointer_call_policy : str
         The default pointer call policy.
     prefix_code : List[str]
-        Any wrapper code that precedes the feature.
+        Custom wrapper code that comes before the auto-generated feature code.
     prefix_text : str
         Text to add at the top of all wrappers.
     reference_call_policy : str
@@ -60,6 +58,8 @@ class BaseInfo(ABC):
         A list of source files to be included with the feature.
     source_root : str
         The root directory of the C++ source code.
+    suffix_code : List[str]
+        Custom wrapper code that comes after the auto-generated feature code.
     template_substitutions : Dict[str, List[Any]]
         A list of template substitution sequences.
 
@@ -123,7 +123,7 @@ class BaseInfo(ABC):
         self.prefix_text: str = ""
         self.custom_generator: str = ""
 
-        self.custom_generator_instance: cppwg_custom.Custom = None
+        self.custom_generator_instance: "templates.custom.Custom" = None  # noqa: F821
 
         if info_config:
             for key in [
@@ -145,6 +145,7 @@ class BaseInfo(ABC):
                 "smart_ptr_type",
                 "source_includes",
                 "source_root",
+                "suffix_code",
                 "template_substitutions",
             ]:
                 if key in info_config:
@@ -176,36 +177,20 @@ class BaseInfo(ABC):
             return
 
         logger = logging.getLogger()
-
-        # Replace the `CPPWG_SOURCEROOT` placeholder in the custom generator
-        # path if needed. For example, a custom generator might be specified
-        # as `custom_generator: CPPWG_SOURCEROOT/path/to/CustomGenerator.py`
-        filepath = self.custom_generator.replace(
-            CPPWG_SOURCEROOT_STRING, self.source_root
-        )
-        filepath = os.path.abspath(filepath)
-
-        # Verify that the custom generator file exists
-        if not os.path.isfile(filepath):
-            logger.error(
-                f"Could not find specified custom generator for {self.name}: {filepath}"
-            )
-            raise FileNotFoundError()
-
-        logger.info(f"Custom generator for {self.name}: {filepath}")
+        logger.info(f"Custom generator for {self.name}: {self.custom_generator}")
 
         # Load the custom generator as a module
-        module_name = os.path.splitext(filepath)[0]  # /path/to/CustomGenerator
-        class_name = os.path.basename(module_name)  # CustomGenerator
+        location = os.path.splitext(self.custom_generator)[0]  # /path/to/FooGen
+        class_name = os.path.basename(location)  # FooGen
 
-        spec = importlib.util.spec_from_file_location(module_name, filepath)
+        spec = importlib.util.spec_from_file_location(location, self.custom_generator)
         module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
+        sys.modules[location] = module  # location is the module name
         spec.loader.exec_module(module)
 
         # Get the custom generator class from the loaded module.
         # Note: The custom generator class name must match the filename.
-        CustomGeneratorClass: cppwg_custom.Custom = getattr(module, class_name)
+        CustomGeneratorClass = getattr(module, class_name)
 
         # Instantiate the custom generator from the provided class
         self.custom_generator_instance = CustomGeneratorClass()
@@ -228,7 +213,7 @@ class BaseInfo(ABC):
             The attribute value, or None if not found.
         """
         value = getattr(self, attribute_name, None)
-        if value:
+        if value or isinstance(value, bool) or isinstance(value, Number):
             return value
 
         if self.parent is None:
@@ -257,7 +242,7 @@ class BaseInfo(ABC):
         value_list: List[Any] = []
 
         value = getattr(self, attribute_name, None)
-        if value:
+        if value or isinstance(value, bool) or isinstance(value, Number):
             value_list.append(value)
 
         if self.parent is None:

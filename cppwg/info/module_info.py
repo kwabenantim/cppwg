@@ -123,9 +123,8 @@ class ModuleInfo(BaseInfo):
         if not self.source_locations:
             return True
 
-        for source_location in self.source_locations:
-            full_path = os.path.join(self.package_info.source_root, source_location)
-            if Path(full_path) in Path(decl.location.file_name).parents:
+        for location in self.source_locations:
+            if Path(location) in Path(decl.location.file_name).parents:
                 return True
 
         return False
