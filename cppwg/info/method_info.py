@@ -12,7 +12,7 @@ class CppMethodInfo(CppEntityInfo):
     Attributes
     ----------
     class_info : CppClassInfo
-        The class info object associated this method belongs to.
+        The class info object that holds this method.
     """
 
     def __init__(self, name: str, _) -> None:
@@ -22,8 +22,15 @@ class CppMethodInfo(CppEntityInfo):
         self.class_info: Optional["CppClassInfo"] = None  # noqa: F821
 
     @property
-    def owner(self) -> "CppClassInfo":  # noqa: F821
+    def parent(self) -> "CppClassInfo":  # noqa: F821
         """
-        Returns the class info object that holds this method info object.
+        Returns the class info object that holds this method.
         """
         return self.class_info
+
+    @parent.setter
+    def parent(self, class_info: "CppClassInfo") -> None:  # noqa: F821
+        """
+        Set the class info object that holds this method.
+        """
+        self.class_info = class_info

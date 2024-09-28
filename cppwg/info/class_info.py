@@ -102,9 +102,9 @@ class CppClassInfo(CppEntityInfo):
                     self.template_params.append(param)
                 break
 
-    def is_child_of(self, other: "ClassInfo") -> bool:  # noqa: F821
+    def extends(self, other: "ClassInfo") -> bool:  # noqa: F821
         """
-        Check if the class is a child of the specified class.
+        Check if the class extends the specified class.
 
         Parameters
         ----------
@@ -114,7 +114,7 @@ class CppClassInfo(CppEntityInfo):
         Returns
         -------
         bool
-            True if the class is a child of the specified class, False otherwise
+            True if the class extends the specified class, False otherwise
         """
         if not self.base_decls:
             return False
@@ -346,10 +346,3 @@ class CppClassInfo(CppEntityInfo):
         """
         self.update_cpp_names()
         self.update_py_names()
-
-    @property
-    def owner(self) -> "ModuleInfo":  # noqa: F821
-        """
-        Returns the module info object that holds this class info object.
-        """
-        return self.module_info

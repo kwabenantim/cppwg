@@ -62,46 +62,49 @@ class ModuleInfo(BaseInfo):
         self.variable_collection: List["CppVariableInfo"] = []  # noqa: F821
 
         if module_config:
-            self.source_locations = module_config.get(
-                "source_locations", self.source_locations
-            )
-            self.use_all_classes = module_config.get(
-                "use_all_classes", self.use_all_classes
-            )
-            self.use_all_free_functions = module_config.get(
-                "use_all_free_functions", self.use_all_free_functions
-            )
-            self.use_all_variables = module_config.get(
-                "use_all_variables", self.use_all_variables
-            )
+            for key in [
+                "source_locations",
+                "use_all_classes",
+                "use_all_free_functions",
+                "use_all_variables",
+            ]:
+                if key in module_config:
+                    setattr(self, key, module_config[key])
 
     @property
-    def owner(self) -> "PackageInfo":  # noqa: F821
+    def parent(self) -> "PackageInfo":  # noqa: F821
         """
         Returns the package info object that holds this module info object.
         """
         return self.package_info
+
+    @parent.setter
+    def parent(self, package_info: "PackageInfo") -> None:  # noqa: F821
+        """
+        Set the package info object that holds this module.
+        """
+        self.package_info = package_info
 
     def add_class(self, class_info: CppClassInfo) -> None:
         """
         Add a class info object to the module.
         """
         self.class_collection.append(class_info)
-        class_info.set_module(self)
+        class_info.parent = self
 
     def add_free_function(self, free_function_info: CppFreeFunctionInfo) -> None:
         """
         Add a free function info object to the module.
         """
         self.free_function_collection.append(free_function_info)
-        free_function_info.set_module(self)
+        free_function_info.parent = self
 
     def add_variable(self, variable_info: "CppVariableInfo") -> None:  # noqa: F821
         """
         Add a variable info object to the module.
         """
         self.variable_collection.append(variable_info)
-        variable_info.set_module(self)
+        variable_info.parent = self
 
     def is_decl_in_source_path(self, decl: "declaration_t") -> bool:  # noqa: F821
         """
@@ -126,12 +129,6 @@ class ModuleInfo(BaseInfo):
                 return True
 
         return False
-
-    def set_package(self, package_info: "PackageInfo") -> None:  # noqa: F821
-        """
-        Set the package info object associated with this module.
-        """
-        self.package_info = package_info
 
     def sort_classes(self) -> None:
         """
@@ -161,12 +158,12 @@ class ModuleInfo(BaseInfo):
 
             a_req_b = a.requires(b)
             b_req_a = b.requires(a)
-            if a.is_child_of(b) or (a_req_b and not b_req_a):
+            if a.extends(b) or (a_req_b and not b_req_a):
                 # a comes after b (ignore cyclic dependencies)
                 cache[(a, b)] = 1
                 cache[(b, a)] = -1
                 return 1
-            elif b.is_child_of(a) or (b_req_a and not a_req_b):
+            elif b.extends(a) or (b_req_a and not a_req_b):
                 # a comes before b (ignore cyclic dependencies)
                 cache[(a, b)] = -1
                 cache[(b, a)] = 1

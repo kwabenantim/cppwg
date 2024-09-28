@@ -65,8 +65,10 @@ class PackageInfo(BaseInfo):
             )
 
     @property
-    def owner(self) -> None:
-        """Returns None as this is the top level object in the hierarchy."""
+    def parent(self) -> None:
+        """
+        Returns None, as this is the top level of the info tree hierarchy.
+        """
         return None
 
     def add_module(self, module_info: "ModuleInfo") -> None:  # noqa: F821
@@ -79,7 +81,7 @@ class PackageInfo(BaseInfo):
             The module info object to add
         """
         self.module_collection.append(module_info)
-        module_info.set_package(self)
+        module_info.parent = self
 
     def init(self, restricted_paths: List[str]) -> None:
         """

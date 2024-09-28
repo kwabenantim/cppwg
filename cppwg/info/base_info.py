@@ -4,13 +4,14 @@ import importlib.util
 import logging
 import os
 import sys
+from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 import cppwg.templates.custom as cppwg_custom
 from cppwg.utils.constants import CPPWG_SOURCEROOT_STRING
 
 
-class BaseInfo:
+class BaseInfo(ABC):
     """
     A generic information structure for features.
 
@@ -125,78 +126,47 @@ class BaseInfo:
         self.custom_generator_instance: cppwg_custom.Custom = None
 
         if info_config:
-            # Paths
-            self.source_includes = info_config.get(
-                "source_includes", self.source_includes
-            )
-            self.source_root = info_config.get("source_root", self.source_root)
-
-            # Exclusions
-            self.arg_type_excludes = info_config.get(
-                "arg_type_excludes", self.arg_type_excludes
-            )
-            self.calldef_excludes = info_config.get(
-                "calldef_excludes", self.calldef_excludes
-            )
-            self.constructor_arg_type_excludes = info_config.get(
-                "constructor_arg_type_excludes", self.constructor_arg_type_excludes
-            )
-            self.constructor_signature_excludes = info_config.get(
-                "constructor_signature_excludes", self.constructor_signature_excludes
-            )
-            self.excluded = info_config.get("excluded", self.excluded)
-            self.excluded_methods = info_config.get(
-                "excluded_methods", self.excluded_methods
-            )
-            self.excluded_variables = info_config.get(
-                "excluded_variables", self.excluded_variables
-            )
-            self.return_type_excludes = info_config.get(
-                "return_type_excludes", self.return_type_excludes
-            )
-
-            # Pointers
-            self.pointer_call_policy = info_config.get(
-                "pointer_call_policy", self.pointer_call_policy
-            )
-            self.reference_call_policy = info_config.get(
-                "reference_call_policy", self.reference_call_policy
-            )
-            self.smart_ptr_type = info_config.get("smart_ptr_type", self.smart_ptr_type)
-
-            # Substitutions
-            self.template_substitutions = info_config.get(
-                "template_substitutions", self.template_substitutions
-            )
-            self.name_replacements = info_config.get(
-                "name_replacements", self.name_replacements
-            )
-
-            # Custom Code
-            self.extra_code = info_config.get("extra_code", self.extra_code)
-            self.prefix_code = info_config.get("prefix_code", self.prefix_code)
-            self.prefix_text = info_config.get("prefix_text", self.prefix_text)
-            self.custom_generator = info_config.get(
-                "custom_generator", self.custom_generator
-            )
+            for key in [
+                "arg_type_excludes",
+                "calldef_excludes",
+                "constructor_arg_type_excludes",
+                "constructor_signature_excludes",
+                "custom_generator",
+                "excluded",
+                "excluded_methods",
+                "excluded_variables",
+                "extra_code",
+                "name_replacements",
+                "pointer_call_policy",
+                "prefix_code",
+                "prefix_text",
+                "reference_call_policy",
+                "return_type_excludes",
+                "smart_ptr_type",
+                "source_includes",
+                "source_root",
+                "template_substitutions",
+            ]:
+                if key in info_config:
+                    setattr(self, key, info_config[key])
 
         self.load_custom_generator()
 
     @property
-    def owner(self) -> Optional["BaseInfo"]:
+    @abstractmethod
+    def parent(self) -> Optional["BaseInfo"]:
         """
-        Get this object's owner.
+        Returns this object's parent node in the info tree hierarchy.
 
-        Return the higher level object that holds this object. This is
-        overriden in subclasses e.g. a ModuleInfo object returns a PackageInfo
-        object, a ClassInfo object returns a ModuleInfo object, etc.
+        This property is supplied by subclasses e.g. a ModuleInfo's parent
+        is a PackageInfo, a ClassInfo's parent is a ModuleInfo etc.
 
         Returns
         -------
         Optional[BaseInfo]
-            The owning object.
+            The parent node in the info tree hierarchy.
         """
-        return None
+        pass
 
     def load_custom_generator(self) -> None:
         """
@@ -242,10 +212,10 @@ class BaseInfo:
 
     def hierarchy_attribute(self, attribute_name: str) -> Any:
         """
-        Get the attribute value from this object or the one that owns this.
+        Get the attribute value from this object or one further up the info tree.
 
-        Search higher level objects recursively and return the first
-        value found for the attribute.
+        Ascend the info tree hierarchy searching for the attribute and return
+        the first value found for it.
 
         Parameters
         ----------
@@ -261,18 +231,18 @@ class BaseInfo:
         if value:
             return value
 
-        if self.owner is None:
+        if self.parent is None:
             # Reached the top of the hierarchy (i.e. PackageInfo)
             return None
 
-        return self.owner.hierarchy_attribute(attribute_name)
+        return self.parent.hierarchy_attribute(attribute_name)
 
     def hierarchy_attribute_gather(self, attribute_name: str) -> List[Any]:
         """
-        Get a list of attribute values from this object or the one that owns it.
+        Get a list of attribute values from this object and others in the info tree.
 
-        Search higher level objects recursively, gathering attribute values
-        into a list wherever the attribute is found.
+        Ascend the info tree hierarchy searching for the attribute and return
+        a list of all the values found for it.
 
         Parameters
         ----------
@@ -290,9 +260,9 @@ class BaseInfo:
         if value:
             value_list.append(value)
 
-        if self.owner is None:
+        if self.parent is None:
             # Reached the top of the hierarchy (i.e. PackageInfo)
             return value_list
 
-        value_list.extend(self.owner.hierarchy_attribute_gather(attribute_name))
+        value_list.extend(self.parent.hierarchy_attribute_gather(attribute_name))
         return value_list

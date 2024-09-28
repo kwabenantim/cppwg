@@ -14,13 +14,6 @@ class CppFreeFunctionInfo(CppEntityInfo):
 
         super().__init__(name, free_function_config)
 
-    @property
-    def owner(self) -> "ModuleInfo":  # noqa: F821
-        """
-        Returns the module info object that holds this free function info object.
-        """
-        return self.module_info
-
     def update_from_ns(self, source_ns: "namespace_t") -> None:  # noqa: F821
         """
         Update with information from the source namespace.

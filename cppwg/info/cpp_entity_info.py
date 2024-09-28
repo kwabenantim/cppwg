@@ -47,14 +47,20 @@ class CppEntityInfo(BaseInfo):
         self.template_signature: str = ""
 
         if entity_config:
-            self.name_override = entity_config.get("name_override", self.name_override)
-            self.source_file = entity_config.get("source_file", self.source_file)
-            self.source_file_path = entity_config.get(
-                "source_file_path", self.source_file_path
-            )
+            for key in ["name_override", "source_file", "source_file_path"]:
+                if key in entity_config:
+                    setattr(self, key, entity_config[key])
 
-    def set_module(self, module_info: "ModuleInfo") -> None:  # noqa: F821
+    @property
+    def parent(self) -> "ModuleInfo":  # noqa: F821
         """
-        Set the associated module info object.
+        Returns the module info object that holds this entity.
+        """
+        return self.module_info
+
+    @parent.setter
+    def parent(self, module_info: "ModuleInfo") -> None:  # noqa: F821
+        """
+        Set the module info object that holds this entity.
         """
         self.module_info = module_info
