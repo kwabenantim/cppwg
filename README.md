@@ -48,7 +48,7 @@ options:
 ## Example
 
 The project in `examples/shapes` demonstrates `cppwg` usage. We can walk through
-the process with the `Rectangle` class in `examples/shapes/src/primitives`
+the process with the `Rectangle` class in `examples/shapes/src/cpp/primitives`
 
 **Rectangle.hpp**
 
@@ -86,10 +86,10 @@ To generate the wrappers:
 
 ```bash
 cd examples/shapes
-cppwg src \
+cppwg src/cpp \
   --wrapper_root wrapper \
   --package_info wrapper/package_info.yaml \
-  --includes src/geometry src/math_funcs src/mesh src/primitives extern/meshgen
+  --includes src/cpp/geometry src/cpp/math_funcs src/cpp/mesh src/cpp/primitives extern/meshgen
 ```
 
 For the `Rectangle` class, this creates two files in
