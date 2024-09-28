@@ -45,7 +45,7 @@ class TestClasses(unittest.TestCase):
         self.assertTrue(cmesh.GetIndex() == 1)
 
     def testSyntax(self):
-        
+
         self.assertEqual(pyshapes.geometry.Point[2], pyshapes.geometry.Point_2)
 
         point = pyshapes.geometry.Point[3](0.0, 1.0, 2.0)

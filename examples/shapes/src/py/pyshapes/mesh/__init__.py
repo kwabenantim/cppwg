@@ -3,16 +3,15 @@ from pyshapes._syntax import ClassDict
 from pyshapes.mesh._pyshapes_mesh import *
 
 AbstractMesh = ClassDict(
-    "AbstractMesh",
-    [
-        (2, 2),
-        (3, 3),
-    ],
+    {
+        (2, 2): AbstractMesh_2_2,
+        (3, 3): AbstractMesh_3_3,
+    }
 )
+
 ConcreteMesh = ClassDict(
-    "ConcreteMesh",
-    [
-        (2,),
-        (3,),
-    ],
+    {
+        2: ConcreteMesh_2,
+        3: ConcreteMesh_3,
+    }
 )

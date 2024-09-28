@@ -3,9 +3,8 @@ from pyshapes._syntax import ClassDict
 from pyshapes.geometry._pyshapes_geometry import *
 
 Point = ClassDict(
-    "Point",
-    [
-        (2,),
-        (3,),
-    ],
+    {
+        2: Point_2,
+        3: Point_3,
+    }
 )

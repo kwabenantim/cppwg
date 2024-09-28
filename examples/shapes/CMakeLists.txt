@@ -35,11 +35,11 @@ target_link_libraries(shapes PUBLIC meshgen::meshgen)
 
 # Copy the Python source and test trees to the build location
 file(
-    COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/python/pyshapes
+    COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/py/pyshapes
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
 )
 file(
-    COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/python/test/
+    COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/py/test/
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/
 )
 
