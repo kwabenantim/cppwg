@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from pygccxml import declarations, parser
 from pygccxml.declarations import declaration_t
@@ -28,20 +28,20 @@ class CppSourceParser:
 
     Attributes
     ----------
+        castxml_cflags : str
+            Optional cflags to be passed to CastXML e.g. "-std=c++17"
+        castxml_binary : str
+            The path to the CastXML binary
+        global_ns : namespace_t
+            The namespace containing all parsed C++ declarations
+        source_includes : List[str]
+            The list of source include paths
+        source_ns : namespace_t
+            The namespace containing C++ declarations from the source tree
         source_root : str
             The root directory of the source code
         wrapper_header_collection : str
             The path to the header collection file
-        castxml_binary : str
-            The path to the CastXML binary
-        source_includes : List[str]
-            The list of source include paths
-        castxml_cflags : str
-            Optional cflags to be passed to CastXML e.g. "-std=c++17"
-        global_ns : namespace_t
-            The namespace containing all parsed C++ declarations
-        source_ns : namespace_t
-            The namespace containing C++ declarations from the source tree
     """
 
     def __init__(
@@ -57,9 +57,6 @@ class CppSourceParser:
         self.castxml_binary: str = castxml_binary
         self.source_includes: List[str] = source_includes
         self.castxml_cflags: str = castxml_cflags
-
-        self.source_ns: Optional[namespace_t] = None
-        self.global_ns: Optional[namespace_t] = None
 
     def parse(self) -> namespace_t:
         """
@@ -89,12 +86,12 @@ class CppSourceParser:
         )
 
         # Get access to the global namespace
-        self.global_ns: namespace_t = declarations.get_global_namespace(decls)
+        global_ns: namespace_t = declarations.get_global_namespace(decls)
 
         # Filter declarations for which files exist
         logger.info("Filtering source declarations.")
         query = declarations.custom_matcher_t(lambda decl: decl.location is not None)
-        filtered_decls: mdecl_wrapper_t = self.global_ns.decls(function=query)
+        filtered_decls: mdecl_wrapper_t = global_ns.decls(function=query)
 
         # Filter declarations in our source tree; include declarations from the
         # wrapper_header_collection file for explicit instantiations, typedefs etc.
@@ -106,10 +103,10 @@ class CppSourceParser:
         ]
 
         # Create a source namespace module for the filtered declarations
-        self.source_ns = namespace_t(name="source", declarations=source_decls)
+        source_ns = namespace_t(name="source", declarations=source_decls)
 
         # Initialise the source namespace's internal type hash tables for faster queries
         logger.info("Optimizing source declaration queries.")
-        self.source_ns.init_optimizer()
+        source_ns.init_optimizer()
 
-        return self.source_ns
+        return source_ns

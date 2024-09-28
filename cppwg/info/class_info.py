@@ -8,31 +8,31 @@ from typing import Any, Dict, List, Optional
 from pygccxml.declarations.matchers import access_type_matcher_t
 from pygccxml.declarations.runtime_errors import declaration_not_found_t
 
-from cppwg.input.cpp_type_info import CppTypeInfo
+from cppwg.info.cpp_entity_info import CppEntityInfo
 from cppwg.utils import utils
 
 
-class CppClassInfo(CppTypeInfo):
+class CppClassInfo(CppEntityInfo):
     """
     An information structure for individual C++ classes to be wrapped.
 
     Attributes
     ----------
+    base_decls : pygccxml.declarations.declaration_t
+        Declarations for the base classes, one per template instantiation
     cpp_names : List[str]
         The C++ names of the class e.g. ["Foo<2,2>", "Foo<3,3>"]
     py_names : List[str]
         The Python names of the class e.g. ["Foo_2_2", "Foo_3_3"]
-    decls : pygccxml.declarations.declaration_t
-        Declarations for this type's base class, one per template instantiation
     """
 
     def __init__(self, name: str, class_config: Optional[Dict[str, Any]] = None):
 
         super().__init__(name, class_config)
 
-        self.cpp_names: List[str] = None
-        self.py_names: List[str] = None
-        self.base_decls: Optional[List["declaration_t"]] = None  # noqa: F821
+        self.base_decls: List["declaration_t"] = []  # noqa: F821
+        self.cpp_names: List[str] = []
+        self.py_names: List[str] = []
 
     def extract_templates_from_source(self) -> None:
         """
@@ -47,13 +47,19 @@ class CppClassInfo(CppTypeInfo):
             return
 
         # Skip if there is no source file
-        source_path = self.source_file_full_path
+        source_path = self.source_file_path
         if not source_path:
             return
 
         # Get list of template substitutions applicable to this class
         # e.g. [ {"signature":"<int A, int B>", "replacement":[[2,2], [3,3]]} ]
-        substitutions = self.hierarchy_attribute_gather("template_substitutions")
+        substitutions = [
+            ts_dict
+            for ts_dict_list in self.hierarchy_attribute_gather(
+                "template_substitutions"
+            )
+            for ts_dict in ts_dict_list
+        ]
 
         # Skip if there are no applicable template substitutions
         if not substitutions:
@@ -84,7 +90,6 @@ class CppClassInfo(CppTypeInfo):
                 self.template_arg_lists = substitution["replacement"]
 
                 # Extract parameters ["A", "B"] from "<int A, int B = A>"
-                self.template_params = []
                 for part in signature.split(","):
                     param = (
                         part.strip()
@@ -97,9 +102,9 @@ class CppClassInfo(CppTypeInfo):
                     self.template_params.append(param)
                 break
 
-    def is_child_of(self, other: "ClassInfo") -> bool:  # noqa: F821
+    def extends(self, other: "ClassInfo") -> bool:  # noqa: F821
         """
-        Check if the class is a child of the specified class.
+        Check if the class extends the specified class.
 
         Parameters
         ----------
@@ -109,7 +114,7 @@ class CppClassInfo(CppTypeInfo):
         Returns
         -------
         bool
-            True if the class is a child of the specified class, False otherwise
+            True if the class extends the specified class, False otherwise
         """
         if not self.base_decls:
             return False
@@ -168,8 +173,6 @@ class CppClassInfo(CppTypeInfo):
         if self.excluded:
             return
 
-        self.decls = []
-
         for class_cpp_name in self.cpp_names:
             class_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
 
@@ -177,10 +180,7 @@ class CppClassInfo(CppTypeInfo):
                 class_decl = source_ns.class_(class_name)
 
             except declaration_not_found_t as e1:
-                if (
-                    self.template_signature is None
-                    or "=" not in self.template_signature
-                ):
+                if "=" not in self.template_signature:
                     logger.error(f"Could not find declaration for class {class_name}")
                     raise e1
 
@@ -212,9 +212,9 @@ class CppClassInfo(CppTypeInfo):
             self.decls.append(class_decl)
 
         # Update the class source file if not already set
-        if not self.source_file_full_path:
-            self.source_file_full_path = self.decls[0].location.file_name
-            self.source_file = os.path.basename(self.source_file_full_path)
+        if not self.source_file_path:
+            self.source_file_path = self.decls[0].location.file_name
+            self.source_file = os.path.basename(self.source_file_path)
 
         # Update the base class declarations
         self.base_decls = [
@@ -235,18 +235,18 @@ class CppClassInfo(CppTypeInfo):
             return
 
         # Attempt to map class to a source file
-        if self.source_file_full_path:
-            self.source_file = os.path.basename(self.source_file_full_path)
+        if self.source_file_path:
+            self.source_file = os.path.basename(self.source_file_path)
         else:
             for file_path in source_file_paths:
                 file_name = os.path.basename(file_path)
                 # Match file name if set
                 if self.source_file == file_name:
-                    self.source_file_full_path = file_path
+                    self.source_file_path = file_path
                 # Match class name, assuming the file name is the class name
                 elif self.name == os.path.splitext(file_name)[0]:
                     self.source_file = file_name
-                    self.source_file_full_path = file_path
+                    self.source_file_path = file_path
 
         # Extract template args from the source file
         self.extract_templates_from_source()
@@ -258,42 +258,39 @@ class CppClassInfo(CppTypeInfo):
         """
         Set the Python names for the class, accounting for template args.
 
-        Set the name of the class as it will appear on the Python side. This
-        collapses template arguments, separating them by underscores and removes
-        special characters. The return type is a list, as a class can have
-        multiple names if it is templated. For example, a class "Foo" with
-        template arguments [[2, 2], [3, 3]] will have a python name list
-        ["Foo_2_2", "Foo_3_3"].
+        Set the name(s) of the class as it should appear in Python. This
+        collapses template arguments, separates them by underscores, and removes
+        special characters. There can be multiple names, one for each template
+        class instantiation. For example, class "Foo" with template arguments
+        [[2, 2], [3, 3]] will have a Python name list ["Foo_2_2", "Foo_3_3"].
         """
         # Handles untemplated classes
-        if self.template_arg_lists is None:
+        if not self.template_arg_lists:
             if self.name_override:
-                self.py_names = [self.name_override]
+                self.py_names.append(self.name_override)
             else:
-                self.py_names = [self.name]
+                self.py_names.append(self.name)
             return
-
-        self.py_names = []
 
         # Table of special characters for removal
         rm_chars = {"<": None, ">": None, ",": None, " ": None}
         rm_table = str.maketrans(rm_chars)
 
-        # Clean the type name
-        type_name = self.name
-        if self.name_override is not None:
-            type_name = self.name_override
+        # Clean the class name
+        class_name = self.name
+        if self.name_override:
+            class_name = self.name_override
 
         # Do standard name replacements e.g. "unsigned int" -> "Unsigned"
         for name, replacement in self.name_replacements.items():
-            type_name = type_name.replace(name, replacement)
+            class_name = class_name.replace(name, replacement)
 
         # Remove special characters
-        type_name = type_name.translate(rm_table)
+        class_name = class_name.translate(rm_table)
 
         # Capitalize the first letter e.g. "foo" -> "Foo"
-        if len(type_name) > 1:
-            type_name = type_name[0].capitalize() + type_name[1:]
+        if len(class_name) > 1:
+            class_name = class_name[0].capitalize() + class_name[1:]
 
         # Create a string of template args separated by "_" e.g. 2_2
         for template_arg_list in self.template_arg_lists:
@@ -319,24 +316,22 @@ class CppClassInfo(CppTypeInfo):
                 if idx < len(template_arg_list) - 1:
                     template_string += "_"
 
-            self.py_names.append(type_name + "_" + template_string)
+            self.py_names.append(class_name + "_" + template_string)
 
     def update_cpp_names(self) -> None:
         """
         Set the C++ names for the class, accounting for template args.
 
-        Set the name of the class as it should appear in C++.
-        The return type is a list, as a class can have multiple names
-        if it is templated. For example, a class "Foo" with
-        template arguments [[2, 2], [3, 3]] will have a C++ name list
-        ["Foo<2, 2>", "Foo<3, 3>"].
+        Set the name(s) of the class as it appears in C++. There can be
+        multiple names, one for each template class instantiation.
+        For example, a class "Foo" with template arguments [[2, 2], [3, 3]]
+        will have a C++ name list ["Foo<2, 2>", "Foo<3, 3>"].
         """
         # Handles untemplated classes
-        if self.template_arg_lists is None:
-            self.cpp_names = [self.name]
+        if not self.template_arg_lists:
+            self.cpp_names.append(self.name)
             return
 
-        self.cpp_names = []
         for template_arg_list in self.template_arg_lists:
             # Create template string from arg list e.g. [2, 2] -> "<2, 2>"
             template_string = ", ".join([str(arg) for arg in template_arg_list])
@@ -351,10 +346,3 @@ class CppClassInfo(CppTypeInfo):
         """
         self.update_cpp_names()
         self.update_py_names()
-
-    @property
-    def parent(self) -> "ModuleInfo":  # noqa: F821
-        """
-        Returns the parent module info object.
-        """
-        return self.module_info

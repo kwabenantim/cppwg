@@ -33,7 +33,7 @@ class CppPackageWrapperWriter:
         """
         Write all the wrappers required for the package.
         """
-        for module_info in self.package_info.module_info_collection:
+        for module_info in self.package_info.module_collection:
             module_writer = CppModuleWrapperWriter(
                 module_info,
                 self.wrapper_templates,
