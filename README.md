@@ -89,7 +89,7 @@ cd examples/shapes
 cppwg src/cpp \
   --wrapper_root wrapper \
   --package_info wrapper/package_info.yaml \
-  --includes src/cpp/geometry src/cpp/math_funcs src/cpp/mesh src/cpp/primitives extern/meshgen
+  --includes src/cpp/geometry src/cpp/math_funcs src/cpp/mesh src/cpp/primitives
 ```
 
 For the `Rectangle` class, this creates two files in

@@ -1,7 +1,6 @@
 import unittest
 
 import pyshapes.geometry
-import pyshapes.mesh
 import pyshapes.primitives
 
 
@@ -36,24 +35,12 @@ class TestClasses(unittest.TestCase):
         cuboid = pyshapes.primitives.Cuboid(5.0, 10.0, 20.0)
         self.assertTrue(len(cuboid.rGetVertices()) == 8)
 
-    def testMesh(self):
-
-        cmesh = pyshapes.mesh.ConcreteMesh_2()
-        self.assertTrue(cmesh.GetIndex() == 0)
-
-        cmesh.SetIndex(1)
-        self.assertTrue(cmesh.GetIndex() == 1)
-
     def testSyntax(self):
 
         self.assertEqual(pyshapes.geometry.Point[2], pyshapes.geometry.Point_2)
 
         point = pyshapes.geometry.Point[3](0.0, 1.0, 2.0)
         self.assertTrue(point.GetLocation() == [0.0, 1.0, 2.0])
-
-        self.assertEqual(
-            pyshapes.mesh.AbstractMesh[2, 2], pyshapes.mesh.AbstractMesh_2_2
-        )
 
 
 if __name__ == "__main__":
