@@ -42,7 +42,7 @@ jobs:
         run: python -m flake8
 
       - name: Test wrapper generation
-        run: python -m unittest test/test_wrapper_generation.py
+        run: python -m unittest tests/test_wrapper_generation.py
 
       - name: Generate new wrappers
         run: |

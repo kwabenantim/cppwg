@@ -1,10 +1,10 @@
-[project]
-name = "pycells"
-version = "0.0.1"
-
 [build-system]
-requires = ["scikit-build-core"]
-build-backend = "scikit_build_core.build"
+requires = [
+    "scikit_build_core",
+    "setuptools",
+    "pybind11",
+]
+build-backend = "scikit_build_core.setuptools.build_meta"
 
-[tool.scikit-build.cmake]
-build-type = "Release"
+[tool.scikit-build]
+cmake.build-type = "Release"
