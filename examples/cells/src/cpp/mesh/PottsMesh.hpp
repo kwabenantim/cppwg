@@ -1,24 +1,24 @@
-#ifndef _CONCRETE_MESH_HPP
-#define _CONCRETE_MESH_HPP
+#ifndef _POTTS_MESH_HPP
+#define _POTTS_MESH_HPP
 
 #include "AbstractMesh.hpp"
 
 /**
- * A concrete mesh implementation
+ * A Potts mesh implementation
  */
 template <unsigned DIM>
-class ConcreteMesh : public AbstractMesh<DIM, DIM>
+class PottsMesh : public AbstractMesh<DIM, DIM>
 {
 public:
     /**
      * Default Constructor
      */
-    ConcreteMesh();
+    PottsMesh();
 
     /**
      * Destructor
      */
-    ~ConcreteMesh();
+    ~PottsMesh();
 
     /**
      * Scale the mesh by a factor
@@ -26,4 +26,4 @@ public:
     void Scale(const double factor) override;
 };
 
-#endif // _CONCRETE_MESH_HPP
+#endif // _POTTS_MESH_HPP

@@ -1,4 +1,4 @@
-#include "ConcreteMesh.hpp"
+#include "PottsMesh.hpp"
 
 #include "MeshFactory.hpp"
 
@@ -12,5 +12,5 @@ MeshFactory<MESH>::~MeshFactory()
 {
 }
 
-template class MeshFactory<ConcreteMesh<2> >;
-template class MeshFactory<ConcreteMesh<3> >;
+template class MeshFactory<PottsMesh<2> >;
+template class MeshFactory<PottsMesh<3> >;

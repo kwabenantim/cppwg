@@ -1,19 +1,19 @@
 #include "AbstractMesh.hpp"
-#include "ConcreteMesh.hpp"
+#include "PottsMesh.hpp"
 
 template <unsigned DIM>
-ConcreteMesh<DIM>::ConcreteMesh() : AbstractMesh<DIM, DIM>()
+PottsMesh<DIM>::PottsMesh() : AbstractMesh<DIM, DIM>()
 {
 }
 
 template <unsigned DIM>
-ConcreteMesh<DIM>::~ConcreteMesh()
+PottsMesh<DIM>::~PottsMesh()
 {
 }
 template <unsigned DIM>
-void ConcreteMesh<DIM>::Scale(const double factor){
+void PottsMesh<DIM>::Scale(const double factor){
     // Scale the mesh
 };
 
-template class ConcreteMesh<2>;
-template class ConcreteMesh<3>;
+template class PottsMesh<2>;
+template class PottsMesh<3>;
