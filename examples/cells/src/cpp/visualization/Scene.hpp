@@ -1,0 +1,24 @@
+#ifndef SCENE_HPP_
+#define SCENE_HPP_
+
+#include <vtkAutoInit.h>
+#include <vtkRenderer.h>
+#include <vtkSmartPointer.h>
+
+VTK_MODULE_INIT(vtkRenderingOpenGL2);
+VTK_MODULE_INIT(vtkRenderingFreeType);
+
+template <unsigned DIM>
+class Scene
+{
+    vtkSmartPointer<vtkRenderer> mpRenderer;
+
+public:
+    Scene();
+
+    virtual ~Scene();
+
+    vtkSmartPointer<vtkRenderer> GetRenderer();
+};
+
+#endif // SCENE_HPP_

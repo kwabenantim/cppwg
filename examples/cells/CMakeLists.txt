@@ -55,8 +55,10 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/wrappers/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/mesh
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/visualization
+    ${VTK_INCLUDE_DIRS}
 )
 
-target_link_libraries(_pycells_lib PUBLIC meshgen::meshgen)
+target_link_libraries(_pycells_lib PUBLIC meshgen::meshgen ${VTK_LIBRARIES})
 
 install(TARGETS _pycells_lib LIBRARY DESTINATION pycells)
