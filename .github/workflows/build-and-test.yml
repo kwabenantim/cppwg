@@ -23,10 +23,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install cmake
+          sudo apt-get update && \
+          sudo apt-get install \
+            cmake \
+            libpetsc-real3.15 \
+            libpetsc-real3.15-dbg \
+            libpetsc-real3.15-dev \
+            libvtk9-dev \
+            python3-petsc4py-real3.15 \
+            python3-vtk9 \
+            vtk9
 
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -61,7 +69,7 @@ jobs:
           cd examples/shapes
           cat cppwg.log | grep "Unknown class"
 
-      - name: Build Python module
+      - name: Build shapes example
         run: |
           cd examples/shapes
           mkdir build
@@ -69,8 +77,16 @@ jobs:
           cmake ..
           make -j $(nproc)
 
-      - name: Test built module
+      - name: Build cells example
+        run: |
+          pip install --user --no-cache -v examples/cells
+
+      - name: Test shapes example
         run: |
           cd examples/shapes/build
           python -m unittest test_functions.py
           python -m unittest test_classes.py
+
+      - name: Test cells example
+        run: |
+          python -m unittest discover examples/cells/tests
