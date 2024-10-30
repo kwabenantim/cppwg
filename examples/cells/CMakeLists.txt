@@ -29,6 +29,7 @@ find_package(VTK 7.1
         vtkIOMovie
         vtkIOParallelXML
         vtkIOXML
+        vtkPython
         vtkRenderingAnnotation
         vtkRenderingCore
         vtkRenderingFreeType
@@ -37,7 +38,7 @@ find_package(VTK 7.1
 )
 
 # Add external library
-add_subdirectory(extern/meshgen meshgen_build)
+add_subdirectory(thirdparty/meshgen meshgen_build)
 
 # Set up pycells module
 file(GLOB SOURCES
@@ -51,11 +52,14 @@ pybind11_add_module(_pycells_lib ${SOURCES})
 
 target_include_directories(
     _pycells_lib
-    PRIVATE
+    PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/wrappers/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/cell
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/mesh
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/visualization
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/meshgen
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/smtk
     ${VTK_INCLUDE_DIRS}
 )
 

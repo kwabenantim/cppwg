@@ -305,7 +305,9 @@ class CppClassInfo(CppEntityInfo):
                     arg_str = arg_str.replace(name, replacement)
 
                 # Remove special characters
-                arg_str = arg_str.replace("<", "_").replace(",", "_").translate(rm_table)
+                arg_str = (
+                    arg_str.replace("<", "_").replace(",", "_").translate(rm_table)
+                )
 
                 # Capitalize the first letter
                 if len(arg_str) > 1:

@@ -1,6 +1,8 @@
 #ifndef _ABSTRACT_MESH_HPP
 #define _ABSTRACT_MESH_HPP
 
+#include "Node.hpp"
+
 /**
  * A mesh in SPACE_DIM space with ELEMENT_DIM dimensional elements
  */
@@ -35,9 +37,9 @@ public:
     void SetIndex(unsigned index);
 
     /**
-     * Add a vertex to the mesh
+     * Add a node to the mesh
      */
-    // void AddVertex(Node<SPACE_DIM> vertex);
+    void AddNode(Node<SPACE_DIM> node);
 
     /**
      * Scale the mesh by a factor

@@ -1,6 +1,5 @@
-#include "PottsMesh.hpp"
-
 #include "MeshFactory.hpp"
+#include "PottsMesh.hpp"
 
 template <class MESH>
 MeshFactory<MESH>::MeshFactory(): mMeshGen()

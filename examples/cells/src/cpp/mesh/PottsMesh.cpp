@@ -1,4 +1,3 @@
-#include "AbstractMesh.hpp"
 #include "PottsMesh.hpp"
 
 template <unsigned DIM>
