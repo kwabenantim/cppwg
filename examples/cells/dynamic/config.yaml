@@ -26,6 +26,7 @@ modules:
     source_locations:
       - cell
       - mesh
+      - utils
       - visualization
 
     classes:
@@ -39,9 +40,12 @@ modules:
           - PottsMesh.hpp
         template_substitutions:
           - signature: <class MESH>
-            replacement: [['PottsMesh<2>'], ['PottsMesh<3>']]
+            replacement: [["PottsMesh<2>"], ["PottsMesh<3>"]]
       - name: Node
       - name: PottsMesh
+
+      # utils
+      - name: PetscUtils
 
       # visualization
       - name: Scene

@@ -1,6 +1,7 @@
 from ._pycells_lib import (
     MeshFactory_PottsMesh_2,
     MeshFactory_PottsMesh_3,
+    PetscUtils,
     PottsMesh_2,
     PottsMesh_3,
     Scene_2,

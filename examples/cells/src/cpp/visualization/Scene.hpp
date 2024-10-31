@@ -7,7 +7,6 @@
 #include <vtkSmartPointer.h>
 
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
-VTK_MODULE_INIT(vtkRenderingFreeType);
 
 template <unsigned DIM>
 class Scene

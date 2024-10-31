@@ -32,6 +32,9 @@ jobs:
             libpetsc-real3.15-dbg \
             libpetsc-real3.15-dev \
             libvtk9-dev \
+            mpi-default-bin \
+            mpi-default-dev \
+            python3-mpi4py \
             python3-petsc4py-real3.15 \
             python3-vtk9 \
             vtk9

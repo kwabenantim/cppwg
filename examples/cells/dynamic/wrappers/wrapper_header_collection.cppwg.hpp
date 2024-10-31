@@ -8,6 +8,7 @@
 #include "Cell.hpp"
 #include "MeshFactory.hpp"
 #include "Node.hpp"
+#include "PetscUtils.hpp"
 #include "PottsMesh.hpp"
 #include "Scene.hpp"
 

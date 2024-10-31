@@ -1,7 +1,7 @@
 #ifndef _MESH_FACTORY_HPP
 #define _MESH_FACTORY_HPP
 
-#include "MeshGen.hpp"
+#include <memory>
 
 /**
  * A concrete mesh implementation
@@ -9,9 +9,6 @@
 template <class MESH>
 class MeshFactory
 {
-private:
-    MeshGen mMeshGen;
-
 public:
     /**
      * Default Constructor
@@ -22,6 +19,11 @@ public:
      * Destructor
      */
     ~MeshFactory();
+
+    /**
+     * Generate a mesh
+     */
+    std::shared_ptr<MESH> generateMesh();
 };
 
 #endif // _MESH_FACTORY_HPP
