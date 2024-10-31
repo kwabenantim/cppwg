@@ -29,3 +29,10 @@ Scene = TemplateClassDict(
         ("3",): Scene_3,
     }
 )
+
+__all__ = [
+    "MeshFactory",
+    "PetscUtils",
+    "PottsMesh",
+    "Scene",
+]

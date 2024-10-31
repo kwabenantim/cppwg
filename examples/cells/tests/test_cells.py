@@ -1,15 +1,21 @@
 import unittest
 
+import petsc4py
 import vtk
-from pycells import Scene_2
+from pycells import PetscUtils, Scene
 
 
 class TestCells(unittest.TestCase):
 
     def testVtkCaster(self):
-        scene = Scene_2()
+        scene = Scene[2]()
         renderer = scene.GetRenderer()
         self.assertIsNotNone(renderer)
+
+    def testPetscCaster(self):
+        petsc4py.init()
+        vec = PetscUtils.CreateVec(10)
+        self.assertIsNotNone(vec)
 
 
 if __name__ == "__main__":
