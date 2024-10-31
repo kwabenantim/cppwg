@@ -22,7 +22,7 @@ template_substitutions:
     replacement: [[2, 2], [3, 3]]
 
 modules:
-  - name: lib
+  - name: all
     source_locations:
       - cell
       - mesh
@@ -46,6 +46,8 @@ modules:
 
       # utils
       - name: PetscUtils
+        source_includes:
+          - PybindPETScTypeCaster.hpp
 
       # visualization
       - name: Scene

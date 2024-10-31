@@ -34,15 +34,16 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/dynamic/wrappers/**/*.hpp
 )
 
-pybind11_add_module(_pycells_lib ${SOURCES})
+pybind11_add_module(_pycells_all ${SOURCES})
 
 target_include_directories(
-    _pycells_lib
+    _pycells_all
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/wrappers/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/cell
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/mesh
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/typecasters
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/utils
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/visualization
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/smtk
@@ -53,7 +54,7 @@ target_include_directories(
 )
 
 target_link_libraries(
-    _pycells_lib
+    _pycells_all
     PUBLIC
     ${VTK_LIBRARIES}
     ${PETSC_LIBRARIES}
@@ -61,4 +62,4 @@ target_link_libraries(
     ${MPI_CXX_LIBRARIES}
 )
 
-install(TARGETS _pycells_lib LIBRARY DESTINATION pycells)
+install(TARGETS _pycells_all LIBRARY DESTINATION pycells)

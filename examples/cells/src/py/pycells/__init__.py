@@ -1,4 +1,4 @@
-from ._pycells_lib import (
+from ._pycells_all import (
     MeshFactory_PottsMesh_2,
     MeshFactory_PottsMesh_3,
     PetscUtils,
