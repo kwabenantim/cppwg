@@ -2,7 +2,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "PybindPETScTypeCaster.hpp"
+#include "caster_petsc.h"
 #include <memory>
 #include "PetscUtils.hpp"
 

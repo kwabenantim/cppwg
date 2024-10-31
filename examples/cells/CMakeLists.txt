@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16...3.22)
-project(pycells LANGUAGES CXX)
+project(pycells LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,6 +23,9 @@ find_package(VTK REQUIRED COMPONENTS
 # Find PETSc
 find_package(PETSc REQUIRED)
 
+# Find PETSc4py
+find_package(PETSc4py REQUIRED)
+
 # Find MPI
 find_package(MPI REQUIRED COMPONENTS CXX)
 
@@ -43,12 +46,13 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/cell
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/mesh
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/typecasters
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/utils
     ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/visualization
+    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/dolfinx
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/smtk
     ${VTK_INCLUDE_DIRS}
     ${PETSC_INCLUDES}
+    ${PETSC4PY_INCLUDES}
     ${MPI_C_INCLUDE_PATH}
     ${MPI_CXX_INCLUDE_PATH}
 )

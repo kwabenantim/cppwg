@@ -47,7 +47,7 @@ modules:
       # utils
       - name: PetscUtils
         source_includes:
-          - PybindPETScTypeCaster.hpp
+          - caster_petsc.h
 
       # visualization
       - name: Scene

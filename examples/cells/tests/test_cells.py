@@ -1,4 +1,5 @@
 import unittest
+import sys
 
 import petsc4py
 import vtk
@@ -10,12 +11,12 @@ class TestCells(unittest.TestCase):
     def testVtkCaster(self):
         scene = Scene[2]()
         renderer = scene.GetRenderer()
-        self.assertIsNotNone(renderer)
+        self.assertIsInstance(renderer, vtk.vtkRenderingOpenGL2Python.vtkOpenGLRenderer)
 
     def testPetscCaster(self):
-        petsc4py.init()
+        petsc4py.init(sys.argv)
         vec = PetscUtils.CreateVec(10)
-        self.assertIsNotNone(vec)
+        self.assertIsInstance(vec, petsc4py.PETSc.Vec)
 
 
 if __name__ == "__main__":
