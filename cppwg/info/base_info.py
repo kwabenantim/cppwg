@@ -106,7 +106,6 @@ class BaseInfo(ABC):
             "unsigned int": "Unsigned",
             "Unsigned int": "Unsigned",
             "unsigned": "Unsigned",
-            "double": "Double",
             "std::vector": "Vector",
             "std::pair": "Pair",
             "std::map": "Map",
