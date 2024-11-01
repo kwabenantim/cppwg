@@ -11,4 +11,3 @@ setup(
     cmake_install_dir="src/py/pycells",
     python_requires=">=3.8",
 )
-

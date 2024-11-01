@@ -6,9 +6,10 @@ exclude =
     .git,
     .github,
     build,
+    cppwg/templates,
     doc,
     examples,
-    cppwg/templates,
+    _skbuild,
     tests,
     venv,
 
