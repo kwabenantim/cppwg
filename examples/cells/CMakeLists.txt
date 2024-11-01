@@ -4,7 +4,7 @@ project(pycells LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 # Find Python
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
@@ -37,8 +37,8 @@ FetchContent_MakeAvailable(pybind11)
 
 # Add a shared library target for the main C++ source
 file(GLOB_RECURSE MAIN_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/*.hpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/*.cpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/*.hpp
 )
 add_library(cells SHARED ${MAIN_SOURCES})
 target_link_libraries(cells PUBLIC
@@ -48,11 +48,11 @@ target_link_libraries(cells PUBLIC
     ${MPI_CXX_LIBRARIES}
 )
 target_include_directories(cells PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/cell
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/mesh
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/utils
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/visualization
+    ${CMAKE_SOURCE_DIR}/src/cpp
+    ${CMAKE_SOURCE_DIR}/src/cpp/cell
+    ${CMAKE_SOURCE_DIR}/src/cpp/mesh
+    ${CMAKE_SOURCE_DIR}/src/cpp/utils
+    ${CMAKE_SOURCE_DIR}/src/cpp/visualization
     ${VTK_INCLUDE_DIRS}
     ${PETSC_INCLUDES}
     ${MPI_C_INCLUDE_PATH}
@@ -61,15 +61,15 @@ target_include_directories(cells PUBLIC
 
 # Set up the pycells module with pybind11
 file(GLOB WRAPPER_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/dynamic/wrappers/all/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/dynamic/wrappers/all/*.hpp
+    ${CMAKE_SOURCE_DIR}/dynamic/wrappers/all/*.cpp
+    ${CMAKE_SOURCE_DIR}/dynamic/wrappers/all/*.hpp
 )
 pybind11_add_module(_pycells_all MODULE ${WRAPPER_SOURCES})
 target_link_libraries(_pycells_all PRIVATE cells)
 target_include_directories(_pycells_all PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/dynamic/wrappers/all
-    ${CMAKE_CURRENT_SOURCE_DIR}/dynamic/thirdparty/dolfinx
-    ${CMAKE_CURRENT_SOURCE_DIR}/dynamic/thirdparty/smtk
+    ${CMAKE_SOURCE_DIR}/dynamic/wrappers/all
+    ${CMAKE_SOURCE_DIR}/dynamic/thirdparty/dolfinx
+    ${CMAKE_SOURCE_DIR}/dynamic/thirdparty/smtk
     ${PETSC4PY_INCLUDES}
 )
 
@@ -84,3 +84,14 @@ if(SKBUILD)
     install(TARGETS cells LIBRARY DESTINATION .)
     install(TARGETS _pycells_all LIBRARY DESTINATION .)
 endif()
+
+# Target for re-generating wrappers
+add_custom_target(wrap
+    COMMAND ${Python3_EXECUTABLE} -m cppwg ${CMAKE_SOURCE_DIR}/src/cpp
+            -w ${CMAKE_SOURCE_DIR}/dynamic/wrappers
+            -p ${CMAKE_SOURCE_DIR}/dynamic/config.yaml
+            -i "$<JOIN:$<TARGET_PROPERTY:_pycells_all,INCLUDE_DIRECTORIES>,;>"
+            -l ${CMAKE_BINARY_DIR}/cppwg.log
+            --std c++17
+    COMMAND_EXPAND_LISTS
+)
