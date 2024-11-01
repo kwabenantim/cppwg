@@ -1,10 +1,12 @@
 [build-system]
 requires = [
-    "scikit_build_core",
-    "setuptools",
+    "cmake",
+    "ninja",
     "pybind11",
+    "scikit-build",
+    "setuptools",
 ]
-build-backend = "scikit_build_core.setuptools.build_meta"
+build-backend = "setuptools.build_meta"
 
 [tool.scikit-build]
 cmake.build-type = "Release"

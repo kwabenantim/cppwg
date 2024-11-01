@@ -15,8 +15,6 @@
 
 // pybind11 casters for PETSc/petsc4py objects
 
-namespace py = pybind11;
-
 // Import petsc4py on demand
 #define VERIFY_PETSC4PY_FROMPY(func) \
   if (!func)                         \
@@ -58,13 +56,13 @@ namespace py = pybind11;
       {                                                                  \
         PyObject *obj = PyPetsc##P4PYTYPE##_New(src);                    \
         PetscObjectDereference((PetscObject)src);                        \
-        return py::handle(obj);                                          \
+        return pybind11::handle(obj);                                    \
       }                                                                  \
       else if (policy == return_value_policy::automatic_reference or     \
                policy == return_value_policy::reference)                 \
       {                                                                  \
         PyObject *obj = PyPetsc##P4PYTYPE##_New(src);                    \
-        return py::handle(obj);                                          \
+        return pybind11::handle(obj);                                    \
       }                                                                  \
       else                                                               \
       {                                                                  \

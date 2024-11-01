@@ -10,13 +10,14 @@
 execute_process(
     COMMAND ${Python3_EXECUTABLE} -c "import petsc4py; print(petsc4py.get_include(), end='')"
     OUTPUT_VARIABLE PETSC4PY_INCLUDES
-    RESULT_VARIABLE PETSC4PY_NOT_FOUND
 )
 
-execute_process(
-    COMMAND ${Python3_EXECUTABLE} -c "import petsc4py; print(petsc4py.__version__, end='')"
-    OUTPUT_VARIABLE PETSC4PY_VERSION
-)
+if(PETSC4PY_INCLUDES)
+    execute_process(
+        COMMAND ${Python3_EXECUTABLE} -c "import petsc4py; print(petsc4py.__version__, end='')"
+        OUTPUT_VARIABLE PETSC4PY_VERSION
+    )
+endif()
 
 mark_as_advanced(PETSC4PY_INCLUDES, PETSC4PY_VERSION)
 

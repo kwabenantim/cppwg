@@ -40,4 +40,4 @@ jobs:
 
       - name: Test cells example
         run: |
-          python -m unittest discover examples/cells/tests
+          python -m unittest discover -s examples/cells/tests

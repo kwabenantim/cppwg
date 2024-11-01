@@ -41,6 +41,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+# Set PETSC_DIR
 # Ubuntu uses versioned paths e.g /usr/lib/petscdir/petsc3.15/x86_64-linux-gnu-real
 file(GLOB ubuntu_paths "/usr/lib/petscdir/*")
 
@@ -48,10 +49,11 @@ find_path(
     PETSC_DIR
     include/petsc.h
     HINTS ENV PETSC_DIR
-    PATHS /usr/lib/petsc ${deb_paths}
+    PATHS /usr/lib/petsc ${ubuntu_paths}
     DOC "PETSc Directory"
 )
 
+# Set PETSC_ARCH
 if(PETSC_DIR AND NOT PETSC_ARCH)
     foreach(_arch $ENV{PETSC_ARCH} x86_64-linux-gnu-real x86_64-linux-gnu-real-debug)
         find_path(
@@ -68,7 +70,11 @@ if(PETSC_DIR AND NOT PETSC_ARCH)
     endforeach()
 endif()
 
-if(EXISTS "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables")
+# Check for PETSc config files
+if(EXISTS "${PETSC_DIR}/include/petscversion.h" AND
+   EXISTS "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/rules" AND
+   EXISTS "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables")
+    set(petsc_version_h "${PETSC_DIR}/include/petscversion.h")
     set(petsc_conf_rules "${PETSC_DIR}/lib/petsc/conf/rules")
     set(petsc_conf_variables "${PETSC_DIR}/lib/petsc/conf/variables")
 else()
@@ -76,30 +82,26 @@ else()
 endif()
 
 # Get the PETSc version
-if(EXISTS "${PETSC_DIR}/include/petscversion.h")
-    file(STRINGS "${PETSC_DIR}/include/petscversion.h" vstrings REGEX "#define PETSC_VERSION_(RELEASE|MAJOR|MINOR|SUBMINOR|PATCH) ")
-    foreach(line ${vstrings})
-        string(REGEX REPLACE " +" ";" fields ${line}) # break line into three fields (the first is always "#define")
-        list(GET fields 1 var)
-        list(GET fields 2 val)
-        set(${var} ${val})
-    endforeach()
+file(STRINGS "${petsc_version_h}" _vstrings REGEX "#define PETSC_VERSION_(RELEASE|MAJOR|MINOR|SUBMINOR|PATCH) ")
+foreach(_line ${_vstrings})
+    string(REGEX REPLACE " +" ";" _fields ${_line}) # break line into three fields (the first is always "#define")
+    list(GET _fields 1 _var)
+    list(GET _fields 2 _val)
+    set(${_var} ${_val})
+endforeach()
 
-    set(vstring "${PETSC_VERSION_MAJOR}.${PETSC_VERSION_MINOR}.${PETSC_VERSION_SUBMINOR}")
+set(_version "${PETSC_VERSION_MAJOR}.${PETSC_VERSION_MINOR}.${PETSC_VERSION_SUBMINOR}")
 
-    if(PETSC_VERSION_RELEASE)
-        if($(PETSC_VERSION_PATCH) GREATER 0)
-            set(vstring "${vstring}p${PETSC_VERSION_PATCH}")
-        endif()
-    else()
-        # make dev version compare higher than any patch level of a released version
-        set(vstring "${vstring}.99")
+if(PETSC_VERSION_RELEASE)
+    if($(PETSC_VERSION_PATCH) GREATER 0)
+        set(_version "${_version}p${PETSC_VERSION_PATCH}")
     endif()
-    set(PETSC_VERSION "${vstring}" CACHE INTERNAL "PETSc version")
 else()
-    message(SEND_ERROR "PETSC_DIR cannot be used, ${PETSC_DIR}/include/petscversion.h does not exist")
+    # make dev version compare higher than any patch level of a released version
+    set(_version "${_version}.99")
 endif()
- 
+set(PETSC_VERSION "${_version}" CACHE INTERNAL "PETSc version")
+
 # A temporary makefile to probe the PETSc configuration
 set(ENV{PETSC_DIR} "${PETSC_DIR}")
 set(ENV{PETSC_ARCH} "${PETSC_ARCH}")
@@ -124,24 +126,24 @@ macro(PETSC_GET_VARIABLE name var)
     )
 endmacro()
 
-# Extract include paths
+# Extract include paths from compile command line
 petsc_get_variable(PETSC_CCPPFLAGS petsc_ccpp_flags)
 
 string(REGEX MATCHALL "-I([^\" ]+|\"[^\"]+\")" _all_tokens "${petsc_ccpp_flags}")
     set(_incs_found "")
-    foreach(token ${_all_tokens})
-        string(REGEX REPLACE "^-I" "" token ${token})
-        string(REGEX REPLACE "//" "/" token ${token})
-        if(EXISTS ${token})
-            list(APPEND _incs_found ${token})
+    foreach(_token ${_all_tokens})
+        string(REGEX REPLACE "^-I" "" _token ${_token})
+        string(REGEX REPLACE "//" "/" _token ${_token})
+        if(EXISTS ${_token})
+            list(APPEND _incs_found ${_token})
         else()
-            message(STATUS "Include directory ${token} does not exist")
+            message(STATUS "Include directory ${_token} does not exist")
         endif()
-    endforeach(token)
+    endforeach()
     list(REMOVE_DUPLICATES _incs_found)
 set(PETSC_INCLUDES_ALL "${_incs_found}")
 
-# Extract libraries
+# Find PETSc libraries
 petsc_get_variable(PETSC_LIB_DIR petsc_lib_dir)
 message(STATUS "petsc_lib_dir ${petsc_lib_dir}")
 
@@ -192,17 +194,18 @@ endif()
 # We do an out-of-source build so __FILE__ will be an absolute path, hence __INSDIR__ is superfluous
 set(PETSC_DEFINITIONS "-D__INSDIR__=" CACHE STRING "PETSc definitions" FORCE)
 
+set(PETSC_INCLUDES ${PETSC_INCLUDES_ALL} CACHE STRING "PETSc include path" FORCE)
+set(PETSC_LIBRARIES ${PETSC_LIBRARIES_ALL} CACHE STRING "PETSc libraries" FORCE)
+
 # Sometimes this can be used to assist FindMPI.cmake
 petsc_get_variable(PCC petsc_cc)
 petsc_get_variable(MPIEXEC petsc_mpiexec)
 set(PETSC_COMPILER ${petsc_cc} CACHE FILEPATH "PETSc compiler" FORCE)
 set(PETSC_MPIEXEC ${petsc_mpiexec} CACHE FILEPATH "Executable for running PETSc MPI programs" FORCE)
 
-set(PETSC_INCLUDES ${PETSC_INCLUDES_ALL} CACHE STRING "PETSc include path" FORCE)
-set(PETSC_LIBRARIES ${PETSC_LIBRARIES_ALL} CACHE STRING "PETSc libraries" FORCE)
-# Note that we have forced values for all these choices.  If you
+# Note that we have forced values for all these choices. If you
 # change these, you are telling the system to trust you that they
-# work.  It is likely that you will end up with a broken build.
+# work. It is likely that you will end up with a broken build.
 mark_as_advanced(PETSC_INCLUDES PETSC_LIBRARIES PETSC_COMPILER PETSC_DEFINITIONS PETSC_MPIEXEC)
 
 file(REMOVE ${petsc_config_makefile})
