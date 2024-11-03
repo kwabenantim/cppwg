@@ -53,12 +53,15 @@ jobs:
           mamba install --yes --file requirements.txt
         working-directory: examples/cells
 
+      - name: Set config paths
+        run: |
+          echo "CMAKE_PREFIX_PATH=$CONDA_PREFIX;$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+          echo "PETSC_DIR=$CONDA_PREFIX" >> $GITHUB_ENV
+          echo "PETSC_ARCH=" >> $GITHUB_ENV
+          echo "VTK_DIR=$CONDA_PREFIX" >> $GITHUB_ENV
+
       - name: Configure
         run: |
-          export CMAKE_PREFIX_PATH="$CONDA_PREFIX;$CMAKE_PREFIX_PATH"
-          export PETSC_DIR=$CONDA_PREFIX
-          export PETSC_ARCH=
-          export VTK_DIR=$CONDA_PREFIX
           mkdir build && cd build
           cmake ..
         working-directory: examples/cells
