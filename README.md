@@ -1,4 +1,5 @@
-![build](https://github.com/Chaste/cppwg/actions/workflows/build-and-test.yml/badge.svg)
+![shapes-example](https://github.com/Chaste/cppwg/actions/workflows/test-shapes.yml/badge.svg)
+![cells-example](https://github.com/Chaste/cppwg/actions/workflows/test-cells.yml/badge.svg)
 
 # cppwg
 

@@ -10,12 +10,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 # Find VTK
-find_package(VTK REQUIRED COMPONENTS
-    vtkCommonCore
-    vtkRenderingCore
-    vtkRenderingOpenGL2
-    vtkWrappingPythonCore
-)
+find_package(VTK COMPONENTS CommonCore QUIET)
+    if(VTK_FOUND)
+        find_package(VTK REQUIRED COMPONENTS CommonCore RenderingCore RenderingOpenGL2 WrappingPythonCore)
+    else()
+        find_package(VTK REQUIRED COMPONENTS vtkCommonCore vtkRenderingCore vtkRenderingOpenGL2 vtkWrappingPythonCore)
+    endif()
+endforeach()
 
 # Find PETSc
 find_package(PETSc REQUIRED)
@@ -29,9 +30,10 @@ find_package(MPI REQUIRED COMPONENTS CXX)
 # Fetch pybind11
 include(FetchContent)
 FetchContent_Declare(
-  pybind11
-  URL https://github.com/pybind/pybind11/archive/refs/tags/v2.10.4.tar.gz
-  URL_HASH SHA256=832e2f309c57da9c1e6d4542dedd34b24e4192ecb4d62f6f4866a737454c9970
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11
+    GIT_TAG v2.10.4
+    GIT_SHALLOW 1
 )
 FetchContent_MakeAvailable(pybind11)
 
