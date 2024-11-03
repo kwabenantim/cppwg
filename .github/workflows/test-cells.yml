@@ -51,8 +51,10 @@ jobs:
 
       - name: Configure
         run: |
+          export CMAKE_PREFIX_PATH="$CONDA_PREFIX;$CMAKE_PREFIX_PATH"
           export PETSC_DIR=$CONDA_PREFIX
           export PETSC_ARCH=
+          export VTK_DIR=$CONDA_PREFIX
           mkdir build && cd build
           cmake ..
         working-directory: examples/cells
