@@ -11,12 +11,11 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 # Find VTK
 find_package(VTK COMPONENTS CommonCore QUIET)
-    if(VTK_FOUND)
-        find_package(VTK REQUIRED COMPONENTS CommonCore RenderingCore RenderingOpenGL2 WrappingPythonCore)
-    else()
-        find_package(VTK REQUIRED COMPONENTS vtkCommonCore vtkRenderingCore vtkRenderingOpenGL2 vtkWrappingPythonCore)
-    endif()
-endforeach()
+if(VTK_FOUND)
+    find_package(VTK REQUIRED COMPONENTS CommonCore RenderingCore RenderingOpenGL2 WrappingPythonCore)
+else()
+    find_package(VTK REQUIRED COMPONENTS vtkCommonCore vtkRenderingCore vtkRenderingOpenGL2 vtkWrappingPythonCore)
+endif()
 
 # Find PETSc
 find_package(PETSc REQUIRED)
