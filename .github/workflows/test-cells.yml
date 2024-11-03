@@ -41,7 +41,8 @@ jobs:
 
       - name: Install cppwg
         run: |
-          conda develop .
+          python -m pip install --upgrade pip
+          python -m pip install .
 
       - name: Install requirements
         run: |
