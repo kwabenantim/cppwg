@@ -1,0 +1,78 @@
+name: test-cells
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  test-cells:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    concurrency:
+      group: test-cells-${{ github.ref }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install cmake
+
+      - name: Setup Miniconda Python ${{ matrix.python-version }}
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          use-mamba: true
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          python-version: ${{ matrix.python-version }}
+          activate-environment: test_cells
+          channels: conda-forge
+
+      - name: Install cppwg
+        run: |
+          conda develop .
+
+      - name: Install requirements
+        run: |
+          mamba install --yes --file requirements.txt
+        working-directory: examples/cells
+
+      - name: Configure
+        run: |
+          export PETSC_DIR=$CONDA_PREFIX
+          export PETSC_ARCH=
+          mkdir build && cd build
+          cmake ..
+        working-directory: examples/cells
+
+      - name: Regenerate wrappers
+        run: |
+          rm -rf dynamic/wrappers
+          cd build
+          make pycells_wrappers
+        working-directory: examples/cells
+
+      - name: Check for changes
+        run: |
+          git diff --exit-code dynamic/wrappers
+          grep "Unknown class" build/cppwg.log
+        working-directory: examples/cells
+
+      - name: Build
+        run: pip install --user --no-cache-dir -v .
+        working-directory: examples/cells
+
+      - name: Test
+        run: python -m unittest discover -s tests
+        working-directory: examples/cells

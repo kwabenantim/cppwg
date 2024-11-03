@@ -86,7 +86,7 @@ if(SKBUILD)
 endif()
 
 # Target for re-generating wrappers
-add_custom_target(wrap
+add_custom_target(pycells_wrappers
     COMMAND ${Python3_EXECUTABLE} -m cppwg ${CMAKE_SOURCE_DIR}/src/cpp
             -w ${CMAKE_SOURCE_DIR}/dynamic/wrappers
             -p ${CMAKE_SOURCE_DIR}/dynamic/config.yaml
