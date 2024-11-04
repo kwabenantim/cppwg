@@ -10,12 +10,20 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 # Find VTK
-find_package(VTK COMPONENTS CommonCore QUIET)
-if(VTK_FOUND)
-    find_package(VTK REQUIRED COMPONENTS CommonCore RenderingCore RenderingOpenGL2 WrappingPythonCore)
-else()
+foreach(_core_module vtkCommonCore CommonCore)
+    find_package(VTK COMPONENTS ${_core_module} QUIET)
+    if(VTK_FOUND)
+        break()
+    endif()
+endforeach()
+
+if(VTK_VERSION VERSION_LESS 9.0.0)
     find_package(VTK REQUIRED COMPONENTS vtkCommonCore vtkRenderingCore vtkRenderingOpenGL2 vtkWrappingPythonCore)
+else()
+    find_package(VTK REQUIRED COMPONENTS CommonCore RenderingCore RenderingOpenGL2 WrappingPythonCore)
 endif()
+
+message(STATUS "VTK version: ${VTK_VERSION}")
 
 # Find PETSc
 find_package(PETSc REQUIRED)
