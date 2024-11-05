@@ -1,5 +1,6 @@
-![shapes-example](https://github.com/Chaste/cppwg/actions/workflows/test-shapes.yml/badge.svg)
-![cells-example](https://github.com/Chaste/cppwg/actions/workflows/test-cells.yml/badge.svg)
+![conda](https://github.com/Chaste/cppwg/actions/workflows/test-cells-conda.yml/badge.svg)
+![pip](https://github.com/Chaste/cppwg/actions/workflows/test-shapes-pip.yml/badge.svg)
+![ubuntu](https://github.com/Chaste/cppwg/actions/workflows/test-cells-ubuntu.yml/badge.svg)
 
 # cppwg
 

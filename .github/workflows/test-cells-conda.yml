@@ -30,7 +30,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install cmake
+          sudo apt-get install cmake git
 
       - name: Setup Miniconda Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
@@ -79,7 +79,11 @@ jobs:
         working-directory: examples/cells
 
       - name: Build
-        run: python -m pip install -v .
+        run: conda build conda-recipe
+        working-directory: examples/cells
+
+      - name: Install
+        run: conda install --use-local pycells
         working-directory: examples/cells
 
       - name: Test
