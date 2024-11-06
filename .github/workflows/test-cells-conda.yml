@@ -77,7 +77,7 @@ jobs:
         working-directory: examples/cells
 
       - name: Install conda-build tools
-        run: mamba install boa conda-build conda-verify
+        run: mamba install boa conda-verify
 
       - name: Build
         run: conda mambabuild recipe -m variants/python${{ matrix.python-version }}.yaml

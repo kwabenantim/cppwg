@@ -1,5 +1,5 @@
-openmpi
 mpi4py
+openmpi
 petsc
 petsc4py
 vtk
