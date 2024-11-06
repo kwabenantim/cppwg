@@ -1,4 +1,4 @@
-mpich
+openmpi
 mpi4py
 petsc
 petsc4py

@@ -6,26 +6,20 @@ package:
   version: {{ version }}
 
 source:
-  path: ..
+  path: ../..
 
 build:
   number: {{ build }}
 
 requirements:
-  build:
-    - cmake
-    - ninja
-    - pip
-    - python
-    - scikit-build
-    - setuptools
-
   host:
     - mpi4py
-    - mpich
+    - openmpi
     - petsc
     - petsc4py
+    - pip
     - python
+    - scikit-build-core
     - vtk
 
 test:

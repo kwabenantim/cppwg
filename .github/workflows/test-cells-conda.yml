@@ -1,4 +1,4 @@
-name: test-cells
+name: test-cells-conda
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
       - "**"
 
 jobs:
-  test-cells:
+  test-cells-conda:
     runs-on: ubuntu-latest
 
     strategy:
@@ -16,7 +16,7 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
     concurrency:
-      group: test-cells-${{ github.ref }}-${{ matrix.python-version }}
+      group: test-cells-conda-${{ github.ref }}-${{ matrix.python-version }}
       cancel-in-progress: true
 
     defaults:
@@ -39,7 +39,6 @@ jobs:
           use-mamba: true
           miniforge-version: latest
           python-version: ${{ matrix.python-version }}
-          activate-environment: test_cells
           channels: conda-forge
 
       - name: Install cppwg
@@ -48,8 +47,7 @@ jobs:
           python -m pip install .
 
       - name: Install requirements
-        run: |
-          mamba install --yes --file requirements.txt
+        run: mamba install --yes --file requirements.txt
         working-directory: examples/cells
 
       - name: Set config paths
@@ -78,14 +76,16 @@ jobs:
           grep "Unknown class" build/cppwg.log
         working-directory: examples/cells
 
+      - name: Install conda-build tools
+        run: mamba install boa conda-build conda-verify
+
       - name: Build
-        run: conda build conda-recipe
-        working-directory: examples/cells
+        run: conda mambabuild recipe -m variants/python${{ matrix.python-version }}.yaml
+        working-directory: examples/cells/conda
 
       - name: Install
-        run: conda install --use-local pycells
-        working-directory: examples/cells
+        run: mamba install --use-local pycells
 
       - name: Test
-        run: python -m unittest discover -s tests
+        run: python -m unittest discover tests
         working-directory: examples/cells

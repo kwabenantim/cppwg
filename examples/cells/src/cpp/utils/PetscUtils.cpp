@@ -12,7 +12,11 @@ void PetscUtils::Initialise()
 {
     if (!PetscUtils::IsInitialised())
     {
+#if PETSC_VERSION_GE(3, 19, 0)
+        PetscInitialize(PETSC_NULLPTR, PETSC_NULLPTR, PETSC_NULLPTR, PETSC_NULLPTR);
+#else
         PetscInitialize(PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);
+#endif
     }
 }
 
@@ -27,7 +31,7 @@ int PetscUtils::GetSize()
 {
     if (!PetscUtils::IsInitialised())
     {
-        return -1;
+        PetscUtils::Initialise();
     }
 
     PetscInt size;
@@ -39,7 +43,7 @@ int PetscUtils::GetRank()
 {
     if (!PetscUtils::IsInitialised())
     {
-        return -1;
+        PetscUtils::Initialise();
     }
 
     PetscInt rank;
@@ -49,9 +53,14 @@ int PetscUtils::GetRank()
 
 Vec PetscUtils::CreateVec(int size)
 {
-    Vec vec;
-    VecCreate(PETSC_COMM_WORLD, &vec);
-    VecSetSizes(vec, PETSC_DECIDE, size);
-    VecSetType(vec, VECMPI);
-    return vec;
+    if (!PetscUtils::IsInitialised())
+    {
+        PetscUtils::Initialise();
+    }
+
+    Vec v;
+    VecCreate(PETSC_COMM_WORLD, &v);
+    VecSetSizes(v, PETSC_DECIDE, size);
+    VecSetFromOptions(v);
+    return v;
 }
