@@ -1,11 +1,14 @@
 [build-system]
-requires = [
-    "cmake",
-    "ninja",
-    "scikit-build",
-    "setuptools",
-]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core >= 0.10.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "pycells"
+version = "0.0.1"
+license = { text = "BSD-3-Clause License" }
+requires-python = ">=3.8"
 
 [tool.scikit-build]
 cmake.build-type = "Release"
+wheel.packages = ["src/py/pycells"]
+wheel.install-dir = "pycells"
