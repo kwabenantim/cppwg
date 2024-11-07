@@ -35,13 +35,18 @@ modules:
 
       # mesh
       - name: AbstractMesh
+
       - name: MeshFactory
         source_includes:
           - PottsMesh.hpp
         template_substitutions:
           - signature: <class MESH>
             replacement: [["PottsMesh<2>"], ["PottsMesh<3>"]]
+
       - name: Node
+        source_includes:
+          - PybindUblasTypeCaster.hpp
+
       - name: PottsMesh
 
       # utils

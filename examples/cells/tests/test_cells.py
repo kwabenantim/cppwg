@@ -3,7 +3,7 @@ import unittest
 
 import petsc4py
 import vtk
-from pycells import PetscUtils, Scene
+from pycells import Node, PetscUtils, Scene
 
 
 class TestCells(unittest.TestCase):
@@ -17,6 +17,12 @@ class TestCells(unittest.TestCase):
         petsc4py.init(sys.argv)
         vec = PetscUtils.CreateVec(10)
         self.assertIsNotNone(vec)
+
+    def testUblasCaster(self):
+        node = Node[2]()
+        self.assertEqual(list(node.GetLocation()), [0, 0])
+        node.Translate([1, 1])
+        self.assertEqual(list(node.GetLocation()), [1, 1])
 
 
 if __name__ == "__main__":

@@ -47,7 +47,7 @@ jobs:
           python -m pip install .
 
       - name: Install requirements
-        run: mamba install --yes --file requirements.txt
+        run: mamba install --yes --file conda/requirements.txt
         working-directory: examples/cells
 
       - name: Set config paths

@@ -1,3 +1,5 @@
+"""Syntax module."""
+
 import inspect
 from collections.abc import Iterable
 

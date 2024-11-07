@@ -2,6 +2,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include "PybindUblasTypeCaster.hpp"
 #include <memory>
 #include "Node.hpp"
 
@@ -16,8 +17,15 @@ void register_Node_2_class(py::module &m)
     py::class_<Node_2, std::shared_ptr<Node_2>>(m, "Node_2")
         .def(py::init<>())
         .def(py::init<::std::vector<double>>(), py::arg("coords"))
+        .def(py::init<::boost::numeric::ublas::c_vector<double, 2>>(), py::arg("coords"))
         .def("GetIndex",
             (unsigned int(Node_2::*)() const) &Node_2::GetIndex,
             " ")
+        .def("GetLocation",
+            (::boost::numeric::ublas::c_vector<double, 2>(Node_2::*)()) &Node_2::GetLocation,
+            " ")
+        .def("Translate",
+            (void(Node_2::*)(::boost::numeric::ublas::c_vector<double, 2> const &)) &Node_2::Translate,
+            " ", py::arg("rDisplacement"))
     ;
 }

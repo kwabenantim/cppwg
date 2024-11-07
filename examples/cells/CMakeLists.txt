@@ -9,6 +9,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 # Find Python
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
+# Find Boost
+find_package (Boost REQUIRED)
+
 # Find VTK
 foreach(_core_module vtkCommonCore CommonCore)
     find_package(VTK COMPONENTS ${_core_module} QUIET)
@@ -51,6 +54,7 @@ file(GLOB_RECURSE MAIN_SOURCES
 )
 add_library(cells SHARED ${MAIN_SOURCES})
 target_link_libraries(cells PUBLIC
+    ${Boost_LIBRARIES}
     ${VTK_LIBRARIES}
     ${PETSC_LIBRARIES}
     ${MPI_C_LIBRARIES}
@@ -62,6 +66,7 @@ target_include_directories(cells PUBLIC
     ${CMAKE_SOURCE_DIR}/src/cpp/mesh
     ${CMAKE_SOURCE_DIR}/src/cpp/utils
     ${CMAKE_SOURCE_DIR}/src/cpp/visualization
+    ${Boost_INCLUDE_DIR}
     ${VTK_INCLUDE_DIRS}
     ${PETSC_INCLUDES}
     ${MPI_C_INCLUDE_PATH}
@@ -77,8 +82,9 @@ pybind11_add_module(_pycells_all MODULE ${WRAPPER_SOURCES})
 target_link_libraries(_pycells_all PRIVATE cells)
 target_include_directories(_pycells_all PRIVATE
     ${CMAKE_SOURCE_DIR}/dynamic/wrappers/all
-    ${CMAKE_SOURCE_DIR}/dynamic/thirdparty/dolfinx
-    ${CMAKE_SOURCE_DIR}/dynamic/thirdparty/smtk
+    ${CMAKE_SOURCE_DIR}/dynamic/typecasters/
+    ${CMAKE_SOURCE_DIR}/dynamic/typecasters/thirdparty/dolfinx
+    ${CMAKE_SOURCE_DIR}/dynamic/typecasters/thirdparty/smtk
     ${PETSC4PY_INCLUDES}
 )
 

@@ -24,6 +24,7 @@ jobs:
           sudo apt-get install \
             cmake \
             git \
+            libboost-all-dev \
             libpetsc-real3.15 \
             libpetsc-real3.15-dbg \
             libpetsc-real3.15-dev \
