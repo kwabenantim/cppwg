@@ -1,4 +1,6 @@
-![build](https://github.com/Chaste/cppwg/actions/workflows/build-and-test.yml/badge.svg)
+![pip](https://github.com/Chaste/cppwg/actions/workflows/test-shapes-pip.yml/badge.svg)
+![ubuntu](https://github.com/Chaste/cppwg/actions/workflows/test-cells-ubuntu.yml/badge.svg)
+![conda](https://github.com/Chaste/cppwg/actions/workflows/test-cells-conda.yml/badge.svg)
 
 # cppwg
 
@@ -89,7 +91,7 @@ cd examples/shapes
 cppwg src/cpp \
   --wrapper_root wrapper \
   --package_info wrapper/package_info.yaml \
-  --includes src/cpp/geometry src/cpp/math_funcs src/cpp/mesh src/cpp/primitives extern/meshgen
+  --includes src/cpp/geometry src/cpp/math_funcs src/cpp/mesh src/cpp/primitives
 ```
 
 For the `Rectangle` class, this creates two files in

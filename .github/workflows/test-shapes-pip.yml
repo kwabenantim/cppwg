@@ -1,0 +1,72 @@
+name: test-shapes-pip
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  test-shapes-pip:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    concurrency:
+      group: test-shapes-pip-${{ github.ref }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install cmake git
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install cppwg
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .
+
+      - name: Regenerate wrappers
+        run: |
+          rm -rf wrapper/*/
+          cppwg src/cpp \
+            --wrapper_root wrapper/ \
+            --package_info wrapper/package_info.yaml \
+            --includes src/cpp/*/ \
+            --std c++17 \
+            --logfile cppwg.log
+        working-directory: examples/shapes
+
+      - name: Check for changes
+        run: |
+          git diff --exit-code wrapper
+          grep "Unknown class" cppwg.log
+        working-directory: examples/shapes
+
+      - name: Configure
+        run: |
+          mkdir build && cd build
+          cmake ..
+        working-directory: examples/shapes
+
+      - name: Build
+        run: make -j $(nproc)
+        working-directory: examples/shapes/build
+
+      - name: Test
+        run: |
+          python -m unittest test_functions.py
+          python -m unittest test_classes.py
+        working-directory: examples/shapes/build
