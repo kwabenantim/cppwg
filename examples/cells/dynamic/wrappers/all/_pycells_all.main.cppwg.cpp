@@ -6,11 +6,11 @@
 #include "Node_3.cppwg.hpp"
 #include "AbstractMesh_2_2.cppwg.hpp"
 #include "AbstractMesh_3_3.cppwg.hpp"
+#include "PetscUtils.cppwg.hpp"
 #include "PottsMesh_2.cppwg.hpp"
 #include "PottsMesh_3.cppwg.hpp"
 #include "MeshFactory_PottsMesh_2.cppwg.hpp"
 #include "MeshFactory_PottsMesh_3.cppwg.hpp"
-#include "PetscUtils.cppwg.hpp"
 #include "Scene_2.cppwg.hpp"
 #include "Scene_3.cppwg.hpp"
 
@@ -23,11 +23,11 @@ PYBIND11_MODULE(_pycells_all, m)
     register_Node_3_class(m);
     register_AbstractMesh_2_2_class(m);
     register_AbstractMesh_3_3_class(m);
+    register_PetscUtils_class(m);
     register_PottsMesh_2_class(m);
     register_PottsMesh_3_class(m);
     register_MeshFactory_PottsMesh_2_class(m);
     register_MeshFactory_PottsMesh_3_class(m);
-    register_PetscUtils_class(m);
     register_Scene_2_class(m);
     register_Scene_3_class(m);
 }
