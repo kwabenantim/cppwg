@@ -62,10 +62,14 @@ class CppModuleWrapperWriter:
         Example output:
 
         ```
-        #include <pybind11/pybind11.h> #include "Foo.cppwg.hpp"
+        #include <pybind11/pybind11.h>
+        #include "Foo.cppwg.hpp"
+        #include "Bar.cppwg.hpp"
 
-        PYBIND11_MODULE(_packagename_modulename, m) {
+        PYBIND11_MODULE(_packagename_modulename, m)
+        {
             register_Foo_class(m);
+            register_Bar_class(m);
         }
         ```
         """
