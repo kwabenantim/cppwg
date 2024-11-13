@@ -145,6 +145,6 @@ r = Rectangle(4, 5)
 
 ## Tips
 
-- Use `examples/shapes` as a starting point.
-- See the [pybind11 docs](https://pybind11.readthedocs.io/) for help on pybind11
+- Use `examples/shapes` or `examples/cells` as a starting point.
+- See the [pybind11 documentation](https://pybind11.readthedocs.io/) for help on pybind11
   wrapper code.
