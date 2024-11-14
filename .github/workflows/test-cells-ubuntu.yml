@@ -62,7 +62,7 @@ jobs:
           pipx ensurepath
 
       - name: Install cppwg
-        run: pipx install .
+        run: pipx install .  --include-deps
 
       - name: Configure
         run: |

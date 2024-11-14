@@ -101,7 +101,7 @@ if(SKBUILD)
 endif()
 
 # Target for re-generating wrappers
-find_program(CPPWG cppwg)
+find_program(CPPWG cppwg REQUIRED)
 add_custom_target(pycells_wrappers
     COMMAND ${CPPWG} ${CMAKE_SOURCE_DIR}/src/cpp
             -w ${CMAKE_SOURCE_DIR}/dynamic/wrappers
