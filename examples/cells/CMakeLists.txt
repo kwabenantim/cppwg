@@ -101,8 +101,9 @@ if(SKBUILD)
 endif()
 
 # Target for re-generating wrappers
+find_program(CPPWG cppwg)
 add_custom_target(pycells_wrappers
-    COMMAND ${Python3_EXECUTABLE} -m cppwg ${CMAKE_SOURCE_DIR}/src/cpp
+    COMMAND ${CPPWG} ${CMAKE_SOURCE_DIR}/src/cpp
             -w ${CMAKE_SOURCE_DIR}/dynamic/wrappers
             -p ${CMAKE_SOURCE_DIR}/dynamic/config.yaml
             -i "$<JOIN:$<TARGET_PROPERTY:_pycells_all,INCLUDE_DIRECTORIES>,;>"
