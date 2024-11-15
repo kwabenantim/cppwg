@@ -47,22 +47,33 @@ jobs:
             libpetsc-real-dev \
             libvtk${vtk_ver}-dev \
             mpi-default-bin \
-            mpi-default-dev
-
-          petsc_ver=$(dpkg-query -W -f='${Version}' libpetsc-real-dev | grep -oE '^[0-9]+\.[0-9]+')
-          echo "PETSc version: ${petsc_ver}"
-
-          sudo apt-get install \
+            mpi-default-dev \
             pipx \
             python3-mpi4py \
-            python3-petsc4py-real${petsc_ver} \
+            python3-petsc4py-real \
             python3-pip \
             python3-vtk${vtk_ver}
 
           pipx ensurepath
 
+          # Check installed package versions
+          dpkg-query -W \
+            cmake \
+            g++ \
+            git \
+            libboost-all-dev \
+            libpetsc-real-dev \
+            libvtk${vtk_ver}-dev \
+            mpi-default-bin \
+            mpi-default-dev \
+            pipx \
+            python3-mpi4py \
+            python3-petsc4py-real \
+            python3-pip \
+            python3-vtk${vtk_ver}
+
       - name: Install cppwg
-        run: pipx install .  --include-deps
+        run: pipx install . --include-deps
 
       - name: Configure
         run: |
@@ -84,9 +95,14 @@ jobs:
         working-directory: examples/cells
 
       - name: Build
-        run: PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install --user -v .
+        run: |
+          python3 -m venv --system-site-packages .venv
+          . .venv/bin/activate
+          python3 -m pip install -v .
         working-directory: examples/cells
 
       - name: Test
-        run: python3 -m unittest discover tests
+        run: |
+          . .venv/bin/activate
+          python3 -m unittest discover tests
         working-directory: examples/cells
