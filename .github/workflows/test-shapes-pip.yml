@@ -26,7 +26,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install cmake git
+          sudo apt-get install castxml clang cmake git
 
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5

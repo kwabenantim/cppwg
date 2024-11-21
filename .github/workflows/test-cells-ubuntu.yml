@@ -41,6 +41,8 @@ jobs:
           echo "VTK version: ${vtk_ver}"
 
           sudo apt-get install \
+            castxml \
+            clang \
             cmake \
             git \
             libboost-all-dev \
@@ -58,8 +60,9 @@ jobs:
 
           # Check installed package versions
           dpkg-query -W \
+            castxml \
+            clang \
             cmake \
-            g++ \
             git \
             libboost-all-dev \
             libpetsc-real-dev \
@@ -73,7 +76,7 @@ jobs:
             python3-vtk${vtk_ver}
 
       - name: Install cppwg
-        run: pipx install . --include-deps
+        run: pipx install .
 
       - name: Configure
         run: |

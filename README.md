@@ -8,6 +8,12 @@ Automatically generate pybind11 Python wrapper code for C++ projects.
 
 ## Installation
 
+Install CastXML (required) and Clang (recommended). On Ubuntu, this would be:
+
+```bash
+sudo apt-get install castxml clang
+```
+
 Clone the repository and install cppwg:
 
 ```bash
