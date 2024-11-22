@@ -5,6 +5,7 @@ exclude =
     __pycache__,
     .git,
     .github,
+    .venv,
     build,
     cppwg/templates,
     doc,

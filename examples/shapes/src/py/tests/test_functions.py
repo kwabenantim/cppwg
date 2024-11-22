@@ -4,7 +4,6 @@ from pyshapes import math_funcs
 
 
 class TestFunctions(unittest.TestCase):
-
     def testAdd(self):
         a = 4
         b = 5

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16...3.22)
+cmake_minimum_required(VERSION 3.16...3.28)
 project(pycells LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -53,24 +53,26 @@ file(GLOB_RECURSE MAIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/cpp/*.hpp
 )
 add_library(cells SHARED ${MAIN_SOURCES})
-target_link_libraries(cells PUBLIC
-    ${Boost_LIBRARIES}
-    ${VTK_LIBRARIES}
-    ${PETSC_LIBRARIES}
-    ${MPI_C_LIBRARIES}
-    ${MPI_CXX_LIBRARIES}
-)
 target_include_directories(cells PUBLIC
     ${CMAKE_SOURCE_DIR}/src/cpp
     ${CMAKE_SOURCE_DIR}/src/cpp/cell
     ${CMAKE_SOURCE_DIR}/src/cpp/mesh
     ${CMAKE_SOURCE_DIR}/src/cpp/utils
     ${CMAKE_SOURCE_DIR}/src/cpp/visualization
+)
+target_include_directories(cells SYSTEM PUBLIC
     ${Boost_INCLUDE_DIR}
     ${VTK_INCLUDE_DIRS}
     ${PETSC_INCLUDES}
     ${MPI_C_INCLUDE_PATH}
     ${MPI_CXX_INCLUDE_PATH}
+)
+target_link_libraries(cells PUBLIC
+    ${Boost_LIBRARIES}
+    ${VTK_LIBRARIES}
+    ${PETSC_LIBRARIES}
+    ${MPI_C_LIBRARIES}
+    ${MPI_CXX_LIBRARIES}
 )
 
 # Set up the pycells module with pybind11
@@ -79,14 +81,14 @@ file(GLOB WRAPPER_SOURCES
     ${CMAKE_SOURCE_DIR}/dynamic/wrappers/all/*.hpp
 )
 pybind11_add_module(_pycells_all MODULE ${WRAPPER_SOURCES})
-target_link_libraries(_pycells_all PRIVATE cells)
 target_include_directories(_pycells_all PRIVATE
     ${CMAKE_SOURCE_DIR}/dynamic/wrappers/all
     ${CMAKE_SOURCE_DIR}/dynamic/typecasters/
     ${CMAKE_SOURCE_DIR}/dynamic/typecasters/thirdparty/dolfinx
     ${CMAKE_SOURCE_DIR}/dynamic/typecasters/thirdparty/smtk
-    ${PETSC4PY_INCLUDES}
 )
+target_include_directories(_pycells_all SYSTEM PRIVATE ${PETSC4PY_INCLUDES})
+target_link_libraries(_pycells_all PRIVATE cells)
 
 # Add install targets for scikit-build
 if(SKBUILD)
@@ -101,11 +103,13 @@ if(SKBUILD)
 endif()
 
 # Target for re-generating wrappers
+find_program(CPPWG cppwg REQUIRED)
 add_custom_target(pycells_wrappers
-    COMMAND ${Python3_EXECUTABLE} -m cppwg ${CMAKE_SOURCE_DIR}/src/cpp
+    COMMAND ${CPPWG} ${CMAKE_SOURCE_DIR}/src/cpp
             -w ${CMAKE_SOURCE_DIR}/dynamic/wrappers
             -p ${CMAKE_SOURCE_DIR}/dynamic/config.yaml
-            -i "$<JOIN:$<TARGET_PROPERTY:_pycells_all,INCLUDE_DIRECTORIES>,;>"
+            -i "$<JOIN:$<TARGET_PROPERTY:cells,INCLUDE_DIRECTORIES>,;>"
+               "$<JOIN:$<TARGET_PROPERTY:_pycells_all,INCLUDE_DIRECTORIES>,;>"
             -l ${CMAKE_BINARY_DIR}/cppwg.log
             --std c++17
     COMMAND_EXPAND_LISTS

@@ -21,7 +21,6 @@ class CppFreeFunctionWrapperWriter(CppBaseWrapperWriter):
     """
 
     def __init__(self, free_function_info, wrapper_templates) -> None:
-
         super().__init__(wrapper_templates)
 
         self.free_function_info: CppFreeFunctionInfo = free_function_info

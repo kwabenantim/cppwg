@@ -7,7 +7,6 @@ from pycells import Node, PetscUtils, Scene
 
 
 class TestCells(unittest.TestCase):
-
     def testVtkCaster(self):
         scene = Scene[2]()
         renderer = scene.GetRenderer()

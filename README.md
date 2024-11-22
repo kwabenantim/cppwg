@@ -8,6 +8,12 @@ Automatically generate pybind11 Python wrapper code for C++ projects.
 
 ## Installation
 
+Install CastXML (required) and Clang (recommended). On Ubuntu, this would be:
+
+```bash
+sudo apt-get install castxml clang
+```
+
 Clone the repository and install cppwg:
 
 ```bash
@@ -19,30 +25,30 @@ pip install .
 ## Usage
 
 ```
-usage: cppwg [-h] [-w WRAPPER_ROOT] [-p PACKAGE_INFO] [-c CASTXML_BINARY]
-             [--std STD] [-i [INCLUDES ...]] [-q] [-l [LOGFILE]] [-v]
-             SOURCE_ROOT
+usage: cppwg [-h] [-w WRAPPER_ROOT] [-p PACKAGE_INFO] [-c CASTXML_BINARY] 
+             [-m CASTXML_COMPILER] [--std STD] [-i [INCLUDES ...]] [-q] 
+             [-l [LOGFILE]] [-v] SOURCE_ROOT
 
 Generate Python Wrappers for C++ code
 
 positional arguments:
-  SOURCE_ROOT           Path to the root directory of the input C++ source
-                        code.
+  SOURCE_ROOT           Path to the root directory of the input C++ source code.
 
 options:
   -h, --help            show this help message and exit
-  -w WRAPPER_ROOT, --wrapper_root WRAPPER_ROOT
-                        Path to the output directory for the Pybind11 wrapper
-                        code.
-  -p PACKAGE_INFO, --package_info PACKAGE_INFO
+  -w, --wrapper_root WRAPPER_ROOT
+                        Path to the output directory for the Pybind11 wrapper code.
+  -p, --package_info PACKAGE_INFO
                         Path to the package info file.
-  -c CASTXML_BINARY, --castxml_binary CASTXML_BINARY
+  -c, --castxml_binary CASTXML_BINARY
                         Path to the castxml executable.
+  -m, --castxml_compiler CASTXML_COMPILER
+                        Path to a compiler to be used by castxml.
   --std STD             C++ standard e.g. c++17.
-  -i [INCLUDES ...], --includes [INCLUDES ...]
+  -i, --includes [INCLUDES ...]
                         List of paths to include directories.
   -q, --quiet           Disable informational messages.
-  -l [LOGFILE], --logfile [LOGFILE]
+  -l, --logfile [LOGFILE]
                         Output log messages to a file.
   -v, --version         Print cppwg version.
 ```
@@ -91,7 +97,8 @@ cd examples/shapes
 cppwg src/cpp \
   --wrapper_root wrapper \
   --package_info wrapper/package_info.yaml \
-  --includes src/cpp/geometry src/cpp/math_funcs src/cpp/mesh src/cpp/primitives
+  --includes src/cpp/geometry src/cpp/math_funcs src/cpp/primitives \
+  --std c++17
 ```
 
 For the `Rectangle` class, this creates two files in

@@ -27,8 +27,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         The class information
     wrapper_templates : Dict[str, str]
         String templates with placeholders for generating wrapper code
-    module_class_decls : List[pygccxml.declarations.class_t]
-        A list of decls for all classes in the module
+    module_classes : Dict[pygccxml.declarations.class_t, str]
+        A dictionary of decls and names for all classes in the module
     has_shared_ptr : bool
         Whether the class uses shared pointers
     hpp_string : str
@@ -41,19 +41,19 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
         self,
         class_info: "CppClassInfo",  # noqa: F821
         wrapper_templates: Dict[str, str],
-        module_class_decls: List["class_t"],  # noqa: F821
+        module_classes: Dict["class_t", str],  # noqa: F821
     ) -> None:
         logger = logging.getLogger()
 
         super().__init__(wrapper_templates)
 
-        self.class_info: "CppClassInfo" = class_info  # noqa: F821
+        self.class_info = class_info
 
         if len(self.class_info.cpp_names) != len(self.class_info.py_names):
             logger.error("C++ and Python class name lists should be the same length")
             raise AssertionError()
 
-        self.module_class_decls: List["class_t"] = module_class_decls  # noqa: F821
+        self.module_classes = module_classes
 
         self.has_shared_ptr: bool = True
 
@@ -292,9 +292,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 continue
 
             # Find and define virtual function "trampoline" overrides
-            methods_needing_override: List["member_function_t"] = (  # noqa: F821
-                self.add_virtual_overrides(idx)
-            )
+            methods_needing_override = self.add_virtual_overrides(idx)
 
             # Add the virtual "trampoline" overrides from "Foo_Overrides" to
             # the "Foo" wrapper class definition if needed
@@ -320,8 +318,8 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                     continue
 
                 # Check if the base class is also wrapped in the module
-                if base.related_class in self.module_class_decls:
-                    bases += f", {base.related_class.name}"
+                if base.related_class in self.module_classes:
+                    bases += f", {self.module_classes[base.related_class]}"
 
             # Add the class registration
             class_definition_dict = {

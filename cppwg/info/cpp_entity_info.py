@@ -32,7 +32,6 @@ class CppEntityInfo(BaseInfo):
     """
 
     def __init__(self, name: str, entity_config: Optional[Dict[str, Any]] = None):
-
         super().__init__(name, entity_config)
 
         self.name_override: str = ""

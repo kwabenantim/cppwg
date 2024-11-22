@@ -11,7 +11,6 @@ class CppFreeFunctionInfo(CppEntityInfo):
     def __init__(
         self, name: str, free_function_config: Optional[Dict[str, Any]] = None
     ):
-
         super().__init__(name, free_function_config)
 
     def update_from_ns(self, source_ns: "namespace_t") -> None:  # noqa: F821

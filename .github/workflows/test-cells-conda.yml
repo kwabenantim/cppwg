@@ -30,7 +30,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install cmake git
+          sudo apt-get install castxml clang cmake git
 
       - name: Setup Miniconda Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
@@ -39,7 +39,8 @@ jobs:
           use-mamba: true
           miniforge-version: latest
           python-version: ${{ matrix.python-version }}
-          channels: conda-forge
+          channels: conda-forge,defaults
+          conda-remove-defaults: "false"
 
       - name: Install cppwg
         run: |
@@ -80,7 +81,8 @@ jobs:
         run: mamba install boa conda-build conda-verify
 
       - name: Build
-        run: conda mambabuild recipe -m variants/python${{ matrix.python-version }}.yaml
+        run: |
+          conda mambabuild recipe -m variants/python${{ matrix.python-version }}.yaml
         working-directory: examples/cells/conda
 
       - name: Install

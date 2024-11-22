@@ -5,7 +5,6 @@ from collections.abc import Iterable
 
 
 class TemplateClassDict:
-
     def __init__(self, template_dict):
         self._dict = {}
         for arg_tuple, cls in template_dict.items():
