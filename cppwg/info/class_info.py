@@ -172,41 +172,23 @@ class CppClassInfo(CppEntityInfo):
         if self.excluded:
             return
 
-        for class_cpp_name in self.cpp_names:
-            class_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2>
-
+        for class_cpp_name, class_py_name in zip(self.cpp_names, self.py_names):
             try:
-                class_decl = source_ns.class_(class_name)
+                cpp_name = class_cpp_name.replace(" ", "")  # e.g. Foo<2,2,1>
+                class_decl = source_ns.class_(cpp_name)
 
-            except declaration_not_found_t as e1:
-                if "=" not in self.template_signature:
-                    logger.error(f"Could not find declaration for class {class_name}")
-                    raise e1
+            except declaration_not_found_t:
+                # Parsed names for templated classes which have default args
+                # may vary between CastXML versions and compiler versions.
+                # Try to look up the class name via the typedef e.g. for
+                # `template <int A, int B=A, int C=1> class Foo {};`
+                # the parsed name for Foo<2,2,1> could be Foo<2,2>, or Foo<2>
+                # but the typedef name will always be Foo_2_2_1
+                py_name = class_py_name.replace(" ", "")  # e.g. Foo_2_2_1
+                typedef_decl = source_ns.typedef(py_name)
+                class_decl = typedef_decl.decl_type.declaration
 
-                # If class has default args, try to compress the template signature
-                logger.warning(
-                    f"Could not find declaration for class {class_name}: trying a partial match."
-                )
-
-                # Try to find the class without default template args
-                # e.g. for template <int A, int B=A> class Foo {};
-                # Look for Foo<2> instead of Foo<2,2>
-                pos = 0
-                for i, s in enumerate(self.template_signature.split(",")):
-                    if "=" in s:
-                        pos = i
-                        break
-
-                class_name = ",".join(class_name.split(",")[0:pos]) + " >"
-
-                try:
-                    class_decl = source_ns.class_(class_name)
-
-                except declaration_not_found_t as e2:
-                    logger.error(f"Could not find declaration for class {class_name}")
-                    raise e2
-
-                logger.info(f"Found {class_name}")
+                logger.info(f"Found {class_decl.name} for {class_cpp_name}")
 
             self.decls.append(class_decl)
 
