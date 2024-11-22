@@ -319,7 +319,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
 
                 # Check if the base class is also wrapped in the module
                 if base.related_class in self.module_classes:
-                    bases += f", {self.module_classes[base]}"
+                    bases += f", {self.module_classes[base.related_class]}"
 
             # Add the class registration
             class_definition_dict = {
