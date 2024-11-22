@@ -39,7 +39,6 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
         method_decl: "member_function_t",  # noqa: F821
         wrapper_templates: Dict[str, str],
     ) -> None:
-
         super().__init__(wrapper_templates)
 
         self.class_info: "CppClassInfo" = class_info  # noqa: F821

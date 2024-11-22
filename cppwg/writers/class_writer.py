@@ -292,9 +292,7 @@ class CppClassWrapperWriter(CppBaseWrapperWriter):
                 continue
 
             # Find and define virtual function "trampoline" overrides
-            methods_needing_override: List["member_function_t"] = (  # noqa: F821
-                self.add_virtual_overrides(idx)
-            )
+            methods_needing_override = self.add_virtual_overrides(idx)
 
             # Add the virtual "trampoline" overrides from "Foo_Overrides" to
             # the "Foo" wrapper class definition if needed

@@ -17,7 +17,6 @@ class CppBaseWrapperWriter:
     """
 
     def __init__(self, wrapper_templates: Dict[str, str]) -> None:
-
         self.wrapper_templates = wrapper_templates
         self.tidy_replacements = OrderedDict(
             [

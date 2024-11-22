@@ -30,14 +30,12 @@ class CppSourceParser:
     ----------
         castxml_cflags : str
             Optional cflags to be passed to CastXML e.g. "-std=c++17"
+        castxml_compiler : str
+            Optional compiler path to be passed to CastXML
         castxml_binary : str
             The path to the CastXML binary
-        global_ns : namespace_t
-            The namespace containing all parsed C++ declarations
         source_includes : List[str]
             The list of source include paths
-        source_ns : namespace_t
-            The namespace containing C++ declarations from the source tree
         source_root : str
             The root directory of the source code
         wrapper_header_collection : str
@@ -51,12 +49,14 @@ class CppSourceParser:
         castxml_binary: str,
         source_includes: List[str],
         castxml_cflags: str = "",
+        castxml_compiler: str = None,
     ):
         self.source_root: str = source_root
         self.wrapper_header_collection: str = wrapper_header_collection
         self.castxml_binary: str = castxml_binary
         self.source_includes: List[str] = source_includes
         self.castxml_cflags: str = castxml_cflags
+        self.castxml_compiler: str = castxml_compiler
 
     def parse(self) -> namespace_t:
         """
@@ -74,8 +74,10 @@ class CppSourceParser:
             xml_generator_path=self.castxml_binary,
             xml_generator="castxml",
             cflags=self.castxml_cflags,
+            compiler_path=self.castxml_compiler,
             include_paths=self.source_includes,
         )
+        logger.info(f"Using compiler: {xml_generator_config.compiler_path}")
 
         # Parse all the C++ source code to extract declarations
         logger.info("Parsing source code for declarations.")
@@ -85,7 +87,7 @@ class CppSourceParser:
             compilation_mode=parser.COMPILATION_MODE.ALL_AT_ONCE,
         )
 
-        # Get access to the global namespace
+        # Get access to the global namespace containing all parsed C++ declarations
         global_ns: namespace_t = declarations.get_global_namespace(decls)
 
         # Filter declarations for which files exist

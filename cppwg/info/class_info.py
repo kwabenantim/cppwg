@@ -27,7 +27,6 @@ class CppClassInfo(CppEntityInfo):
     """
 
     def __init__(self, name: str, class_config: Optional[Dict[str, Any]] = None):
-
         super().__init__(name, class_config)
 
         self.base_decls: List["declaration_t"] = []  # noqa: F821
@@ -298,7 +297,6 @@ class CppClassInfo(CppEntityInfo):
 
             template_string = ""
             for idx, arg in enumerate(template_arg_list):
-
                 # Do standard name replacements
                 arg_str = str(arg)
                 for name, replacement in self.name_replacements.items():

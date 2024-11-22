@@ -5,9 +5,7 @@ import pyshapes.primitives
 
 
 class TestClasses(unittest.TestCase):
-
     def testGeometry(self):
-
         p0 = pyshapes.geometry.Point_2()
         self.assertTrue(p0.GetLocation() == [0.0, 0.0])
 
@@ -36,7 +34,6 @@ class TestClasses(unittest.TestCase):
         self.assertTrue(len(cuboid.rGetVertices()) == 8)
 
     def testSyntax(self):
-
         self.assertEqual(pyshapes.geometry.Point[2], pyshapes.geometry.Point_2)
 
         point = pyshapes.geometry.Point[3](0.0, 1.0, 2.0)

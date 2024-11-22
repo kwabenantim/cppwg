@@ -39,7 +39,6 @@ class CppHeaderCollectionWriter:
         wrapper_root: str,
         hpp_collection_file: str,
     ):
-
         self.package_info: PackageInfo = package_info
         self.wrapper_root: str = wrapper_root
         self.hpp_collection_file: str = hpp_collection_file

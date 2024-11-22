@@ -45,6 +45,13 @@ def parse_args() -> argparse.Namespace:
         help="Path to the castxml executable.",
     )
 
+    parser.add_argument(
+        "-m",
+        "--castxml_compiler",
+        type=str,
+        help="Path to a compiler to be used by castxml.",
+    )
+
     # Note: we're passing in std directly because syntax like
     # --castxml_cflags "-std=c++17" isn't supported by argparse because of
     # the initial "-" in the argument. See https://bugs.python.org/issue9334
@@ -112,6 +119,7 @@ def generate(args: argparse.Namespace) -> None:
         package_info_path=args.package_info,
         castxml_binary=args.castxml_binary,
         castxml_cflags=castxml_cflags,
+        castxml_compiler=args.castxml_compiler,
     )
 
     generator.generate()

@@ -16,7 +16,6 @@ class CppMethodInfo(CppEntityInfo):
     """
 
     def __init__(self, name: str, _) -> None:
-
         super().__init__(name)
 
         self.class_info: Optional["CppClassInfo"] = None  # noqa: F821

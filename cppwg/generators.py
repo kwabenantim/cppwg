@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+import shutil
 import subprocess
 import uuid
 from pathlib import Path
@@ -40,6 +41,8 @@ class CppWrapperGenerator:
         The path to the castxml binary
     castxml_cflags : str
         Optional cflags to be passed to castxml e.g. "-std=c++17"
+    castxml_compiler : str
+        Optional compiler path to be passed to CastXML
     package_info_path : str
         The path to the package info yaml config file; defaults to "package_info.yaml"
     source_ns : pygccxml.declarations.namespace_t
@@ -56,6 +59,7 @@ class CppWrapperGenerator:
         castxml_binary: Optional[str] = None,
         package_info_path: Optional[str] = None,
         castxml_cflags: Optional[str] = None,
+        castxml_compiler: Optional[str] = None,
     ):
         logger = logging.getLogger()
 
@@ -99,6 +103,16 @@ class CppWrapperGenerator:
         self.castxml_cflags = "-w"
         if castxml_cflags:
             self.castxml_cflags = f"{self.castxml_cflags} {castxml_cflags}"
+
+        # Try to set castxml compiler
+        if castxml_compiler:
+            self.castxml_compiler = castxml_compiler
+        else:
+            compiler_path = shutil.which("clang++")
+            if compiler_path:
+                self.castxml_compiler = compiler_path
+            else:
+                self.castxml_compiler = None
 
         # Sanitize source_root
         self.source_root: str = os.path.abspath(source_root)
@@ -195,7 +209,6 @@ class CppWrapperGenerator:
 
         # Check for uninstantiated class templates not parsed by pygccxml
         for hpp_file_path in self.package_info.source_hpp_files:
-
             class_list = utils.find_classes_in_source_file(hpp_file_path)
 
             for _, class_name, _ in class_list:
@@ -216,6 +229,7 @@ class CppWrapperGenerator:
             self.castxml_binary,
             self.source_includes,
             self.castxml_cflags,
+            self.castxml_compiler,
         )
         self.source_ns = source_parser.parse()
 
