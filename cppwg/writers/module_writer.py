@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Dict, List
+from typing import Dict
 
 from cppwg.utils.constants import CPPWG_EXT, CPPWG_HEADER_COLLECTION_FILENAME
 from cppwg.writers.class_writer import CppClassWrapperWriter
@@ -26,8 +26,9 @@ class CppModuleWrapperWriter:
         String templates with placeholders for generating wrapper code
     wrapper_root : str
         The output directory for the generated wrapper code
-    class_decls : List[pygccxml.declarations.class_t]
-        A list of declarations of all classes to be wrapped in the module
+
+    classes : Dict[pygccxml.declarations.class_t, str]
+        A dictionary of decls and names for all classes to be wrapped in the module
     """
 
     def __init__(
@@ -40,16 +41,17 @@ class CppModuleWrapperWriter:
         self.wrapper_templates: Dict[str, str] = wrapper_templates
         self.wrapper_root: str = wrapper_root
 
-        # For convenience, store a list of declarations of all
+        # For convenience, store a dictionary of decl->name pairs for all
         # classes to be wrapped in the module
-        self.class_decls: List["class_t"] = []  # noqa: F821
+        self.classes: Dict["class_t", str] = {}  # noqa: F821
 
         for class_info in self.module_info.class_collection:
             # Skip excluded classes
             if class_info.excluded:
                 continue
 
-            self.class_decls.extend(class_info.decls)
+            for decl, cpp_name in zip(class_info.decls, class_info.cpp_names):
+                self.classes[decl] = cpp_name
 
     def write_module_wrapper(self) -> None:
         """
@@ -162,7 +164,7 @@ class CppModuleWrapperWriter:
             class_writer = CppClassWrapperWriter(
                 class_info,
                 self.wrapper_templates,
-                self.class_decls,
+                self.classes,
             )
 
             # Write the class wrappers into /path/to/wrapper_root/modulename/
