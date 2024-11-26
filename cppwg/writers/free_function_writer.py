@@ -54,7 +54,9 @@ class CppFreeFunctionWrapperWriter(CppBaseWrapperWriter):
                 if arg.default_value is not None:
                     # Try to convert "(-1)" to "-1" etc.
                     default_value = str(arg.default_value)
-                    value = utils.str_to_num(default_value, integer="int" in str(arg.decl_type))
+                    value = utils.str_to_num(
+                        default_value, integer="int" in str(arg.decl_type)
+                    )
                     if value is not None:
                         default_value = str(value)
                     default_args += f" = {default_value}"

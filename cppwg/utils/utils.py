@@ -172,7 +172,7 @@ def read_source_file(
     return source
 
 
-def str_to_num(expr: str, integer:bool = False) -> Number:
+def str_to_num(expr: str, integer: bool = False) -> Number:
     """
     Convert a literal string expression to a number e.g. "(-1)" to -1.
 
