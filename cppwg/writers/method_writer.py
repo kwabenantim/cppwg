@@ -158,9 +158,9 @@ class CppMethodWrapperWriter(CppBaseWrapperWriter):
             ):
                 # Try to convert "(-1)" to "-1" etc.
                 default_value = str(arg.default_value)
-                num = utils.str_to_num(default_value)
-                if num is not None:
-                    default_value = str(num)
+                value = utils.str_to_num(default_value, integer="int" in str(arg.decl_type))
+                if value is not None:
+                    default_value = str(value)
 
                 # Check for template params in default value
                 if self.template_params:
