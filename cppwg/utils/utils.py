@@ -172,7 +172,7 @@ def read_source_file(
     return source
 
 
-def str_to_num(expr: str) -> float:
+def str_to_num(expr: str, integer: bool = False) -> Number:
     """
     Convert a literal string expression to a number e.g. "(-1)" to -1.
 
@@ -183,12 +183,14 @@ def str_to_num(expr: str) -> float:
 
     Returns
     -------
-    float
+    Number
         The converted number, or None if the conversion fails
     """
     try:
         result = ast.literal_eval(expr.strip())
         if isinstance(result, Number):
+            if integer:
+                return int(result)
             return float(result)
     except (SyntaxError, TypeError, ValueError):
         pass

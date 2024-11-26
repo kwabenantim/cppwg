@@ -49,14 +49,16 @@ class CppFreeFunctionWrapperWriter(CppBaseWrapperWriter):
         # e.g. with default values: ', py::arg("foo") = 1, py::arg("bar") = 2'
         default_args = ""
         if not self.free_function_info.hierarchy_attribute("exclude_default_args"):
-            for argument in self.free_function_info.decls[0].arguments:
-                default_args += f', py::arg("{argument.name}")'
-                if argument.default_value is not None:
+            for arg in self.free_function_info.decls[0].arguments:
+                default_args += f', py::arg("{arg.name}")'
+                if arg.default_value is not None:
                     # Try to convert "(-1)" to "-1" etc.
-                    default_value = str(argument.default_value)
-                    num = utils.str_to_num(default_value)
-                    if num is not None:
-                        default_value = str(num)
+                    default_value = str(arg.default_value)
+                    value = utils.str_to_num(
+                        default_value, integer="int" in str(arg.decl_type)
+                    )
+                    if value is not None:
+                        default_value = str(value)
                     default_args += f" = {default_value}"
 
         # Add the free function wrapper code to the wrapper string
