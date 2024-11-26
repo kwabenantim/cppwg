@@ -2,6 +2,7 @@
 #define SCENE_HPP_
 
 #include <vtkAutoInit.h>
+#include <vtkColorTransferFunction.h>
 #include <vtkOpenGLRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkSmartPointer.h>
@@ -13,6 +14,7 @@ class Scene
 {
     vtkSmartPointer<vtkRenderer> mpRenderer;
     vtkSmartPointer<vtkRenderWindow> mpRenderWindow;
+    vtkSmartPointer<vtkColorTransferFunction> mpColorTransferFunction;
 
 public:
     Scene();

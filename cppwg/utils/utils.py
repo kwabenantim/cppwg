@@ -1,6 +1,8 @@
 """Utility functions for the cppwg package."""
 
+import ast
 import re
+from numbers import Number
 from typing import Any, List, Tuple
 
 from cppwg.utils.constants import CPPWG_ALL_STRING, CPPWG_TRUE_STRINGS
@@ -168,6 +170,40 @@ def read_source_file(
     )
 
     return source
+
+
+def str_to_num(expr: str) -> Number:
+    """
+    Convert a literal string expression to a number e.g. "(-1)" to -1.
+
+    Parameters
+    ----------
+    expr : str
+        The string expression to convert
+
+    Returns
+    -------
+    Number
+        The converted number, or None if the conversion fails
+    """
+    expr = expr.strip()
+    if expr.isnumeric():
+        return int(expr)
+
+    try:
+        result = float(expr)
+        return result
+    except ValueError:
+        pass
+
+    try:
+        result = ast.literal_eval(expr)
+        if isinstance(result, Number):
+            return result
+    except (ValueError, SyntaxError):
+        pass
+
+    return None
 
 
 def strip_source(

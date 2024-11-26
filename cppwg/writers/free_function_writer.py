@@ -3,6 +3,7 @@
 from typing import Dict, List
 
 from cppwg.info.free_function_info import CppFreeFunctionInfo
+from cppwg.utils import utils
 from cppwg.writers.base_writer import CppBaseWrapperWriter
 
 
@@ -51,7 +52,12 @@ class CppFreeFunctionWrapperWriter(CppBaseWrapperWriter):
             for argument in self.free_function_info.decls[0].arguments:
                 default_args += f', py::arg("{argument.name}")'
                 if argument.default_value is not None:
-                    default_args += f" = {argument.default_value}"
+                    # Try to convert "(-1)" to "-1" etc.
+                    default_value = str(argument.default_value)
+                    num = utils.str_to_num(default_value)
+                    if num is not None:
+                        default_value = str(num)
+                    default_args += f" = {default_value}"
 
         # Add the free function wrapper code to the wrapper string
         func_dict = {
