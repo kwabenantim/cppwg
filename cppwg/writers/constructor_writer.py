@@ -5,6 +5,7 @@ from typing import Dict
 
 from pygccxml.declarations import type_traits, type_traits_classes
 
+from cppwg.utils import utils
 from cppwg.writers.base_writer import CppBaseWrapperWriter
 
 
@@ -185,7 +186,11 @@ class CppConstructorWrapperWriter(CppBaseWrapperWriter):
                 arg.default_value is None
                 or self.class_info.hierarchy_attribute("exclude_default_args")
             ):
+                # Try to convert "(-1)" to "-1" etc.
                 default_value = str(arg.default_value)
+                num = utils.str_to_num(default_value)
+                if num is not None:
+                    default_value = str(num)
 
                 # Check for template params in default value
                 if self.template_params:

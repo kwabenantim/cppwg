@@ -189,6 +189,7 @@ class CppClassInfo(CppEntityInfo):
                 class_decl = typedef_decl.decl_type.declaration
 
                 logger.info(f"Found {class_decl.name} for {class_cpp_name}")
+                class_decl.name = class_cpp_name
 
             self.decls.append(class_decl)
 
